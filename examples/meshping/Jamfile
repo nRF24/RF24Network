@@ -3,14 +3,25 @@ PROJECT_DIR 	= . ;
 PROJECT_LIBS = SPI RF24 RF24Network ; 
 
 OUT_DIR = ojam ;
-ARDUINO_VERSION	= 22 ;
 F_CPU 		= 16000000 ;
 
-# Where is everything?
-AVR_TOOLS_PATH 	= /usr/bin ;
-ARDUINO_DIR 	= /opt/arduino-00$(ARDUINO_VERSION) ;
-ARDUINO_CORE 	= $(ARDUINO_DIR)/hardware/arduino/cores/arduino ;
+# Host-specific overrides for locations 
+if $(OS) = MACOSX 
+{
+ARDUINO_VERSION	= 22 ;
+OLD_DIR 	= /opt/arduino-0021 ;
+AVR_TOOLS_PATH 	= $(OLD_DIR)/hardware/tools/avr/bin ;
+AVRDUDECONFIG_PATH = $(OLD_DIR)/hardware/tools/avr/etc ;
+ARDUINO_DIR 	= /opt/Arduino ;
 ARDUINO_AVR 	= /usr/lib/avr/include ;
+}
+
+# Where is everything?
+ARDUINO_VERSION	?= 22 ;
+AVR_TOOLS_PATH 	?= /usr/bin ;
+ARDUINO_DIR 	?= /opt/arduino-00$(ARDUINO_VERSION) ;
+ARDUINO_AVR 	?= $(ARDUINO_DIR)/hardware/tools/avr/avr/include/avr ;
+ARDUINO_CORE 	= $(ARDUINO_DIR)/hardware/arduino/cores/arduino ;
 ARDUINO_LIB 	= $(ARDUINO_DIR)/libraries ;
 SKETCH_LIB      = $(HOME)/Source/Arduino/libraries ;
 AVR_CC  	= $(AVR_TOOLS_PATH)/avr-gcc ;
@@ -25,7 +36,7 @@ CXXFLAGS  	= $(CFLAGS) $(CXXTUNING) ;
 LDFLAGS  	= -Os -lm -Wl,--gc-sections -mmcu=atmega328p ;
 
 # Search everywhere for headers
-HDRS  	 	= $(PROJECT_DIR) $(ARDUINO_AVR) $(ARDUINO_CORE) [ GLOB $(ARDUINO_LIB) $(SKETCH_LIB) : * ] ;
+HDRS  	 	= $(PROJECT_DIR) $(ARDUINO_AVR) $(ARDUINO_CORE) [ GLOB $(ARDUINO_LIB) $(SKETCH_LIB) : [^.]* ] ;
 
 # Grab everything from the core directory
 CORE_MODULES  	= [ GLOB $(ARDUINO_CORE) : *.c *.cpp ] ;
