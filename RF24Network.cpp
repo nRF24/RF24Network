@@ -24,6 +24,8 @@
 #undef PSTR 
 #define PSTR(s) (__extension__({static prog_char __c[] PROGMEM = (s); &__c[0];}))
 
+uint16_t RF24NetworkHeader::next_id = 1;
+
 RF24Network::RF24Network( RF24& _radio, const RF24NodeLine* _topology ): radio(_radio), topology(_topology), next_frame(frame_queue)
 {
   // Find out how many nodes are defined
@@ -269,8 +271,8 @@ uint16_t RF24Network::find_node( uint16_t current_node, uint16_t target_node )
 
 const char* RF24NetworkHeader::toString(void) const
 {
-  static char buffer[20];
-  snprintf(buffer,sizeof(buffer),"from %04x to %04x",from_node,to_node);
+  static char buffer[28];
+  snprintf(buffer,sizeof(buffer),"id %04x from %04x to %04x",id,from_node,to_node);
   return buffer;
 }
 

@@ -34,8 +34,10 @@ struct RF24NetworkHeader
 {
   uint16_t from_node;
   uint16_t to_node;
+  uint16_t id;
+  static uint16_t next_id;
   RF24NetworkHeader() {}
-  RF24NetworkHeader(uint16_t _to): to_node(_to) {}
+  RF24NetworkHeader(uint16_t _to): to_node(_to), id(next_id++) {}
   const char* toString(void) const;
 };
 
