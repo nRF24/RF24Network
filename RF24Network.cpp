@@ -10,14 +10,17 @@
 #include <RF24Network.h>
 #include <RF24.h>
 
+#define SERIAL_DEBUG
+
 // Avoid spurious warnings
 #undef PROGMEM 
 #define PROGMEM __attribute__(( section(".progmem.data") )) 
 #undef PSTR 
 #define PSTR(s) (__extension__({static prog_char __c[] PROGMEM = (s); &__c[0];}))
 
-RF24Network::RF24Network( RF24& _radio, const RF24NodeLine* _topology ): radio(_radio), topology(_topology)
+RF24Network::RF24Network( RF24& _radio, const RF24NodeLine* _topology ): radio(_radio), topology(_topology), next_frame(frame_queue)
 {
+  // Find out how many nodes are defined
   num_nodes = 0;
   const RF24NodeLine* i = topology;
   while ( (i++)->parent_node != 0xFFFF )
@@ -26,7 +29,7 @@ RF24Network::RF24Network( RF24& _radio, const RF24NodeLine* _topology ): radio(_
 
 void RF24Network::begin(uint8_t _channel, uint16_t _node_address, rf24_direction_e /*_direction*/ )
 {
-  if ( node_address < num_nodes )
+  if ( _node_address < num_nodes )
     node_address = _node_address;
 
   radio.setChannel(_channel);
@@ -38,21 +41,127 @@ void RF24Network::begin(uint8_t _channel, uint16_t _node_address, rf24_direction
 
 void RF24Network::update(void)
 {
+  // if there is data ready
+  uint8_t pipe_num;
+  while ( radio.available(&pipe_num) )
+  {
+    // Dump the payloads until we've gotten everything
+    boolean done = false;
+    while (!done)
+    {
+      // Fetch the payload, and see if this was the last one.
+      done = radio.read( frame_buffer, sizeof(frame_buffer) );
+
+      // Read the beginning of the frame as the header
+      const RF24NetworkHeader& frame = * reinterpret_cast<RF24NetworkHeader*>(frame_buffer);
+
+      // Is this for us?
+      if ( frame.to_node == node_address )
+      {
+	// Add it to the buffer of frames for us
+	enqueue();
+      }
+      else
+      {
+	// Relay it
+
+#ifdef SERIAL_DEBUG	
+	// Spew it
+	printf("%lu ",millis());
+	//payload_printf("RELAY",payload);
+	printf(" on pipe %u. ",pipe_num);
+#endif
+	write(frame.to_node);
+      }
+    }
+  }
+}
+
+void RF24Network::enqueue(void)
+{
+  // Copy the current frame into the frame queue
+  if ( next_frame <= frame_buffer + frame_size )
+  {
+    memcpy(next_frame,frame_buffer, frame_size );
+    next_frame += frame_size; 
+  }
 }
 
 bool RF24Network::available(void)
 {
-  return false;
+  // Are there frames on the queue for us?
+  return (next_frame > frame_queue);
 }
 
-size_t RF24Network::read(RF24NetworkHeader& /*header*/,void* /*buf*/, size_t /*maxlen*/)
+size_t RF24Network::read(RF24NetworkHeader& header,void* buf, size_t maxlen)
 {
-  return 0;
+  size_t bufsize = 0;
+  uint8_t* frame = next_frame;
+
+  if ( available() )
+  {
+    // How much buffer size should we actually copy?
+    bufsize = min(maxlen,frame_size-sizeof(RF24NetworkHeader));
+
+    // Copy the next available frame from the queue into the provided buffer
+    memcpy(&header,frame,sizeof(RF24NetworkHeader));
+    memcpy(buf,frame,bufsize);
+    
+    // And move on to the next one
+    next_frame -= frame_size;
+  }
+
+  return bufsize;
 }
 
-bool RF24Network::write(RF24NetworkHeader& /*header*/,const void* /*buf*/, size_t /*len*/)
+bool RF24Network::write(RF24NetworkHeader& header,const void* buf, size_t len)
 {
-  return false;
+  // Build the full frame to send
+  memcpy(frame_buffer,&header,sizeof(RF24NetworkHeader));
+  memcpy(frame_buffer + sizeof(RF24NetworkHeader),buf,min(frame_size-sizeof(RF24NetworkHeader),len));
+
+  return write(header.to_node);
+}
+
+bool RF24Network::write(uint16_t to_node)
+{
+  // First, stop listening so we can talk.
+  radio.stopListening();
+
+  // Which pipe should we use to get the message to the "to_node"?
+  // We need to find a node who is OUR CHILD that either IS the to_node
+  // or has the to_node as one of ITS children.  Failing that, we'll just
+  // send it back to the parent to deal with.
+  uint8_t out_node = find_node(node_address,to_node);
+
+  // First, stop listening so we can talk
+  radio.stopListening();
+
+  // If this node is our child, we talk on it's listening pipe.
+  uint64_t out_pipe;
+  if ( topology[out_node].parent_node == node_address )
+    out_pipe = topology[out_node].listening_pipe;
+  
+  // Otherwise, it's our parent so we talk on OUR talking pipe
+  else
+    out_pipe = topology[node_address].talking_pipe;
+  
+  // Open the correct pipe for writing.  
+  radio.openWritingPipe(out_pipe);
+
+  // Retry a few times
+  short attempts = 5;
+  bool ok = false;
+  do
+  {
+    ok = radio.write( frame_buffer, frame_size );
+  }
+  while ( !ok && --attempts );
+
+  // Now, continue listening
+  radio.startListening();
+
+  return ok;
 }
 
 void RF24Network::open_pipes(void)
@@ -92,12 +201,45 @@ void RF24Network::open_pipes(void)
     // The topology table tells us who our children are
     int i = num_nodes;
     while (i--)
-    {
       if ( topology[i].parent_node == node_address )
 	radio.openReadingPipe(current_pipe++,topology[i].talking_pipe);
-    }
   }
 
+}
+
+/**
+ * Find where to send a message to reach the target node
+ *
+ * Given the @p target_node, find the child or parent of
+ * the @p current_node which will relay messages for the target.
+ *
+ * This is needed in a multi-hop system where the @p current_node
+ * is not adjacent to the @p target_node in the topology
+ */
+uint16_t RF24Network::find_node( uint16_t current_node, uint16_t target_node )
+{
+  uint16_t out_node = target_node;
+  bool found_target = false;
+  while ( ! found_target )
+  {
+    if ( topology[out_node].parent_node == current_node )
+    {
+      found_target = true; 
+    }
+    else
+    {
+      out_node = topology[out_node].parent_node;
+
+      // If we've made it all the way back to the base without finding
+      // common lineage with the to_node, we will just send it to our parent
+      if ( out_node == 0 || out_node == 0xFFFF )
+      {
+	out_node = topology[current_node].parent_node;
+	found_target = true;
+      }
+    }
+  }
+  return out_node;
 }
 
 // vim:ai:cin:sts=2 sw=2 ft=cpp

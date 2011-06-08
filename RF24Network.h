@@ -122,12 +122,19 @@ public:
 
 protected:
   void open_pipes(void);
+  uint16_t find_node( uint16_t current_node, uint16_t target_node );
+  bool write(uint16_t);
+  void enqueue(void);
 
 private:
   RF24& radio; /**< Underlying radio driver, provides link/physical layers */ 
   uint16_t node_address; /**< Logical node address of this unit, 1 .. UINT_MAX */
   const RF24NodeLine* topology; /**< Mapping table of logical node addresses to physical RF pipes */
   uint16_t num_nodes; /**< Number of nodes in the topology table */
+  const static short frame_size = 32;
+  uint8_t frame_buffer[frame_size];
+  uint8_t frame_queue[5*frame_size];
+  uint8_t* next_frame;
 
 };
 #endif // __RF24_H__

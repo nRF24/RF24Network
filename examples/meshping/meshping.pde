@@ -79,7 +79,7 @@ void loop(void)
   network.update();
 
   // Is there anything ready for us?
-  if ( network.available() )
+  while ( network.available() )
   {
     // If so, grab it and print it out
     RF24NetworkHeader header;
