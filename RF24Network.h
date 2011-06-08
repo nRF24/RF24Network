@@ -65,11 +65,6 @@ typedef enum { RF24_NET_UNIDIRECTIONAL = 0, RF24_NET_BIDIRECTIONAL } rf24_direct
 
 class RF24Network
 {
-private:
-  RF24& radio; /**< Underlying radio driver, provides link/physical layers */ 
-  uint16_t node_address; /**< Logical node address of this unit, 1 .. UINT_MAX */
-  const RF24NodeLine* topology; /**< Mapping table of logical node addresses to physical RF pipes */
-
 public:
   RF24Network( RF24& _radio, const RF24NodeLine* _topology);
 
@@ -124,6 +119,16 @@ public:
    * @return Whether the message was successfully received 
    */
   bool write(RF24NetworkHeader& header,const void* buf, size_t len);
+
+protected:
+  void open_pipes(void);
+
+private:
+  RF24& radio; /**< Underlying radio driver, provides link/physical layers */ 
+  uint16_t node_address; /**< Logical node address of this unit, 1 .. UINT_MAX */
+  const RF24NodeLine* topology; /**< Mapping table of logical node addresses to physical RF pipes */
+  uint16_t num_nodes; /**< Number of nodes in the topology table */
+
 };
 #endif // __RF24_H__
 // vim:ai:cin:sts=2 sw=2 ft=cpp

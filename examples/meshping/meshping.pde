@@ -2,6 +2,7 @@
 #include <RF24Network.h>
 #include <RF24.h>
 #include <SPI.h>
+#include "printf.h"
 
 // Avoid spurious warnings
 #undef PROGMEM 
@@ -17,6 +18,7 @@ RF24NodeLine topology[] =
   { 0x0000000000LL, 0x0000000000LL, 0 }, // Node 0: Invalid
   { 0xE7E7E7E701LL, 0xE7E7E7E701LL, 0 }, // Node 1: Base, has no parent
   { 0xE7E7E7E70ELL, 0xE7E7E7E70ELL, 1 }, // Node 2: Leaf, child of #1
+  { 0xFFFFFFFFFFLL, 0xFFFFFFFFFFLL, -1 }, // End of data marker 
 };
 
 RF24 radio(8,9);
@@ -36,10 +38,18 @@ unsigned long last_time_sent;
 
 void setup(void)
 {
-  SPI.begin();
-  radio.begin();
+  //
+  // Print preamble
+  //
+  
+  Serial.begin(57600);
+  printf_begin();
+  printf("\n\rRF24Network/examples/meshping/\n\r");
+  
+  //
+  // Node configuration 
+  //
 
-  // Figure out which node we are
   pinMode(role_pin,INPUT);
   digitalWrite(role_pin,HIGH);
   if ( digitalRead(role_pin) )
@@ -52,9 +62,14 @@ void setup(void)
     this_node = 2;
     other_node = 1;
   }
+  printf("ADDRESS: %i\n\r",this_node);
 
-
+  //
   // Bring up the RF network
+  //
+
+  SPI.begin();
+  radio.begin();
   network.begin(/*channel*/ 100, /*node address*/ this_node, /*directionality*/ RF24_NET_BIDIRECTIONAL);
 }
 
