@@ -36,6 +36,7 @@ struct RF24NetworkHeader
   uint16_t to_node;
   RF24NetworkHeader() {}
   RF24NetworkHeader(uint16_t _to): to_node(_to) {}
+  const char* toString(void) const;
 };
 
 /**

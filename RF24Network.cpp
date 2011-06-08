@@ -6,11 +6,17 @@
  version 2 as published by the Free Software Foundation.
  */
 
+#include <avr/pgmspace.h>
 #include <WProgram.h>
 #include <RF24Network.h>
 #include <RF24.h>
 
 #define SERIAL_DEBUG
+#ifdef SERIAL_DEBUG
+#define IF_SERIAL_DEBUG(x) (x)
+#else
+#define IF_SERIAL_DEBUG(x)
+#endif
 
 // Avoid spurious warnings
 #undef PROGMEM 
@@ -31,6 +37,8 @@ void RF24Network::begin(uint8_t _channel, uint16_t _node_address, rf24_direction
 {
   if ( _node_address < num_nodes )
     node_address = _node_address;
+
+  open_pipes();
 
   radio.setChannel(_channel);
   radio.setDataRate(RF24_1MBPS);
@@ -53,26 +61,17 @@ void RF24Network::update(void)
       done = radio.read( frame_buffer, sizeof(frame_buffer) );
 
       // Read the beginning of the frame as the header
-      const RF24NetworkHeader& frame = * reinterpret_cast<RF24NetworkHeader*>(frame_buffer);
+      const RF24NetworkHeader& header = * reinterpret_cast<RF24NetworkHeader*>(frame_buffer);
+
+      IF_SERIAL_DEBUG(printf_P(PSTR("%lu: NET Received on %u %s\n\r"),millis(),pipe_num,header.toString()));
 
       // Is this for us?
-      if ( frame.to_node == node_address )
-      {
+      if ( header.to_node == node_address )
 	// Add it to the buffer of frames for us
 	enqueue();
-      }
       else
-      {
 	// Relay it
-
-#ifdef SERIAL_DEBUG	
-	// Spew it
-	printf("%lu ",millis());
-	//payload_printf("RELAY",payload);
-	printf(" on pipe %u. ",pipe_num);
-#endif
-	write(frame.to_node);
-      }
+	write(header.to_node);
     }
   }
 }
@@ -80,6 +79,8 @@ void RF24Network::update(void)
 bool RF24Network::enqueue(void)
 {
   bool result = false;
+  
+  IF_SERIAL_DEBUG(printf_P(PSTR("%lu: Enqueue "),millis()));
 
   // Copy the current frame into the frame queue
   if ( next_frame <= frame_buffer + frame_size )
@@ -88,7 +89,10 @@ bool RF24Network::enqueue(void)
     next_frame += frame_size; 
 
     result = true;
+    IF_SERIAL_DEBUG(printf_P(PSTR("ok\n\r")));
   }
+  else
+    IF_SERIAL_DEBUG(printf_P(PSTR("failed\n\r")));
 
   return result;
 }
@@ -115,6 +119,8 @@ size_t RF24Network::read(RF24NetworkHeader& header,void* buf, size_t maxlen)
     
     // And move on to the next one
     next_frame -= frame_size;
+      
+    IF_SERIAL_DEBUG(printf_P(PSTR("%lu: MCU Received %s\n\r"),millis(),header.toString()));
   }
 
   return bufsize;
@@ -122,10 +128,15 @@ size_t RF24Network::read(RF24NetworkHeader& header,void* buf, size_t maxlen)
 
 bool RF24Network::write(RF24NetworkHeader& header,const void* buf, size_t len)
 {
+  // Fill out the header
+  header.from_node = node_address;
+
   // Build the full frame to send
   memcpy(frame_buffer,&header,sizeof(RF24NetworkHeader));
   memcpy(frame_buffer + sizeof(RF24NetworkHeader),buf,min(frame_size-sizeof(RF24NetworkHeader),len));
 
+  IF_SERIAL_DEBUG(printf_P(PSTR("%lu: MCU Sending %s\n\r"),millis(),header.toString()));
+  
   // If the user is trying to send it to himself
   if ( header.to_node == node_address )
     // Just queue it in the received queue
@@ -172,6 +183,8 @@ bool RF24Network::write(uint16_t to_node)
 
   // Now, continue listening
   radio.startListening();
+  
+  IF_SERIAL_DEBUG(printf_P(PSTR("%lu: NET Sent on %u %s\n\r"),millis(),out_pipe,ok?"ok":"failed"));
 
   return ok;
 }
@@ -252,6 +265,13 @@ uint16_t RF24Network::find_node( uint16_t current_node, uint16_t target_node )
     }
   }
   return out_node;
+}
+
+const char* RF24NetworkHeader::toString(void) const
+{
+  static char buffer[20];
+  snprintf(buffer,sizeof(buffer),"from %04x to %04x",from_node,to_node);
+  return buffer;
 }
 
 // vim:ai:cin:sts=2 sw=2 ft=cpp
