@@ -1,0 +1,130 @@
+PROJECT_NAME 	= $(PWD:B) ;
+PROJECT_DIR 	= . ;
+PROJECT_LIBS = SPI RF24 RF24Network ; 
+
+OUT_DIR = ojam ;
+ARDUINO_VERSION	= 22 ;
+F_CPU 		= 16000000 ;
+
+# Where is everything?
+AVR_TOOLS_PATH 	= /usr/bin ;
+ARDUINO_DIR 	= /opt/arduino-00$(ARDUINO_VERSION) ;
+ARDUINO_CORE 	= $(ARDUINO_DIR)/hardware/arduino/cores/arduino ;
+ARDUINO_AVR 	= /usr/lib/avr/include ;
+ARDUINO_LIB 	= $(ARDUINO_DIR)/libraries ;
+SKETCH_LIB      = $(HOME)/Source/Arduino/libraries ;
+AVR_CC  	= $(AVR_TOOLS_PATH)/avr-gcc ;
+AVR_CXX  	= $(AVR_TOOLS_PATH)/avr-g++ ;
+AVR_LD  	= $(AVR_TOOLS_PATH)/avr-gcc ;
+
+DEFINES  	= F_CPU=$(F_CPU)L ARDUINO=$(ARDUINO_VERSION) ;
+CTUNING  	= -ffunction-sections -fdata-sections ;
+CXXTUNING  	= -fno-exceptions ; 
+CFLAGS  	= -Os -Wall -mmcu=atmega328p $(CTUNING) ;
+CXXFLAGS  	= $(CFLAGS) $(CXXTUNING) ;
+LDFLAGS  	= -Os -lm -Wl,--gc-sections -mmcu=atmega328p ;
+
+# Search everywhere for headers
+HDRS  	 	= $(PROJECT_DIR) $(ARDUINO_AVR) $(ARDUINO_CORE) [ GLOB $(ARDUINO_LIB) $(SKETCH_LIB) : * ] ;
+
+# Grab everything from the core directory
+CORE_MODULES  	= [ GLOB $(ARDUINO_CORE) : *.c *.cpp ] ;
+
+# Grab everything from libraries.  To avoid this "grab everything" behaviour, you
+# can specify specific modules to pick up in PROJECT_MODULES
+LIB_MODULES  	= [ GLOB $(ARDUINO_LIB)/$(PROJECT_LIBS) $(SKETCH_LIB)/$(PROJECT_LIBS) : *.cpp ] ;
+
+# In addition to explicitly-specified program modules, pick up anything from the current
+# dir.
+PROJECT_MODULES += [ GLOB $(PROJECT_DIR) : *.c *.cpp *.pde ] ;
+
+rule AvrCc
+{
+  Depends $(<) : $(>) ;
+  Depends $(<) : $(<:D) ;
+  Clean clean : $(<) ;
+
+  CCHDRS on $(<) = [ on $(<) FIncludes $(HDRS) ] ;
+  CCDEFS on $(<) = [ on $(<) FDefines $(DEFINES) ] ;
+}
+
+actions AvrCc
+{
+  $(AVR_CC) -c -o $(<) $(CCHDRS) $(CCDEFS) $(CFLAGS) $(>) 
+}
+
+rule AvrC++
+{
+  Depends $(<) : $(>) ;
+  Depends $(<) : $(<:D) ;
+  Clean clean : $(<) ;
+
+  CCHDRS on $(<) = [ on $(<) FIncludes $(HDRS) ] ;
+  CCDEFS on $(<) = [ on $(<) FDefines $(DEFINES) ] ;
+}
+
+actions AvrC++
+{
+  $(AVR_CXX) -c -o $(<) $(CCHDRS) $(CCDEFS) $(CXXFLAGS) $(>) 
+}
+
+rule Pde
+{
+  Depends $(<) : $(>) ;
+  Depends $(<) : $(<:D) ;
+  Clean clean : $(<) ;
+}
+
+actions Pde
+{
+  echo "#include <WProgram.h>" > $(<) 
+  echo "#line 1 \"$(>)\"" >> $(<)
+  cat $(>) >> $(<) 
+}
+
+rule AvrPde
+{
+  local _CPP = $(OUT_DIR)/$(_I:B).cpp ;
+  Pde $(_CPP) : $(>) ;
+  AvrC++ $(<) : $(_CPP) ;
+}
+
+rule AvrObject
+{
+  switch $(>:S)
+  {
+    case .c :   AvrCc $(<) : $(>) ;
+    case .cpp : AvrC++ $(<) : $(>) ;
+    case .pde : AvrPde $(<) : $(>) ;
+  }
+}
+
+rule AvrObjects
+{
+  for _I in $(<) 
+  {
+    AvrObject $(OUT_DIR)/$(_I:B).o : $(_I) ;
+  }
+}
+
+rule AvrMainFromObjects
+{
+  Depends $(<) : $(>) ;
+  Depends $(<) : $(<:D) ;
+  MkDir $(<:D) ;
+  Depends all : $(<) ;
+  Clean clean : $(<) ;
+}
+
+actions AvrMainFromObjects
+{
+  $(AVR_LD) $(LDFLAGS) -o $(<) $(>) 
+}
+
+rule AvrMain
+{
+  AvrMainFromObjects $(<) : $(OUT_DIR)/$(>:B).o ;
+  AvrObjects $(>) ;
+}
+
+AvrMain $(OUT_DIR)/$(PROJECT_NAME).elf : $(CORE_MODULES) $(LIB_MODULES) $(PROJECT_MODULES) ;
