@@ -77,14 +77,20 @@ void RF24Network::update(void)
   }
 }
 
-void RF24Network::enqueue(void)
+bool RF24Network::enqueue(void)
 {
+  bool result = false;
+
   // Copy the current frame into the frame queue
   if ( next_frame <= frame_buffer + frame_size )
   {
     memcpy(next_frame,frame_buffer, frame_size );
     next_frame += frame_size; 
+
+    result = true;
   }
+
+  return result;
 }
 
 bool RF24Network::available(void)
@@ -120,7 +126,13 @@ bool RF24Network::write(RF24NetworkHeader& header,const void* buf, size_t len)
   memcpy(frame_buffer,&header,sizeof(RF24NetworkHeader));
   memcpy(frame_buffer + sizeof(RF24NetworkHeader),buf,min(frame_size-sizeof(RF24NetworkHeader),len));
 
-  return write(header.to_node);
+  // If the user is trying to send it to himself
+  if ( header.to_node == node_address )
+    // Just queue it in the received queue
+    return enqueue();
+  else
+    // Otherwise send it out over the air
+    return write(header.to_node);
 }
 
 bool RF24Network::write(uint16_t to_node)

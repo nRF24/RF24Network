@@ -124,7 +124,7 @@ protected:
   void open_pipes(void);
   uint16_t find_node( uint16_t current_node, uint16_t target_node );
   bool write(uint16_t);
-  void enqueue(void);
+  bool enqueue(void);
 
 private:
   RF24& radio; /**< Underlying radio driver, provides link/physical layers */ 
