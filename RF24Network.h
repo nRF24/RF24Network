@@ -25,6 +25,9 @@ struct RF24NodeLine
   uint16_t parent_node; /**< Logical address of our parent node */
 };
 
+#define RF24NODELINE_LIST_BEGIN  { 0xFFFFFFFFFFLL, 0xFFFFFFFFFFLL, 0 },
+#define RF24NODELINE_LIST_END  { 0xFFFFFFFFFFLL, 0xFFFFFFFFFFLL, -1 }
+
 /**
  * Header which is sent with each message
  *
@@ -63,12 +66,46 @@ typedef enum { RF24_NET_UNIDIRECTIONAL = 0, RF24_NET_BIDIRECTIONAL } rf24_direct
  * @li Host Addressing.  Each node has a logical address on the local network.
  * @li Message Forwarding.  Messages can be sent from one node to any other, and
  * this layer will get them there no matter how many hops it takes.
- * @li Someday, fragmentation/reassembly. 
+ *
+ * The layer does not (yet) provide:
+ * @li Fragmentation/reassembly.  Ability to send longer messages and put them
+ * all back together before exposing them up to the app.
+ * @li Dynamic topology / ad-hoc joining.  The ability to add a new node to a
+ * network and have it automatically join in.
+ * @li Power-efficient listening.  It would be useful for nodes who are listening
+ * to sleep for extended periods of time if they could know that they would miss
+ * no traffic.
+ *
+ * Please read through the public interface for details on how this network
+ * operates.
  */
 
 class RF24Network
 {
 public:
+  /**
+   * Construct the network
+   *
+   * This requires a static topology.  Send in @p _topology as a pointer to a
+   * terminated array of RF24NodeLines, one node line for each valid node address.
+   * Adding a new node to the network requires adding/changing the entry in this
+   * table and re-flashing the entire network.  Yes it would be nice to manage
+   * this dynamically!  Someday.
+   *
+   * @code
+   * RF24NodeLine topology[] = 
+   * {
+   *   RF24NODELINE_LIST_BEGIN
+   *   { 0xE7E7E7E7F1LL, 0xE7E7E7E701LL, 0 }, // Node 1: Base, has no parent
+   *   { 0xE7E7E7E7FELL, 0xE7E7E7E70ELL, 1 }, // Node 2: Leaf, child of #1
+   *   RF24NODELINE_LIST_END
+   * };
+   * @endcode
+   *
+   * @param _radio The underlying radio driver instance
+   * @param _topology Terminated array of node addresses / pipe mappings.
+   *
+   */
   RF24Network( RF24& _radio, const RF24NodeLine* _topology);
 
   /**
@@ -77,6 +114,11 @@ public:
    * Uni-directional networks can only talk to the base.  This is what you would set up in
    * a mesh of sensor nodes who were sending readings to the base.  Bi-directional mode
    * allows any node to address any other node, up or down any part of the tree.
+   *
+   * In uni-directional mode, only nodes with children always need to listen.  This allows
+   * the leaf nodes (those with no children) to sleep.  In bi-directional mode, all nodes
+   * are listening all the time.  Listening is relatively expensive (12-13mA), so it's not
+   * ideal for battery-operated nodes.
    *
    * @warning Be sure to 'begin' the radio first.
    *
@@ -105,11 +147,11 @@ public:
    * Read a message
    *
    * @param[out] header The header (envelope) of this message
-   * @param[out] buf Pointer to memory where the message should be placed
-   * @param maxlen The largest message size which can be held in @p buf
-   * @return The total number of bytes copied into @p buf
+   * @param[out] message Pointer to memory where the message should be placed
+   * @param maxlen The largest message size which can be held in @p message
+   * @return The total number of bytes copied into @p message
    */
-  size_t read(RF24NetworkHeader& header, void* buf, size_t maxlen);
+  size_t read(RF24NetworkHeader& header, void* message, size_t maxlen);
   
   /**
    * Send a message
@@ -117,11 +159,11 @@ public:
    * @param[in,out] header The header (envelope) of this message.  The critical
    * thing to fill in is the @p to_node field so we know where to send the
    * message.  It is then updated with the details of the actual header sent.
-   * @param buf Pointer to memory where the message is located 
+   * @param message Pointer to memory where the message is located 
    * @param len The size of the message 
    * @return Whether the message was successfully received 
    */
-  bool write(RF24NetworkHeader& header,const void* buf, size_t len);
+  bool write(RF24NetworkHeader& header,const void* message, size_t len);
 
 protected:
   void open_pipes(void);

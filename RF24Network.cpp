@@ -105,7 +105,7 @@ bool RF24Network::available(void)
   return (next_frame > frame_queue);
 }
 
-size_t RF24Network::read(RF24NetworkHeader& header,void* buf, size_t maxlen)
+size_t RF24Network::read(RF24NetworkHeader& header,void* message, size_t maxlen)
 {
   size_t bufsize = 0;
   uint8_t* frame = next_frame;
@@ -117,7 +117,7 @@ size_t RF24Network::read(RF24NetworkHeader& header,void* buf, size_t maxlen)
 
     // Copy the next available frame from the queue into the provided buffer
     memcpy(&header,frame,sizeof(RF24NetworkHeader));
-    memcpy(buf,frame,bufsize);
+    memcpy(message,frame,bufsize);
     
     // And move on to the next one
     next_frame -= frame_size;
@@ -128,14 +128,14 @@ size_t RF24Network::read(RF24NetworkHeader& header,void* buf, size_t maxlen)
   return bufsize;
 }
 
-bool RF24Network::write(RF24NetworkHeader& header,const void* buf, size_t len)
+bool RF24Network::write(RF24NetworkHeader& header,const void* message, size_t len)
 {
   // Fill out the header
   header.from_node = node_address;
 
   // Build the full frame to send
   memcpy(frame_buffer,&header,sizeof(RF24NetworkHeader));
-  memcpy(frame_buffer + sizeof(RF24NetworkHeader),buf,min(frame_size-sizeof(RF24NetworkHeader),len));
+  memcpy(frame_buffer + sizeof(RF24NetworkHeader),message,min(frame_size-sizeof(RF24NetworkHeader),len));
 
   IF_SERIAL_DEBUG(printf_P(PSTR("%lu: MCU Sending %s\n\r"),millis(),header.toString()));
   

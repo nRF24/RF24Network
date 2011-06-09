@@ -1,3 +1,11 @@
+/*
+ Copyright (C) 2011 James Coliz, Jr. <maniacbug@ymail.com>
+
+ This program is free software; you can redistribute it and/or
+ modify it under the terms of the GNU General Public License
+ version 2 as published by the Free Software Foundation.
+ */
+
 #include <avr/pgmspace.h>
 #include <RF24Network.h>
 #include <RF24.h>
@@ -15,10 +23,10 @@
 // interval with many more nodes!
 RF24NodeLine topology[] = 
 {
-  { 0x0000000000LL, 0x0000000000LL, 0 }, // Node 0: Invalid
-  { 0xE7E7E7E701LL, 0xE7E7E7E701LL, 0 }, // Node 1: Base, has no parent
-  { 0xE7E7E7E70ELL, 0xE7E7E7E70ELL, 1 }, // Node 2: Leaf, child of #1
-  { 0xFFFFFFFFFFLL, 0xFFFFFFFFFFLL, -1 }, // End of data marker 
+  RF24NODELINE_LIST_BEGIN
+  { 0xE7E7E7E7F1LL, 0xE7E7E7E701LL, 0 }, // Node 1: Base, has no parent
+  { 0xE7E7E7E7FELL, 0xE7E7E7E70ELL, 1 }, // Node 2: Leaf, child of #1
+  RF24NODELINE_LIST_END
 };
 
 RF24 radio(8,9);
@@ -52,15 +60,16 @@ void setup(void)
 
   pinMode(role_pin,INPUT);
   digitalWrite(role_pin,HIGH);
-  if ( digitalRead(role_pin) )
+  switch ( digitalRead(role_pin) )
   {
-    this_node = 1;
-    other_node = 2;
-  }
-  else
-  {
-    this_node = 2;
-    other_node = 1;
+    case LOW:
+      this_node = 1;
+      other_node = 2;
+      break;
+    case HIGH:
+      this_node = 2;
+      other_node = 1;
+      break;
   }
   printf("ADDRESS: %i\n\r",this_node);
 
