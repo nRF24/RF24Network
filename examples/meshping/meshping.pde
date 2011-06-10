@@ -92,8 +92,8 @@ void loop(void)
   {
     // If so, grab it and print it out
     RF24NetworkHeader header;
-    network.read(header,&message,sizeof(message));
-    printf_P(PSTR("%lu: RECEIVED %lu from %u\n\r"),millis(),message,header.from_node);
+    network.read(header,&message,sizeof(unsigned long));
+    printf_P(PSTR("%lu: APP Received %lu from %u\n\r"),millis(),message,header.from_node);
   }
 
   // Send a ping to the other guy every 'interval' ms
@@ -102,18 +102,18 @@ void loop(void)
   {
     last_time_sent = now;
 
-    printf_P(PSTR("%lu: SENDING %lu..."),millis(),now);
+    printf_P(PSTR("%lu: APP Sending %lu...\n\r"),millis(),now);
     
     message = now;
     RF24NetworkHeader header(/*to node*/ other_node);
-    bool ok = network.write(header,&message,sizeof(message));
+    bool ok = network.write(header,&message,sizeof(unsigned long));
     if (ok)
     {
-      printf_P(PSTR("ok\n\r"));
+      printf_P(PSTR("%lu: APP Send ok\n\r"),millis());
     }
     else
     {
-      printf_P(PSTR("failed\n\r"));
+      printf_P(PSTR("%lu: APP Send failed\n\r"),millis());
 
       // Try sending at a different time next time
       last_time_sent += 100;

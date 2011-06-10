@@ -65,7 +65,12 @@ void RF24Network::update(void)
       // Read the beginning of the frame as the header
       const RF24NetworkHeader& header = * reinterpret_cast<RF24NetworkHeader*>(frame_buffer);
 
-      IF_SERIAL_DEBUG(printf_P(PSTR("%lu: NET Received on %u %s\n\r"),millis(),pipe_num,header.toString()));
+      IF_SERIAL_DEBUG(printf_P(PSTR("%lu: MAC Received on %u %s\n\r"),millis(),pipe_num,header.toString()));
+
+#ifdef SERIAL_DEBUG
+      const uint16_t* i = reinterpret_cast<const uint16_t*>(frame_buffer + sizeof(RF24NetworkHeader));
+      printf_P(PSTR("%lu: NET message %04x\n\r"),millis(),*i);
+#endif  
 
       // Is this for us?
       if ( header.to_node == node_address )
@@ -82,7 +87,7 @@ bool RF24Network::enqueue(void)
 {
   bool result = false;
   
-  IF_SERIAL_DEBUG(printf_P(PSTR("%lu: Enqueue "),millis()));
+  IF_SERIAL_DEBUG(printf_P(PSTR("%lu: NET Enqueue "),millis()));
 
   // Copy the current frame into the frame queue
   if ( next_frame <= frame_buffer + frame_size )
@@ -108,21 +113,21 @@ bool RF24Network::available(void)
 size_t RF24Network::read(RF24NetworkHeader& header,void* message, size_t maxlen)
 {
   size_t bufsize = 0;
-  uint8_t* frame = next_frame;
 
   if ( available() )
   {
+    // Move the pointer back one in the queue 
+    next_frame -= frame_size;
+    uint8_t* frame = next_frame;
+      
     // How much buffer size should we actually copy?
     bufsize = min(maxlen,frame_size-sizeof(RF24NetworkHeader));
 
     // Copy the next available frame from the queue into the provided buffer
     memcpy(&header,frame,sizeof(RF24NetworkHeader));
-    memcpy(message,frame,bufsize);
+    memcpy(message,frame+sizeof(RF24NetworkHeader),bufsize);
     
-    // And move on to the next one
-    next_frame -= frame_size;
-      
-    IF_SERIAL_DEBUG(printf_P(PSTR("%lu: MCU Received %s\n\r"),millis(),header.toString()));
+    IF_SERIAL_DEBUG(printf_P(PSTR("%lu: NET Received %s\n\r"),millis(),header.toString()));
   }
 
   return bufsize;
@@ -137,8 +142,13 @@ bool RF24Network::write(RF24NetworkHeader& header,const void* message, size_t le
   memcpy(frame_buffer,&header,sizeof(RF24NetworkHeader));
   memcpy(frame_buffer + sizeof(RF24NetworkHeader),message,min(frame_size-sizeof(RF24NetworkHeader),len));
 
-  IF_SERIAL_DEBUG(printf_P(PSTR("%lu: MCU Sending %s\n\r"),millis(),header.toString()));
-  
+  IF_SERIAL_DEBUG(printf_P(PSTR("%lu: NET Sending %s\n\r"),millis(),header.toString()));
+
+#ifdef SERIAL_DEBUG
+  const uint16_t* i = reinterpret_cast<const uint16_t*>(message);
+  printf_P(PSTR("%lu: NET message %04x\n\r"),millis(),*i);
+#endif  
+
   // If the user is trying to send it to himself
   if ( header.to_node == node_address )
     // Just queue it in the received queue
@@ -186,7 +196,7 @@ bool RF24Network::write(uint16_t to_node)
   // Now, continue listening
   radio.startListening();
   
-  IF_SERIAL_DEBUG(printf_P(PSTR("%lu: NET Sent on %u %s\n\r"),millis(),out_pipe,ok?"ok":"failed"));
+  IF_SERIAL_DEBUG(printf_P(PSTR("%lu: MAC Sent on %x %s\n\r"),millis(),(uint16_t)out_pipe,ok?"ok":"failed"));
 
   return ok;
 }
