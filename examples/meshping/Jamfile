@@ -4,6 +4,11 @@ PROJECT_LIBS = SPI RF24 RF24Network ;
 
 OUT_DIR = ojam ;
 F_CPU 		= 16000000 ;
+MCU             = atmega328p ;
+
+UPLOAD_RATE 	= 57600 ;
+AVRDUDE_PROTOCOL = stk500v1 ;
+COM 		= 33 ;
 
 # Host-specific overrides for locations 
 if $(OS) = MACOSX 
@@ -21,17 +26,20 @@ ARDUINO_VERSION	?= 22 ;
 AVR_TOOLS_PATH 	?= /usr/bin ;
 ARDUINO_DIR 	?= /opt/arduino-00$(ARDUINO_VERSION) ;
 ARDUINO_AVR 	?= $(ARDUINO_DIR)/hardware/tools/avr/avr/include/avr ;
+AVRDUDECONFIG_PATH ?= $(ARDUINO_DIR)/hardware/tools ;
 ARDUINO_CORE 	= $(ARDUINO_DIR)/hardware/arduino/cores/arduino ;
 ARDUINO_LIB 	= $(ARDUINO_DIR)/libraries ;
 SKETCH_LIB      = $(HOME)/Source/Arduino/libraries ;
 AVR_CC  	= $(AVR_TOOLS_PATH)/avr-gcc ;
 AVR_CXX  	= $(AVR_TOOLS_PATH)/avr-g++ ;
 AVR_LD  	= $(AVR_TOOLS_PATH)/avr-gcc ;
+AVR_OBJCOPY 	= $(AVR_TOOLS_PATH)/avr-objcopy ;
+AVRDUDE 	= $(AVR_TOOLS_PATH)/avrdude ;
 
 DEFINES  	= F_CPU=$(F_CPU)L ARDUINO=$(ARDUINO_VERSION) ;
 CTUNING  	= -ffunction-sections -fdata-sections ;
 CXXTUNING  	= -fno-exceptions ; 
-CFLAGS  	= -Os -Wall -mmcu=atmega328p $(CTUNING) ;
+CFLAGS  	= -Os -Wall -mmcu=$(MCU) $(CTUNING) ;
 CXXFLAGS  	= $(CFLAGS) $(CXXTUNING) ;
 LDFLAGS  	= -Os -lm -Wl,--gc-sections -mmcu=atmega328p ;
 
@@ -48,6 +56,13 @@ LIB_MODULES  	= [ GLOB $(ARDUINO_LIB)/$(PROJECT_LIBS) $(SKETCH_LIB)/$(PROJECT_LI
 # In addition to explicitly-specified program modules, pick up anything from the current
 # dir.
 PROJECT_MODULES += [ GLOB $(PROJECT_DIR) : *.c *.cpp *.pde ] ;
+
+# Shortcut for the out files
+OUT             = $(OUT_DIR)/$(PROJECT_NAME) ;
+
+# AvrDude setup
+
+AVRDUDE_FLAGS = -V -F -D -C $(AVRDUDECONFIG_PATH)/avrdude.conf -p $(MCU) -c $(AVRDUDE_PROTOCOL) -b $(UPLOAD_RATE) ;
 
 rule AvrCc
 {
@@ -138,4 +153,34 @@ rule AvrMain
   AvrObjects $(>) ;
 }
 
+rule AvrHex
+{
+  Depends $(<) : $(>) ;
+  Depends $(<) : $(<:D) ;
+  Depends hex : $(<) ;
+  Clean clean : $(<) ;
+}
+
+actions AvrHex
+{
+  $(AVR_OBJCOPY) -O ihex -R .eeprom $(>) $(<)
+}
+
+rule AvrUpload
+{
+  Depends $(1) : $(2) ;
+  Depends $(2) : $(3) ;
+  AvrUploadAction $(2) : $(3) ;
+}
+
+actions AvrUploadAction
+{
+  $(AVRDUDE) $(AVRDUDE_FLAGS) -P $(<) $(AVRDUDE_WRITE_FLASH) -U flash:w:$(>):i
+}
+
 AvrMain $(OUT_DIR)/$(PROJECT_NAME).elf : $(CORE_MODULES) $(LIB_MODULES) $(PROJECT_MODULES) ;
+AvrHex $(OUT_DIR)/$(PROJECT_NAME).hex : $(OUT_DIR)/$(PROJECT_NAME).elf ;
+
+AvrUpload p6 : /dev/tty.usbserial-A600eHIs : $(OUT_DIR)/$(PROJECT_NAME).hex ;
+AvrUpload p4 : /dev/tty.usbserial-A40081RP : $(OUT_DIR)/$(PROJECT_NAME).hex ;
+AvrUpload p9 : /dev/tty.usbserial-A9007LmI : $(OUT_DIR)/$(PROJECT_NAME).hex ;
