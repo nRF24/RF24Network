@@ -5,6 +5,7 @@ PROJECT_LIBS = SPI RF24 RF24Network ;
 OUT_DIR = ojam ;
 F_CPU 		= 16000000 ;
 MCU             = atmega328p ;
+PORTS           = /dev/tty.usbserial-A600eHIs /dev/tty.usbserial-A40081RP /dev/tty.usbserial-A9007LmI ;
 
 UPLOAD_RATE 	= 57600 ;
 AVRDUDE_PROTOCOL = stk500v1 ;
@@ -64,6 +65,18 @@ OUT             = $(OUT_DIR)/$(PROJECT_NAME) ;
 
 AVRDUDE_FLAGS = -V -F -D -C $(AVRDUDECONFIG_PATH)/avrdude.conf -p $(MCU) -c $(AVRDUDE_PROTOCOL) -b $(UPLOAD_RATE) ;
 
+#This is not working :(
+#HDRSCAN on $(OUT).pde = "^#[ \\t]*include[ \\t]*[<\\"](.*)[\\">].*$" ;
+#HDRRULE on $(OUT).pde = HDER ;
+#rule HDER
+#{
+#  Echo $(<) INCLUDES $(>:B) ;
+#
+#  _LIB = [ GLOB $(ARDUINO_LIB)/$(>:B) $(SKETCH_LIB)/$(>:B) : *.cpp ] ;
+#  Includes $(<) : $(OUT_DIR)/$(_LIB:B).o ; 
+#  Echo [ GLOB $(ARDUINO_LIB)/$(>:B) $(SKETCH_LIB)/$(>:B) : *.cpp ] ;
+#}
+
 rule AvrCc
 {
   Depends $(<) : $(>) ;
@@ -99,6 +112,10 @@ rule Pde
   Depends $(<) : $(>) ;
   Depends $(<) : $(<:D) ;
   Clean clean : $(<) ;
+
+# Could not get headerscan to work :( 
+#  HDRRULE on $(>) = HDER ;
+#  HDRSCAN on $(>) = $(HDRPATTERN) ;
 }
 
 actions Pde
@@ -170,6 +187,8 @@ rule AvrUpload
 {
   Depends $(1) : $(2) ;
   Depends $(2) : $(3) ;
+  NotFile $(1) ;
+  Always $(1) ;
   AvrUploadAction $(2) : $(3) ;
 }
 
@@ -178,9 +197,10 @@ actions AvrUploadAction
   $(AVRDUDE) $(AVRDUDE_FLAGS) -P $(<) $(AVRDUDE_WRITE_FLASH) -U flash:w:$(>):i
 }
 
-AvrMain $(OUT_DIR)/$(PROJECT_NAME).elf : $(CORE_MODULES) $(LIB_MODULES) $(PROJECT_MODULES) ;
-AvrHex $(OUT_DIR)/$(PROJECT_NAME).hex : $(OUT_DIR)/$(PROJECT_NAME).elf ;
+AvrMain $(OUT).elf : $(CORE_MODULES) $(LIB_MODULES) $(PROJECT_MODULES) ;
+AvrHex $(OUT).hex : $(OUT).elf ;
 
-AvrUpload p6 : /dev/tty.usbserial-A600eHIs : $(OUT_DIR)/$(PROJECT_NAME).hex ;
-AvrUpload p4 : /dev/tty.usbserial-A40081RP : $(OUT_DIR)/$(PROJECT_NAME).hex ;
-AvrUpload p9 : /dev/tty.usbserial-A9007LmI : $(OUT_DIR)/$(PROJECT_NAME).hex ;
+AvrUpload p6 : /dev/tty.usbserial-A600eHIs : $(OUT).hex ;
+AvrUpload p4 : /dev/tty.usbserial-A40081RP : $(OUT).hex ;
+AvrUpload p9 : /dev/tty.usbserial-A9007LmI : $(OUT).hex ;
+
