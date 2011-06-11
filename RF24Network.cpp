@@ -11,7 +11,7 @@
 #include <RF24Network.h>
 #include <RF24.h>
 
-#define SERIAL_DEBUG
+#undef SERIAL_DEBUG
 #ifdef SERIAL_DEBUG
 #define IF_SERIAL_DEBUG(x) (x)
 #else
@@ -90,7 +90,7 @@ bool RF24Network::enqueue(void)
   IF_SERIAL_DEBUG(printf_P(PSTR("%lu: NET Enqueue "),millis()));
 
   // Copy the current frame into the frame queue
-  if ( next_frame <= frame_buffer + frame_size )
+  if ( next_frame <= frame_queue + sizeof(frame_queue) )
   {
     memcpy(next_frame,frame_buffer, frame_size );
     next_frame += frame_size; 
@@ -160,6 +160,8 @@ bool RF24Network::write(RF24NetworkHeader& header,const void* message, size_t le
 
 bool RF24Network::write(uint16_t to_node)
 {
+  bool ok = false;
+  
   // First, stop listening so we can talk.
   radio.stopListening();
 
@@ -168,6 +170,13 @@ bool RF24Network::write(uint16_t to_node)
   // or has the to_node as one of ITS children.  Failing that, we'll just
   // send it back to the parent to deal with.
   uint8_t out_node = find_node(node_address,to_node);
+
+  // If we get '0' as a node, there is a problem
+  if ( ! out_node )
+  {
+    IF_SERIAL_DEBUG(printf_P(PSTR("%lu: NET Cannot send to node %u, discarded\n\r"),millis(),to_node));
+    return ok;
+  }
 
   // First, stop listening so we can talk
   radio.stopListening();
@@ -186,7 +195,6 @@ bool RF24Network::write(uint16_t to_node)
 
   // Retry a few times
   short attempts = 5;
-  bool ok = false;
   do
   {
     ok = radio.write( frame_buffer, frame_size );
