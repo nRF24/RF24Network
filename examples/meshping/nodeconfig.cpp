@@ -24,9 +24,12 @@ uint8_t nodeconfig_read(void)
   {
     // Read the address from EEPROM
     result = eeprom_read_byte(address_at_eeprom_location+1);
+    printf_P(PSTR("ADDRESS: %u\n\r"),result);
   }
-
-  printf_P(PSTR("ADDRESS: %u\n\r"),result);
+  else
+  {
+    printf_P(PSTR("*** No valid address found.  Send 1-9 via serial to set node address\n\r"));
+  }
   
   return result;
 }
