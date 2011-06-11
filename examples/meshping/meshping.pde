@@ -10,6 +10,7 @@
 #include <RF24Network.h>
 #include <RF24.h>
 #include <SPI.h>
+#include "nodeconfig.h"
 #include "printf.h"
 
 // Avoid spurious warnings
@@ -25,17 +26,17 @@ RF24NodeLine topology[] =
 {
   RF24NODELINE_LIST_BEGIN
   { 0xE7E7E7E7F1LL, 0xE7E7E7E701LL, 0 }, // Node 1: Base, has no parent
-  { 0xE7E7E7E7FELL, 0xE7E7E7E70ELL, 1 }, // Node 2: Leaf, child of #1
+  { 0xE7E7E7E7F8LL, 0xE7E7E7E708LL, 1 }, // Node 2: Leaf, child of #1
   RF24NODELINE_LIST_END
 };
 
 RF24 radio(8,9);
 RF24Network network(radio,topology);
 
-// Node identities
-const int role_pin = 7; // Connect to ground on one unit, leave disconnected on the other
+// Our node address
 uint16_t this_node;
-uint16_t other_node;
+uint16_t next_node_to;
+const uint16_t max_node = sizeof(topology) / sizeof(RF24NodeLine) - 2 ;
 
 // The message that we send is just a ulong, containing the time
 unsigned long message;
@@ -43,6 +44,7 @@ unsigned long message;
 // Delay manager to send pings regularly
 const unsigned long interval = 2000; // ms
 unsigned long last_time_sent;
+bool running = false;
 
 void setup(void)
 {
@@ -55,23 +57,24 @@ void setup(void)
   printf("\n\rRF24Network/examples/meshping/\n\r");
   
   //
-  // Node configuration 
+  // Pull node address out of eeprom 
   //
 
-  pinMode(role_pin,INPUT);
-  digitalWrite(role_pin,HIGH);
-  switch ( digitalRead(role_pin) )
-  {
-    case LOW:
-      this_node = 1;
-      other_node = 2;
-      break;
-    case HIGH:
-      this_node = 2;
-      other_node = 1;
-      break;
-  }
-  printf("ADDRESS: %i\n\r",this_node);
+  // Which node are we?
+  this_node = nodeconfig_read();
+
+  // Decide which node to send to next
+  next_node_to = this_node + 1;
+  if ( next_node_to > max_node )
+    next_node_to = 1;
+  
+  // Node 1 starts running right away, the rest wait
+  // This makes it easier to test because we can set up
+  // a repeatable system.  Bring all the other nodes up
+  // first, and then bring up node 1, and it will all
+  // work the same every time.
+  if ( this_node == 1 )
+    running = true;
 
   //
   // Bring up the RF network
@@ -94,18 +97,23 @@ void loop(void)
     RF24NetworkHeader header;
     network.read(header,&message,sizeof(unsigned long));
     printf_P(PSTR("%lu: APP Received %lu from %u\n\r"),millis(),message,header.from_node);
+
+    // We can start running once we get our first message
+    if ( !running )
+      running = true;
   }
 
   // Send a ping to the other guy every 'interval' ms
   unsigned long now = millis();
-  if ( now - last_time_sent > interval )
+  if ( running && now - last_time_sent >= interval )
   {
     last_time_sent = now;
 
-    printf_P(PSTR("%lu: APP Sending %lu...\n\r"),millis(),now);
+    printf_P(PSTR("---------------------------------\n\r"));
+    printf_P(PSTR("%lu: APP Sending %lu to %u...\n\r"),millis(),now,next_node_to);
     
     message = now;
-    RF24NetworkHeader header(/*to node*/ other_node);
+    RF24NetworkHeader header(/*to node*/ next_node_to);
     bool ok = network.write(header,&message,sizeof(unsigned long));
     if (ok)
     {
@@ -116,8 +124,15 @@ void loop(void)
       printf_P(PSTR("%lu: APP Send failed\n\r"),millis());
 
       // Try sending at a different time next time
-      last_time_sent += 100;
+      last_time_sent -= 100;
     }
+    
+    // Decide which node to send to next
+    if ( ++next_node_to > max_node )
+      next_node_to = 1;
   }
+
+  // Listen for a new node address
+  nodeconfig_listen();
 }
 // vim:ai:cin:sts=2 sw=2 ft=cpp
