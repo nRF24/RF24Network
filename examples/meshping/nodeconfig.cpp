@@ -51,7 +51,7 @@ void nodeconfig_listen(void)
   {
     // If the character on serial input is in a valid range...
     char c = Serial.read();
-    if ( c >= '0' && c <= '5' )
+    if ( c >= '1' && c <= '9' )
     {
       // It is our address
       eeprom_write_byte(address_at_eeprom_location,valid_eeprom_flag);
