@@ -6,6 +6,28 @@
  version 2 as published by the Free Software Foundation.
  */
 
+/**
+ * Example of a cross-pinging mesh network
+ *
+ * Using this sketch, each node will send a ping to one other node every
+ * 2 seconds.  The RF24Network library will route the message across
+ * the mesh to the correct node.
+ *
+ * To see the underlying frames being relayed, compile RF24Network with
+ * #define SERIAL_DEBUG.
+ *
+ * The logical node address of each node is set in EEPROM.  The nodeconfig
+ * module handles this by listening for a digit (0-9) on the serial port,
+ * and writing that number to EEPROM.
+ *
+ * Set up the topology below to accurately reflect the layout of your
+ * network.  Each line corresponds to one node address, and specifies
+ * the unique pipe addresses for talking/listening to the parent, and
+ * specifies the parent node for each parent.
+ *
+ * Any node can have up to 6 children.
+ */
+
 #include <avr/pgmspace.h>
 #include <RF24Network.h>
 #include <RF24.h>
