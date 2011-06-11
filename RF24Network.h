@@ -229,7 +229,7 @@ private:
 /**
  * @mainpage Network Layer for RF24 Radios
  *
- * This class implements an OSI Network Layer using nRF24L01(+) radios driven
+ * This class implements an <href="http://en.wikipedia.org/wiki/Network_layer">OSI Network Layer</a> using nRF24L01(+) radios driven
  * by the <a href="http://maniacbug.github.com/RF24/">RF24</a> library.
  *
  * @section Features Features
