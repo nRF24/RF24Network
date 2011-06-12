@@ -94,7 +94,7 @@ void setup(void)
 
   // Only the leaves sleep.  
   if ( this_node > 1 ) 
-    sleep_begin(wdt_prescalar,sleep_cycles_per_transmission);
+    Sleep.begin(wdt_prescalar,sleep_cycles_per_transmission);
 
   //
   // Bring up the RF network
@@ -142,7 +142,7 @@ void loop(void)
 
     // Sleep the MCU.  The watchdog timer will awaken in a short while, and
     // continue execution here.
-    sleep_now();
+    Sleep.go();
   }
 
   // Listen for a new node address
