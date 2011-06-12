@@ -10,8 +10,8 @@
  * Example of a sensor network 
  *
  * This sketch demonstrates how to use the RF24Network library to
- * manage a set of sensor nodes which awake regularly to send readings 
- * to the base.
+ * manage a set of low-power sensor nodes which mostly sleep but
+ * awake regularly to send readings to the base.
  *
  * To see the underlying frames being relayed, compile RF24Network with
  * #define SERIAL_DEBUG.
@@ -64,7 +64,10 @@ uint16_t this_node;
 // The message that we send is just a ulong, containing the time
 unsigned long message;
 
-// Sleep constants 
+// Sleep constants.  In this example, the watchdog timer wakes up
+// every 1s, and every 4th wakeup we power up the radio and send
+// a reading.  In real use, these numbers which be much higher.
+// Try wdt_8s and 7 cycles for one reading per minute.
 const wdt_prescalar_e wdt_prescalar = wdt_1s;
 const short sleep_cycles_per_transmission = 4;
 

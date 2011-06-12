@@ -227,6 +227,14 @@ private:
  */
 
 /**
+ * @example sensornet.pde
+ *
+ * Example of a sensor network.
+ * This sketch demonstrates how to use the RF24Network library to
+ * manage a set of low-power sensor nodes which mostly sleep but
+ * awake regularly to send readings to the base.
+ */
+/**
  * @mainpage Network Layer for RF24 Radios
  *
  * This class implements an <a href="http://en.wikipedia.org/wiki/Network_layer">OSI Network Layer</a> using nRF24L01(+) radios driven
