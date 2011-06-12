@@ -37,7 +37,7 @@ AVR_LD  	= $(AVR_TOOLS_PATH)/avr-gcc ;
 AVR_OBJCOPY 	= $(AVR_TOOLS_PATH)/avr-objcopy ;
 AVRDUDE 	= $(AVR_TOOLS_PATH)/avrdude ;
 
-DEFINES  	= F_CPU=$(F_CPU)L ARDUINO=$(ARDUINO_VERSION) ;
+DEFINES  	= F_CPU=$(F_CPU)L ARDUINO=$(ARDUINO_VERSION) VERSION_H ;
 CTUNING  	= -ffunction-sections -fdata-sections ;
 CXXTUNING  	= -fno-exceptions ; 
 CFLAGS  	= -Os -Werror -Wall -Wextra -mmcu=$(MCU) $(CTUNING) ;
@@ -76,6 +76,21 @@ AVRDUDE_FLAGS = -V -F -D -C $(AVRDUDECONFIG_PATH)/avrdude.conf -p $(MCU) -c $(AV
 #  Includes $(<) : $(OUT_DIR)/$(_LIB:B).o ; 
 #  Echo [ GLOB $(ARDUINO_LIB)/$(>:B) $(SKETCH_LIB)/$(>:B) : *.cpp ] ;
 #}
+
+rule GitVersion
+{
+  Always $(<) ;
+  Depends all : $(<) ;
+}
+
+actions GitVersion
+{
+  echo "const char program_version[] = \"\\" > $(<)
+  git log @{1}..@{0} --pretty=format:%h >> $(<)
+  echo "\";" >> $(<)
+}
+
+GitVersion version.h ;
 
 rule AvrCc
 {
@@ -189,6 +204,7 @@ rule AvrUpload
   Depends $(2) : $(3) ;
   NotFile $(1) ;
   Always $(1) ;
+  Always $(2) ;
   AvrUploadAction $(2) : $(3) ;
 }
 

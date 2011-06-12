@@ -42,6 +42,12 @@
 #undef PSTR 
 #define PSTR(s) (__extension__({static prog_char __c[] PROGMEM = (s); &__c[0];}))
 
+#ifdef VERSION_H
+#include "version.h"
+#else
+const char program_version[] = "Unknown";
+#endif
+
 // This exact same code will work with an unlimited number of nodes connected in a giant mesh.  
 // Increase the sleep delay with many more nodes!
 RF24NodeLine topology[] = 
@@ -79,7 +85,8 @@ void setup(void)
   
   Serial.begin(57600);
   printf_begin();
-  printf("\n\rRF24Network/examples/sensornet/\n\r");
+  printf_P(PSTR("\n\rRF24Network/examples/sensornet/\n\r"));
+  printf_P(PSTR("VERSION: %s\n\r"),program_version);
   
   //
   // Pull node address out of eeprom 
