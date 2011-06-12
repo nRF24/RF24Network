@@ -40,7 +40,7 @@ AVRDUDE 	= $(AVR_TOOLS_PATH)/avrdude ;
 DEFINES  	= F_CPU=$(F_CPU)L ARDUINO=$(ARDUINO_VERSION) ;
 CTUNING  	= -ffunction-sections -fdata-sections ;
 CXXTUNING  	= -fno-exceptions ; 
-CFLAGS  	= -Os -Wall -Werror -mmcu=$(MCU) $(CTUNING) ;
+CFLAGS  	= -Os -Werror -Wall -Wextra -mmcu=$(MCU) $(CTUNING) ;
 CXXFLAGS  	= $(CFLAGS) $(CXXTUNING) ;
 LDFLAGS  	= -Os -lm -Wl,--gc-sections -mmcu=atmega328p ;
 

@@ -110,7 +110,9 @@ bool RF24Network::enqueue(void)
     IF_SERIAL_DEBUG(printf_P(PSTR("ok\n\r")));
   }
   else
+  {
     IF_SERIAL_DEBUG(printf_P(PSTR("failed\n\r")));
+  }
 
   return result;
 }

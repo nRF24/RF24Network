@@ -59,7 +59,7 @@ void nodeconfig_listen(void)
 
       // And we are done right now (no easy way to soft reset)
       printf_P(PSTR("\n\rManually reset address to: %c\n\rPress RESET to continue!"),c);
-      while(1);
+      while(1) ;
     }
   }
 }
