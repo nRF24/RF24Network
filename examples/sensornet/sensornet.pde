@@ -10,8 +10,8 @@
  * Example of a sensor network 
  *
  * This sketch demonstrates how to use the RF24Network library to
- * manage a set of sensor which awake regularly to send readings to the
- * base.
+ * manage a set of sensor nodes which awake regularly to send readings 
+ * to the base.
  *
  * To see the underlying frames being relayed, compile RF24Network with
  * #define SERIAL_DEBUG.
@@ -42,9 +42,8 @@
 #undef PSTR 
 #define PSTR(s) (__extension__({static prog_char __c[] PROGMEM = (s); &__c[0];}))
 
-// This is a very simple example, using 2 nodes.  This exact same code will work
-// With an unlimited number of nodes connected in a giant mesh.  Increase the ping
-// interval with many more nodes!
+// This exact same code will work with an unlimited number of nodes connected in a giant mesh.  
+// Increase the sleep delay with many more nodes!
 RF24NodeLine topology[] = 
 {
   RF24NODELINE_LIST_BEGIN
