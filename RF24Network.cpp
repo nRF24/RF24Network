@@ -26,7 +26,9 @@
 
 uint16_t RF24NetworkHeader::next_id = 1;
 
-RF24Network::RF24Network( RF24& _radio, const RF24NodeLine* _topology ): radio(_radio), topology(_topology), next_frame(frame_queue)
+/******************************************************************/
+
+RF24Network::RF24Network( RF24& _radio, const RF24NodeLine* _topology ): radio(_radio), topology(_topology), next_frame(frame_queue), bidirectional(true)
 {
   // Find out how many nodes are defined
   num_nodes = 0;
@@ -35,19 +37,26 @@ RF24Network::RF24Network( RF24& _radio, const RF24NodeLine* _topology ): radio(_
     ++num_nodes;
 }
 
-void RF24Network::begin(uint8_t _channel, uint16_t _node_address, rf24_direction_e /*_direction*/ )
+/******************************************************************/
+
+void RF24Network::begin(uint8_t _channel, uint16_t _node_address, rf24_direction_e _direction )
 {
   if ( _node_address < num_nodes )
     node_address = _node_address;
 
-  open_pipes();
+  if ( _direction == RF24_NET_UNIDIRECTIONAL )
+    bidirectional = false;
 
   radio.setChannel(_channel);
   radio.setDataRate(RF24_1MBPS);
   radio.setCRCLength(RF24_CRC_16);
-  radio.startListening();
+  
+  open_pipes();
+
   radio.printDetails();
 }
+
+/******************************************************************/
 
 void RF24Network::update(void)
 {
@@ -83,6 +92,8 @@ void RF24Network::update(void)
   }
 }
 
+/******************************************************************/
+
 bool RF24Network::enqueue(void)
 {
   bool result = false;
@@ -104,11 +115,15 @@ bool RF24Network::enqueue(void)
   return result;
 }
 
+/******************************************************************/
+
 bool RF24Network::available(void)
 {
   // Are there frames on the queue for us?
   return (next_frame > frame_queue);
 }
+
+/******************************************************************/
 
 size_t RF24Network::read(RF24NetworkHeader& header,void* message, size_t maxlen)
 {
@@ -132,6 +147,8 @@ size_t RF24Network::read(RF24NetworkHeader& header,void* message, size_t maxlen)
 
   return bufsize;
 }
+
+/******************************************************************/
 
 bool RF24Network::write(RF24NetworkHeader& header,const void* message, size_t len)
 {
@@ -158,6 +175,8 @@ bool RF24Network::write(RF24NetworkHeader& header,const void* message, size_t le
     return write(header.to_node);
 }
 
+/******************************************************************/
+
 bool RF24Network::write(uint16_t to_node)
 {
   bool ok = false;
@@ -181,12 +200,15 @@ bool RF24Network::write(uint16_t to_node)
   // First, stop listening so we can talk
   radio.stopListening();
 
-  // If this node is our child, we talk on it's listening pipe.
+  // Determine which pipe we should be sending this on
   uint64_t out_pipe;
-  if ( topology[out_node].parent_node == node_address )
+
+  // In Bidirectional mode, if this node is our child, we talk on it's listening pipe.
+  if ( bidirectional && topology[out_node].parent_node == node_address )
     out_pipe = topology[out_node].listening_pipe;
   
   // Otherwise, it's our parent so we talk on OUR talking pipe
+  // (In uni-directional mode, we can ONLY talk to our parent)
   else
     out_pipe = topology[node_address].talking_pipe;
   
@@ -209,6 +231,8 @@ bool RF24Network::write(uint16_t to_node)
   return ok;
 }
 
+/******************************************************************/
+
 void RF24Network::open_pipes(void)
 {
   // In order to open the right pipes, we need to know whether the node has parents
@@ -229,12 +253,16 @@ void RF24Network::open_pipes(void)
     // Writing pipe to speak to our parent
     radio.openWritingPipe(topology[node_address].talking_pipe);
 
-    // Listen to our parent.  If we have children, we need to do so
-    // on pipe 0 to make room for more children
-    if ( has_children )
-      radio.openReadingPipe(0,topology[node_address].listening_pipe);
-    else
-      radio.openReadingPipe(1,topology[node_address].listening_pipe);
+    // In bi-directional mode only...
+    if ( bidirectional )
+    {
+      // Listen to our parent.  If we have children, we need to do so
+      // on pipe 0 to make room for more children
+      if ( has_children )
+	radio.openReadingPipe(0,topology[node_address].listening_pipe);
+      else
+	radio.openReadingPipe(1,topology[node_address].listening_pipe);
+    }
   }
 
   // Listen on children's talking pipes
@@ -250,7 +278,11 @@ void RF24Network::open_pipes(void)
 	radio.openReadingPipe(current_pipe++,topology[i].talking_pipe);
   }
 
+  //if ( bidirectional || has_children )
+    radio.startListening();
 }
+
+/******************************************************************/
 
 /**
  * Find where to send a message to reach the target node
@@ -286,6 +318,8 @@ uint16_t RF24Network::find_node( uint16_t current_node, uint16_t target_node )
   }
   return out_node;
 }
+
+/******************************************************************/
 
 const char* RF24NetworkHeader::toString(void) const
 {
