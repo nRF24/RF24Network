@@ -42,6 +42,7 @@
 #undef PSTR 
 #define PSTR(s) (__extension__({static prog_char __c[] PROGMEM = (s); &__c[0];}))
 
+// This is for git version tracking.  Safe to ignore
 #ifdef VERSION_H
 #include "version.h"
 #else
