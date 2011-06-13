@@ -230,18 +230,16 @@ private:
  * @li Host Addressing.  Each node has a logical address on the local network.
  * @li Message Forwarding.  Messages can be sent from one node to any other, and
  * this layer will get them there no matter how many hops it takes.
+ * @li Ad-hoc Joining.  A node can join a network without any changes to the
+ * existing node.
  *
  * The layer does not (yet) provide:
  * @li Fragmentation/reassembly.  Ability to send longer messages and put them
  * all back together before exposing them up to the app.
- * @li Dynamic topology / ad-hoc joining.  The ability to add a new node to a
- * network and have it automatically join in.
  * @li Power-efficient listening.  It would be useful for nodes who are listening
  * to sleep for extended periods of time if they could know that they would miss
  * no traffic.
- *
- * Please read through the public interface for details on how this network
- * operates.
+ * @li Dynamic address assignment.
  *
  * @section More How to learn more
  *
@@ -249,6 +247,8 @@ private:
  * @li <a href="http://maniacbug.github.com/RF24Network/classRF24Network.html">RF24Network Class Documentation</a>
  * @li <a href="https://github.com/maniacbug/RF24Network/">Source Code</a>
  * @li <a href="https://github.com/maniacbug/RF24Network/archives/master">Downloads Page</a>
+ * 
+ * Please see the @ref ZigBee page for a comparison against the ZigBee protocols
  *
  * @section Topology Topology for Mesh Networks using nRF24L01(+)
  *
@@ -258,6 +258,18 @@ private:
  * one node is the base, and all other nodes are children either of that node, or of another.
  * Unlike a true mesh network, multiple nodes are not connected together, so there is only one
  * path to any given node.
+ *
+ * @section Octal Octal Addressing
+ *
+ * Each node must be assigned an 15-bit address by the administrator.  This address exactly
+ * describes the position of the node within the tree.  The address is an octal number.  Each
+ * digit in the address represents a position in the tree further from the base.
+ *
+ * @li Node 00 is the base node.
+ * @li Nodes 01-05 are nodes whose parent is the base.
+ * @li Node 021 is the second child of node 01.
+ * @li Node 0321 is the third child of node 021, an so on.
+ * @li The largest node address is 05555, so 3,125 nodes are allowed on a single channel.
  *
  * @section Routing How routing is handled
  *
@@ -269,6 +281,12 @@ private:
  *
  * All of this work is handled by the RF24Network::update() method, so be sure to call it
  * regularly or your network will miss packets.
+ *
+ * @section Startup Starting up a node
+ *
+ * When a node starts up, it only has to contact its parent to establish communication.
+ * No direction connection to the Base node is needed.  This is useful in situations where
+ * relay nodes are being used to bridge the distance to the base.
  *
  * @section Directionality Uni-directional mode versus bi-directional mode
  *
@@ -287,6 +305,38 @@ private:
  * In the future, I plan to write a system where messages can still be passed upward from
  * the base, and get delivered when a sleeping node is ready to receive them.  The radio
  * and underlying driver support 'ack payloads', which will be a handy mechanism for this.
+ *
+ * @page ZigBee Comparison to ZigBee
+ *
+ * This network layer is influenced by the design of ZigBee, but does not implement it
+ * directly.  
+ *
+ * @section Advantage Which is better?
+ *
+ * ZigBee is a much more robust, feature-rich set of protocols, with many different vendors
+ * providing compatible chips.
+ *
+ * RF24Network is cheap.  While ZigBee radios are well over $20, nRF24L01 modules can be found
+ * for under $6.  My personal favorite is 
+ * <a href="http://www.mdfly.com/index.php?main_page=product_info&products_id=82">MDFly RF-IS2401</a>.
+ *
+ * @section Contrast Similiarities & Differences
+ *
+ * Here are some comparisons between RF24Network and ZigBee.
+ *
+ * @li Both networks support Star and Tree topologies.  Only Zigbee supports a true mesh.
+ * @li In both networks, only leaf nodes can sleep (see @ref NodeNames).
+ * @li ZigBee nodes are configured using AT commands, or a separate Windows application. 
+ * RF24 nodes are configured by recompiliing the firmware or writing to EEPROM.
+ *
+ * @section NodeNames Node Naming
+ *
+ * @li Leaf node: A node at the outer edge of the network with no children.  ZigBee calls it
+ * an End Device node.
+ * @li Relay node: A node which has both parents and children, and relays messages from one
+ * to the other.  ZigBee calls it a Router.
+ * @li Base node.  The top of the tree node with no parents, only children.  Typically this node
+ * will bridge to another kind of network like Ethernet.  ZigBee calls it a Co-ordinator node.
  */
 
 #endif // __RF24NETWORK_H__
