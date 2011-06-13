@@ -49,24 +49,11 @@
 const char program_version[] = "Unknown";
 #endif
 
-// This exact same code will work with an unlimited number of nodes connected in a giant mesh.  
-// Increase the sleep delay with many more nodes!
-RF24NodeLine topology[] = 
-{
-  RF24NODELINE_LIST_BEGIN
-  { 0xE7E7E7E7FELL, 0xE7E7E7E701LL, 0 }, // Node 1: Base, has no parent
-  { 0xE7E7E7E7F8LL, 0xE7E7E7E708LL, 1 }, // Node 2: Leaf, child of #1
-  { 0xE7E7E7E7F0LL, 0xE7E7E7E710LL, 1 }, // Node 3: Leaf, child of #1
-  { 0xE7E7E7E7E9LL, 0xE7E7E7E717LL, 1 }, // Node 4: Leaf, child of #1
-  { 0xE7E7E7E7E4LL, 0xE7E7E7E71CLL, 1 }, // Node 5: Leaf, child of #1
-  RF24NODELINE_LIST_END
-};
-
 RF24 radio(8,9);
-RF24Network network(radio,topology);
+RF24Network network(radio);
 
 // Our node address
-uint16_t this_node;
+uint16_t this_node = -1;
 
 // The message that we send is just a ulong, containing the time
 unsigned long message;
