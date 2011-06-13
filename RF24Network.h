@@ -43,16 +43,6 @@ struct RF24NodeLine
 };
 
 /**
- * Marker for the start of a topology list
- */
-#define RF24NODELINE_LIST_BEGIN  { 0xFFFFFFFFFFLL, 0xFFFFFFFFFFLL, 0 },
-
-/**
- * Marker for the end of a topology list
- */
-#define RF24NODELINE_LIST_END  { 0xFFFFFFFFFFLL, 0xFFFFFFFFFFLL, -1 }
-
-/**
  * Header which is sent with each message
  *
  * The frame put over the air consists of this header and a message
@@ -120,27 +110,10 @@ public:
   /**
    * Construct the network
    *
-   * This requires a static topology.  Send in @p _topology as a pointer to a
-   * terminated array of RF24NodeLines, one node line for each valid node address.
-   * Adding a new node to the network requires adding/changing the entry in this
-   * table and re-flashing the entire network.  Yes it would be nice to manage
-   * this dynamically!  Someday.
-   *
-   * @code
-   * RF24NodeLine topology[] = 
-   * {
-   *   RF24NODELINE_LIST_BEGIN
-   *   { 0xE7E7E7E7F1LL, 0xE7E7E7E701LL, 0 }, // Node 1: Base, has no parent
-   *   { 0xE7E7E7E7FELL, 0xE7E7E7E70ELL, 1 }, // Node 2: Leaf, child of #1
-   *   RF24NODELINE_LIST_END
-   * };
-   * @endcode
-   *
    * @param _radio The underlying radio driver instance
-   * @param _topology Terminated array of node addresses / pipe mappings.
    *
    */
-  RF24Network( RF24& _radio, const RF24NodeLine* _topology);
+  RF24Network( RF24& _radio );
 
   /**
    * Bring up the network
@@ -203,7 +176,14 @@ protected:
   void open_pipes(void);
   uint16_t find_node( uint16_t current_node, uint16_t target_node );
   bool write(uint16_t);
+  bool write_to_pipe( uint16_t node, uint8_t pipe );
   bool enqueue(void);
+
+  bool is_direct_child( uint16_t node );
+  bool is_descendant( uint16_t node );
+  uint16_t direct_child_route_to( uint16_t node );
+  uint8_t pipe_to_descendant( uint16_t node );
+  void setup_address(void);
 
 private:
   RF24& radio; /**< Underlying radio driver, provides link/physical layers */ 
@@ -215,6 +195,10 @@ private:
   uint8_t frame_queue[5*frame_size]; /**< Space for a small set of frames that need to be delivered to the app layer */
   uint8_t* next_frame; /**< Pointer into the @p frame_queue where we should place the next received frame */
   bool bidirectional; /**< Whether we are in bi-dir (true) or uni-dir (false) mode */
+
+  uint16_t parent_node; /**< Our parent's node address */
+  uint8_t parent_pipe; /**< The pipe our parent uses to listen to us */
+  uint16_t node_mask; /**< The bits which contain signfificant node address information */
 };
 
 /**
