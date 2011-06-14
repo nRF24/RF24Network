@@ -204,6 +204,7 @@ rule AvrUpload
   Depends $(2) : $(3) ;
   NotFile $(1) ;
   Always $(1) ;
+  Always $(2) ;
   AvrUploadAction $(2) : $(3) ;
 }
 
