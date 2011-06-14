@@ -112,7 +112,7 @@ void loop(void)
   network.update();
 
   // If we are the base, is there anything ready for us?
-  while ( this_node == 0 && network.available() )
+  while ( network.available() )
   {
     // If so, grab it and print it out
     RF24NetworkHeader header;
@@ -133,7 +133,7 @@ void loop(void)
     printf_P(PSTR("%lu: APP Sending %lu to %u...\n\r"),millis(),message,1);
     
     // Send it to the base
-    RF24NetworkHeader header(/*to node*/ 1, /*type*/ 'S');
+    RF24NetworkHeader header(/*to node*/ 0, /*type*/ 'S');
     bool ok = network.write(header,&message,sizeof(unsigned long));
     if (ok)
       printf_P(PSTR("%lu: APP Send ok\n\r"),millis());
