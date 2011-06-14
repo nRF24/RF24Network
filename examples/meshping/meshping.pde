@@ -9,9 +9,15 @@
 /**
  * Example of pinging across a mesh network
  *
- * Using this sketch, each node will send a ping to the base every
- * few seconds.  The RF24Network library will route the message across
+ * Using this sketch, each node will send a ping to every other node
+ * in the network every few seconds. 
+ * The RF24Network library will route the message across
  * the mesh to the correct node.
+ *
+ * This sketch is complicated by the fact that at startup time, each
+ * node (including the base) has no clue what nodes are alive.  So,
+ * each node builds an array of nodes it has heard about.  When the
+ * base hears about a new node, it tells all the other nodes.
  *
  * To see the underlying frames being relayed, compile RF24Network with
  * #define SERIAL_DEBUG.
@@ -46,6 +52,12 @@ unsigned long message;
 // Delay manager to send pings regularly
 const unsigned long interval = 2000; // ms
 unsigned long last_time_sent;
+
+// Array of nodes we are aware of
+const short max_active_nodes = 10;
+uint16_t active_nodes[max_active_nodes];
+short num_active_nodes = 0;
+short next_ping_node_index = 0;
 
 void setup(void)
 {
@@ -84,20 +96,48 @@ void loop(void)
     // If so, grab it and print it out
     RF24NetworkHeader header;
     network.read(header,&message,sizeof(unsigned long));
-    printf_P(PSTR("%lu: APP Received %lu from %u\n\r"),millis(),message,header.from_node);
+    printf_P(PSTR("%lu: APP Received %lu from 0%o\n\r"),millis(),message,header.from_node);
+
+    // If this message is to ourselves, don't bother adding it to the active nodes.
+    if ( header.from_node == this_node )
+      continue;
+
+    // Do we already know about this node?
+    short i = num_active_nodes;
+    while (i--)
+    {
+      if ( active_nodes[i] == header.from_node )
+	break;
+    }
+    // If not, add it to the table
+    if ( i == -1 && num_active_nodes < max_active_nodes )
+    {
+      active_nodes[num_active_nodes++] = header.from_node;
+      printf_P(PSTR("%lu: APP Added to list of active nodes.\n\r"),millis());
+    }
   }
 
   // Send a ping to the other guy every 'interval' ms
   unsigned long now = millis();
-  if ( this_node > 0 && now - last_time_sent >= interval )
+  if ( now - last_time_sent >= interval )
   {
     last_time_sent = now;
 
+    // Who should we send to?
+    // By default, send to base
+    uint16_t to = 0;
+    if ( num_active_nodes )
+    {
+      to = active_nodes[next_ping_node_index++];
+      if ( next_ping_node_index >= num_active_nodes )
+	next_ping_node_index = 0;
+    }
+
     printf_P(PSTR("---------------------------------\n\r"));
-    printf_P(PSTR("%lu: APP Sending %lu to base...\n\r"),millis(),now);
-    
+    printf_P(PSTR("%lu: APP Sending %lu to 0%o...\n\r"),millis(),now,to);
+
     message = now;
-    RF24NetworkHeader header(/*to node*/ 0, /*type*/ 'T');
+    RF24NetworkHeader header(/*to node*/ to, /*type*/ 'T');
     bool ok = network.write(header,&message,sizeof(unsigned long));
     if (ok)
     {
