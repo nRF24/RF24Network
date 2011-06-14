@@ -19,13 +19,6 @@
  * The logical node address of each node is set in EEPROM.  The nodeconfig
  * module handles this by listening for a digit (0-9) on the serial port,
  * and writing that number to EEPROM.
- *
- * Set up the topology below to accurately reflect the layout of your
- * network.  Each line corresponds to one node address, and specifies
- * the unique pipe addresses for talking/listening to the parent, and
- * specifies the parent node for each parent.
- *
- * Any node can have up to 6 children.
  */
 
 #include <avr/pgmspace.h>

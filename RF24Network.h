@@ -207,9 +207,9 @@ private:
 /**
  * @example meshping.pde
  *
- * Example of a cross-pinging mesh network.
- * Using this sketch, each node will send a ping to one other node every
- * 2 seconds.  The RF24Network library will route the message across
+ * Example of pinging across a mesh network
+ * Using this sketch, each node will send a ping to the base every
+ * few seconds.  The RF24Network library will route the message across
  * the mesh to the correct node.
  */
 

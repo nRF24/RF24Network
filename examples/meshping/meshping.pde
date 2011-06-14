@@ -7,7 +7,7 @@
  */
 
 /**
- * Example of a cross-pinging mesh network
+ * Example of pinging across a mesh network
  *
  * Using this sketch, each node will send a ping to the base every
  * few seconds.  The RF24Network library will route the message across
