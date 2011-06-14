@@ -53,6 +53,7 @@ void RF24Network::begin(uint8_t _channel, uint16_t _node_address, rf24_direction
   
   // Open up our listening pipe
   radio.openReadingPipe(0,pipe_address(_node_address,0));
+  radio.startListening();
 
   // Spew debugging state about the radio
   radio.printDetails();
@@ -99,6 +100,9 @@ void RF24Network::update(void)
       {
 	uint8_t pipe = pipe_to_descendant(header.from_node);
 	radio.openReadingPipe(pipe,pipe_address(node_address,pipe));
+
+	// Also need to open pipe 1 so the system can get the full 5-byte address of the pipe.
+	radio.openReadingPipe(1,pipe_address(node_address,1));
       }
     }
   }
