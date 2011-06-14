@@ -124,7 +124,7 @@ void loop(void)
     printf_P(PSTR("%lu: APP Sending %lu to %u...\n\r"),millis(),message,1);
     
     // Send it to the base
-    RF24NetworkHeader header(/*to node*/ 1);
+    RF24NetworkHeader header(/*to node*/ 1, /*type*/ 'S');
     bool ok = network.write(header,&message,sizeof(unsigned long));
     if (ok)
       printf_P(PSTR("%lu: APP Send ok\n\r"),millis());

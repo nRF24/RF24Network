@@ -52,6 +52,9 @@ struct RF24NetworkHeader
   uint16_t from_node; /**< Logical address where the message was generated */
   uint16_t to_node; /**< Logical address where the message is going */
   uint16_t id; /**< Sequential message ID, incremented every message */
+  uint16_t time; /**< Time of the sending machine when sent. */
+  unsigned char type; /**< Type of the packet.  0-127 are user-defined types, 128-255 are reserved for system */
+
   static uint16_t next_id; /**< The message ID of the next message to be sent */
 
   /**
@@ -67,13 +70,13 @@ struct RF24NetworkHeader
    * Use this constructor to create a header and then send a message
    *
    * @code
-   *  RF24NetworkHeader header(recipient_address);
+   *  RF24NetworkHeader header(recipient_address,'t');
    *  network.write(header,&message,sizeof(message));
    * @endcode
    *
    * @param _to The logical node address where the message is going
    */
-  RF24NetworkHeader(uint16_t _to): to_node(_to), id(next_id++) {}
+  RF24NetworkHeader(uint16_t _to, unsigned char _type = 0): to_node(_to), id(next_id++), time(millis()&0xffff), type(_type&0x7f) {}
 
   /**
    * Create debugging string

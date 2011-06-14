@@ -357,8 +357,8 @@ uint16_t RF24Network::find_node( uint16_t current_node, uint16_t target_node )
 
 const char* RF24NetworkHeader::toString(void) const
 {
-  static char buffer[28];
-  snprintf(buffer,sizeof(buffer),"id %04x from %04x to %04x",id,from_node,to_node);
+  static char buffer[45];
+  snprintf(buffer,sizeof(buffer),"id %04x from %04x to %04x type %c time %04x",id,from_node,to_node,type,time);
   return buffer;
 }
 
