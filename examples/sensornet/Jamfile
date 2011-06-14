@@ -37,7 +37,7 @@ AVR_LD  	= $(AVR_TOOLS_PATH)/avr-gcc ;
 AVR_OBJCOPY 	= $(AVR_TOOLS_PATH)/avr-objcopy ;
 AVRDUDE 	= $(AVR_TOOLS_PATH)/avrdude ;
 
-DEFINES  	= F_CPU=$(F_CPU)L ARDUINO=$(ARDUINO_VERSION) VERSION_H ;
+DEFINES  	= F_CPU=$(F_CPU)L ARDUINO=$(ARDUINO_VERSION) ;
 CTUNING  	= -ffunction-sections -fdata-sections ;
 CXXTUNING  	= -fno-exceptions -fno-strict-aliasing ; 
 CFLAGS  	= -Os -Werror -Wall -Wextra -mmcu=$(MCU) $(CTUNING) ;
@@ -90,7 +90,8 @@ actions GitVersion
   echo "\";" >> $(<)
 }
 
-GitVersion version.h ;
+# Broken :(
+#GitVersion version.h ;
 
 rule AvrCc
 {

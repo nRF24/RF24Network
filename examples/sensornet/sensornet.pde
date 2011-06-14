@@ -53,7 +53,7 @@ RF24 radio(8,9);
 RF24Network network(radio);
 
 // Our node address
-uint16_t this_node = -1;
+uint16_t this_node;
 
 // The message that we send is just a ulong, containing the time
 unsigned long message;
@@ -61,7 +61,7 @@ unsigned long message;
 // Sleep constants.  In this example, the watchdog timer wakes up
 // every 1s, and every 4th wakeup we power up the radio and send
 // a reading.  In real use, these numbers which be much higher.
-// Try wdt_8s and 7 cycles for one reading per minute.
+// Try wdt_8s and 7 cycles for one reading per minute.> 1
 const wdt_prescalar_e wdt_prescalar = wdt_1s;
 const short sleep_cycles_per_transmission = 4;
 
@@ -88,7 +88,7 @@ void setup(void)
   //
 
   // Only the leaves sleep.  
-  if ( this_node > 1 ) 
+  if ( this_node > 0 ) 
     Sleep.begin(wdt_prescalar,sleep_cycles_per_transmission);
 
   //
@@ -106,7 +106,7 @@ void loop(void)
   network.update();
 
   // If we are the base, is there anything ready for us?
-  while ( this_node == 1 && network.available() )
+  while ( this_node == 0 && network.available() )
   {
     // If so, grab it and print it out
     RF24NetworkHeader header;
@@ -115,7 +115,7 @@ void loop(void)
   }
 
   // If we are not the base, send sensor readings to the base
-  if ( this_node > 1 )
+  if ( this_node > 0 )
   {
     // Take a 'reading'.  Just using the millis() clock for an example 'reading'
     message = millis();
