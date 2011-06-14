@@ -9,6 +9,7 @@
 #include <WProgram.h>
 #include <avr/eeprom.h>
 #include <avr/pgmspace.h>
+#include "nodeconfig.h"
 
 // Avoid spurious warnings
 #undef PROGMEM 
@@ -37,6 +38,10 @@ uint8_t nodeconfig_read(void)
   else
   {
     printf_P(PSTR("*** No valid address found.  Send 0-9 via serial to set node address\n\r"));
+    while(1)
+    {
+      nodeconfig_listen();
+    }
   }
   
   return result;

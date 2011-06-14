@@ -9,8 +9,8 @@
 /**
  * Example of a cross-pinging mesh network
  *
- * Using this sketch, each node will send a ping to one other node every
- * 2 seconds.  The RF24Network library will route the message across
+ * Using this sketch, each node will send a ping to the base every
+ * few seconds.  The RF24Network library will route the message across
  * the mesh to the correct node.
  *
  * To see the underlying frames being relayed, compile RF24Network with
@@ -19,13 +19,6 @@
  * The logical node address of each node is set in EEPROM.  The nodeconfig
  * module handles this by listening for a digit (0-9) on the serial port,
  * and writing that number to EEPROM.
- *
- * Set up the topology below to accurately reflect the layout of your
- * network.  Each line corresponds to one node address, and specifies
- * the unique pipe addresses for talking/listening to the parent, and
- * specifies the parent node for each parent.
- *
- * Any node can have up to 6 children.
  */
 
 #include <avr/pgmspace.h>
@@ -46,8 +39,6 @@ RF24Network network(radio);
 
 // Our node address
 uint16_t this_node;
-uint16_t next_node_to;
-const uint16_t max_node = 2; 
 
 // The message that we send is just a ulong, containing the time
 unsigned long message;
@@ -72,11 +63,6 @@ void setup(void)
 
   // Which node are we?
   this_node = nodeconfig_read();
-
-  // Decide which node to send to next
-  next_node_to = this_node + 1;
-  if ( next_node_to > max_node )
-    next_node_to = 0;
 
   //
   // Bring up the RF network
@@ -103,15 +89,15 @@ void loop(void)
 
   // Send a ping to the other guy every 'interval' ms
   unsigned long now = millis();
-  if ( now - last_time_sent >= interval )
+  if ( this_node > 0 && now - last_time_sent >= interval )
   {
     last_time_sent = now;
 
     printf_P(PSTR("---------------------------------\n\r"));
-    printf_P(PSTR("%lu: APP Sending %lu to %u...\n\r"),millis(),now,next_node_to);
+    printf_P(PSTR("%lu: APP Sending %lu to base...\n\r"),millis(),now);
     
     message = now;
-    RF24NetworkHeader header(/*to node*/ next_node_to, /*type*/ 'T');
+    RF24NetworkHeader header(/*to node*/ 0, /*type*/ 'T');
     bool ok = network.write(header,&message,sizeof(unsigned long));
     if (ok)
     {
@@ -124,10 +110,6 @@ void loop(void)
       // Try sending at a different time next time
       last_time_sent -= 100;
     }
-    
-    // Decide which node to send to next
-    if ( ++next_node_to > max_node )
-      next_node_to = 0;
   }
 
   // Listen for a new node address
