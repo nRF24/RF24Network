@@ -55,8 +55,14 @@ RF24Network network(radio);
 // Our node address
 uint16_t this_node;
 
-// The message that we send is just a ulong, containing the time
-unsigned long message;
+// The message that we send is just an unsigned int, containing a sensor reading. 
+unsigned int message;
+
+// The pin our sensor is on
+const short sensor_pin = A0;
+
+// How many measurements to take.  64*1024 = 65536, so 64 is the max we can fit in an unsigned int.
+const short num_measurements = 64;
 
 // Sleep constants.  In this example, the watchdog timer wakes up
 // every 1s, and every 4th wakeup we power up the radio and send
@@ -117,8 +123,11 @@ void loop(void)
   // If we are not the base, send sensor readings to the base
   if ( this_node > 0 )
   {
-    // Take a 'reading'.  Just using the millis() clock for an example 'reading'
-    message = millis();
+    // Take a reading.
+    int i = num_measurements;
+    message = 0;
+    while(i--)
+      message += analogRead(sensor_pin); 
 
     printf_P(PSTR("---------------------------------\n\r"));
     printf_P(PSTR("%lu: APP Sending %lu to %u...\n\r"),millis(),message,1);
