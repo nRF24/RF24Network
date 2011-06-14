@@ -14,10 +14,10 @@
  * The RF24Network library will route the message across
  * the mesh to the correct node.
  *
- * This sketch is complicated by the fact that at startup time, each
+ * This sketch is greatly complicated by the fact that at startup time, each
  * node (including the base) has no clue what nodes are alive.  So,
- * each node builds an array of nodes it has heard about.  When the
- * base hears about a new node, it tells all the other nodes.
+ * each node builds an array of nodes it has heard about.  The base
+ * periodically sends out its whole known list of nodes to everyone.
  *
  * To see the underlying frames being relayed, compile RF24Network with
  * #define SERIAL_DEBUG.
@@ -59,6 +59,13 @@ uint16_t active_nodes[max_active_nodes];
 short num_active_nodes = 0;
 short next_ping_node_index = 0;
 
+// Prototypes for functions to send & handle messages
+bool send_T(uint16_t to);
+bool send_N(uint16_t to);
+void handle_T(RF24NetworkHeader& header);
+void handle_N(RF24NetworkHeader& header);
+void add_node(uint16_t node);
+
 void setup(void)
 {
   //
@@ -95,26 +102,21 @@ void loop(void)
   {
     // If so, grab it and print it out
     RF24NetworkHeader header;
-    network.read(header,&message,sizeof(unsigned long));
-    printf_P(PSTR("%lu: APP Received %lu from 0%o\n\r"),millis(),message,header.from_node);
+    network.peek(header);
 
-    // If this message is to ourselves, don't bother adding it to the active nodes.
-    if ( header.from_node == this_node )
-      continue;
-
-    // Do we already know about this node?
-    short i = num_active_nodes;
-    while (i--)
+    // Process the node, based on its type.
+    switch (header.type)
     {
-      if ( active_nodes[i] == header.from_node )
-	break;
-    }
-    // If not, add it to the table
-    if ( i == -1 && num_active_nodes < max_active_nodes )
-    {
-      active_nodes[num_active_nodes++] = header.from_node;
-      printf_P(PSTR("%lu: APP Added to list of active nodes.\n\r"),millis());
-    }
+    case 'T':
+      handle_T(header);
+      break;
+    case 'N':
+      handle_N(header);
+      break;
+    default:
+      printf_P(PSTR("*** WARNING *** Unknown message type %c\n\r"),header.type);
+      break;
+    };
   }
 
   // Send a ping to the other guy every 'interval' ms
@@ -129,16 +131,25 @@ void loop(void)
     if ( num_active_nodes )
     {
       to = active_nodes[next_ping_node_index++];
-      if ( next_ping_node_index >= num_active_nodes )
+      // Have we rolled over?
+      if ( next_ping_node_index > num_active_nodes )
+      {
+	// Next time start at the beginning
 	next_ping_node_index = 0;
+	// This time, send to node 0.
+	to = 0;
+      }
     }
 
-    printf_P(PSTR("---------------------------------\n\r"));
-    printf_P(PSTR("%lu: APP Sending %lu to 0%o...\n\r"),millis(),now,to);
+    bool ok;
+    if ( this_node > 0 || to == 0 )
+      // Normal nodes send a 'T' ping
+      ok = send_T(to);
+    else
+      // Base node sends the current active nodes out
+      ok = send_N(to);
 
-    message = now;
-    RF24NetworkHeader header(/*to node*/ to, /*type*/ 'T');
-    bool ok = network.write(header,&message,sizeof(unsigned long));
+    // Notify us of the result
     if (ok)
     {
       printf_P(PSTR("%lu: APP Send ok\n\r"),millis());
@@ -155,4 +166,80 @@ void loop(void)
   // Listen for a new node address
   nodeconfig_listen();
 }
+
+/**
+ * Send a 'T' message, the current time
+ */
+bool send_T(uint16_t to)
+{
+  message = millis();
+  RF24NetworkHeader header(/*to node*/ to, /*type*/ 'T' /*Time*/);
+  
+  printf_P(PSTR("---------------------------------\n\r"));
+  printf_P(PSTR("%lu: APP Sending %lu to 0%o...\n\r"),millis(),message,to);
+  return network.write(header,&message,sizeof(unsigned long));
+}
+
+/**
+ * Send an 'N' message, the active node list
+ */
+bool send_N(uint16_t to)
+{
+  RF24NetworkHeader header(/*to node*/ to, /*type*/ 'N' /*Time*/);
+  
+  printf_P(PSTR("---------------------------------\n\r"));
+  printf_P(PSTR("%lu: APP Sending active nodes to 0%o...\n\r"),millis(),to);
+  return network.write(header,active_nodes,sizeof(active_nodes));
+}
+
+/**
+ * Handle a 'T' message
+ *
+ * Add the node to the list of active nodes
+ */
+void handle_T(RF24NetworkHeader& header)
+{
+  network.read(header,&message,sizeof(unsigned long));
+  printf_P(PSTR("%lu: APP Received %lu from 0%o\n\r"),millis(),message,header.from_node);
+
+  // If this message is from ourselves or the base, don't bother adding it to the active nodes.
+  if ( header.from_node != this_node || header.from_node > 0 )
+    add_node(header.from_node);
+}
+
+/**
+ * Handle an 'N' message, the active node list
+ */
+void handle_N(RF24NetworkHeader& header)
+{
+  static uint16_t incoming_nodes[max_active_nodes];
+
+  network.read(header,&incoming_nodes,sizeof(incoming_nodes));
+  printf_P(PSTR("%lu: APP Received nodes from 0%o\n\r"),millis(),header.from_node);
+
+  int i = 0;
+  while ( i < max_active_nodes && incoming_nodes[i] > 0 )
+    add_node(incoming_nodes[i++]);
+}
+
+/**
+ * Add a particular node to the current list of active nodes
+ */
+void add_node(uint16_t node)
+{
+  // Do we already know about this node?
+  short i = num_active_nodes;
+  while (i--)
+  {
+    if ( active_nodes[i] == node )
+      break;
+  }
+  // If not, add it to the table
+  if ( i == -1 && num_active_nodes < max_active_nodes )
+  {
+    active_nodes[num_active_nodes++] = node; 
+    printf_P(PSTR("%lu: APP Added 0%o to list of active nodes.\n\r"),millis(),node);
+  }
+}
+
 // vim:ai:cin:sts=2 sw=2 ft=cpp

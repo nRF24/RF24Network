@@ -143,6 +143,17 @@ bool RF24Network::available(void)
 
 /******************************************************************/
 
+void RF24Network::peek(RF24NetworkHeader& header)
+{
+  if ( available() )
+  {
+    // Copy the next available frame from the queue into the provided buffer
+    memcpy(&header,next_frame-frame_size,sizeof(RF24NetworkHeader));
+  }
+}
+
+/******************************************************************/
+
 size_t RF24Network::read(RF24NetworkHeader& header,void* message, size_t maxlen)
 {
   size_t bufsize = 0;

@@ -152,6 +152,18 @@ public:
    * @return Whether there is a message available for this node
    */
   bool available(void);
+ 
+  /**
+   * Read the next available header
+   *
+   * Reads the next available header without advancing to the next
+   * incoming message.  Useful for doing a switch on the message type
+   *
+   * If there is no message available, the header is not touched
+   *
+   * @param[out] header The header (envelope) of the next message
+   */
+  void peek(RF24NetworkHeader& header);
 
   /**
    * Read a message
