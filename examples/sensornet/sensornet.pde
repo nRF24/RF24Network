@@ -7,11 +7,11 @@
  */
 
 /**
- * Example of a cross-pinging mesh network
+ * Example of a sensor network 
  *
- * Using this sketch, each node will send a ping to one other node every
- * 2 seconds.  The RF24Network library will route the message across
- * the mesh to the correct node.
+ * This sketch demonstrates how to use the RF24Network library to
+ * manage a set of low-power sensor nodes which mostly sleep but
+ * awake regularly to send readings to the base.
  *
  * To see the underlying frames being relayed, compile RF24Network with
  * #define SERIAL_DEBUG.
@@ -33,6 +33,7 @@
 #include <RF24.h>
 #include <SPI.h>
 #include "nodeconfig.h"
+#include "sleep.h"
 #include "printf.h"
 
 // Avoid spurious warnings
@@ -41,20 +42,28 @@
 #undef PSTR 
 #define PSTR(s) (__extension__({static prog_char __c[] PROGMEM = (s); &__c[0];}))
 
+// This is for git version tracking.  Safe to ignore
+#ifdef VERSION_H
+#include "version.h"
+#else
+const char program_version[] = "Unknown";
+#endif
+
 RF24 radio(8,9);
 RF24Network network(radio);
 
 // Our node address
-uint16_t this_node;
-uint16_t next_node_to;
-const uint16_t max_node = 2; 
+uint16_t this_node = -1;
 
 // The message that we send is just a ulong, containing the time
 unsigned long message;
 
-// Delay manager to send pings regularly
-const unsigned long interval = 2000; // ms
-unsigned long last_time_sent;
+// Sleep constants.  In this example, the watchdog timer wakes up
+// every 1s, and every 4th wakeup we power up the radio and send
+// a reading.  In real use, these numbers which be much higher.
+// Try wdt_8s and 7 cycles for one reading per minute.
+const wdt_prescalar_e wdt_prescalar = wdt_1s;
+const short sleep_cycles_per_transmission = 4;
 
 void setup(void)
 {
@@ -64,7 +73,8 @@ void setup(void)
   
   Serial.begin(57600);
   printf_begin();
-  printf("\n\rRF24Network/examples/meshping/\n\r");
+  printf_P(PSTR("\n\rRF24Network/examples/sensornet/\n\r"));
+  printf_P(PSTR("VERSION: %s\n\r"),program_version);
   
   //
   // Pull node address out of eeprom 
@@ -73,10 +83,13 @@ void setup(void)
   // Which node are we?
   this_node = nodeconfig_read();
 
-  // Decide which node to send to next
-  next_node_to = this_node + 1;
-  if ( next_node_to > max_node )
-    next_node_to = 0;
+  //
+  // Prepare sleep parameters
+  //
+
+  // Only the leaves sleep.  
+  if ( this_node > 1 ) 
+    Sleep.begin(wdt_prescalar,sleep_cycles_per_transmission);
 
   //
   // Bring up the RF network
@@ -84,7 +97,7 @@ void setup(void)
 
   SPI.begin();
   radio.begin();
-  network.begin(/*channel*/ 100, /*node address*/ this_node, /*directionality*/ RF24_NET_BIDIRECTIONAL);
+  network.begin(/*channel*/ 95, /*node address*/ this_node, /*directionality*/ RF24_NET_UNIDIRECTIONAL);
 }
 
 void loop(void)
@@ -92,8 +105,8 @@ void loop(void)
   // Pump the network regularly
   network.update();
 
-  // Is there anything ready for us?
-  while ( network.available() )
+  // If we are the base, is there anything ready for us?
+  while ( this_node == 1 && network.available() )
   {
     // If so, grab it and print it out
     RF24NetworkHeader header;
@@ -101,33 +114,30 @@ void loop(void)
     printf_P(PSTR("%lu: APP Received %lu from %u\n\r"),millis(),message,header.from_node);
   }
 
-  // Send a ping to the other guy every 'interval' ms
-  unsigned long now = millis();
-  if ( now - last_time_sent >= interval )
+  // If we are not the base, send sensor readings to the base
+  if ( this_node > 1 )
   {
-    last_time_sent = now;
+    // Take a 'reading'.  Just using the millis() clock for an example 'reading'
+    message = millis();
 
     printf_P(PSTR("---------------------------------\n\r"));
-    printf_P(PSTR("%lu: APP Sending %lu to %u...\n\r"),millis(),now,next_node_to);
+    printf_P(PSTR("%lu: APP Sending %lu to %u...\n\r"),millis(),message,1);
     
-    message = now;
-    RF24NetworkHeader header(/*to node*/ next_node_to);
+    // Send it to the base
+    RF24NetworkHeader header(/*to node*/ 1);
     bool ok = network.write(header,&message,sizeof(unsigned long));
     if (ok)
-    {
       printf_P(PSTR("%lu: APP Send ok\n\r"),millis());
-    }
     else
-    {
       printf_P(PSTR("%lu: APP Send failed\n\r"),millis());
+     
+    // Power down the radio.  Note that the radio will get powered back up
+    // on the next write() call.
+    radio.powerDown();
 
-      // Try sending at a different time next time
-      last_time_sent -= 100;
-    }
-    
-    // Decide which node to send to next
-    if ( ++next_node_to > max_node )
-      next_node_to = 0;
+    // Sleep the MCU.  The watchdog timer will awaken in a short while, and
+    // continue execution here.
+    Sleep.go();
   }
 
   // Listen for a new node address
