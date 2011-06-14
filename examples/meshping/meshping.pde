@@ -25,6 +25,10 @@
  * The logical node address of each node is set in EEPROM.  The nodeconfig
  * module handles this by listening for a digit (0-9) on the serial port,
  * and writing that number to EEPROM.
+ *
+ * To use the sketch, upload it to two or more units.  Run each one in
+ * turn.  Attach a serial monitor, and send a single-digit address to
+ * each.  Make the first one '0', and the following units '1', '2', etc.
  */
 
 #include <avr/pgmspace.h>
@@ -45,9 +49,6 @@ RF24Network network(radio);
 
 // Our node address
 uint16_t this_node;
-
-// The message that we send is just a ulong, containing the time
-unsigned long message;
 
 // Delay manager to send pings regularly
 const unsigned long interval = 2000; // ms
@@ -100,11 +101,11 @@ void loop(void)
   // Is there anything ready for us?
   while ( network.available() )
   {
-    // If so, grab it and print it out
+    // If so, take a look at it 
     RF24NetworkHeader header;
     network.peek(header);
 
-    // Process the node, based on its type.
+    // Dispatch the message to the correct handler.
     switch (header.type)
     {
     case 'T':
@@ -119,7 +120,7 @@ void loop(void)
     };
   }
 
-  // Send a ping to the other guy every 'interval' ms
+  // Send a ping to the next node every 'interval' ms
   unsigned long now = millis();
   if ( now - last_time_sent >= interval )
   {
@@ -128,25 +129,32 @@ void loop(void)
     // Who should we send to?
     // By default, send to base
     uint16_t to = 0;
+    
+    // Or if we have active nodes,
     if ( num_active_nodes )
     {
+      // Send to the next active node
       to = active_nodes[next_ping_node_index++];
+      
       // Have we rolled over?
       if ( next_ping_node_index > num_active_nodes )
       {
 	// Next time start at the beginning
 	next_ping_node_index = 0;
+
 	// This time, send to node 0.
 	to = 0;
       }
     }
 
     bool ok;
+
+    // Normal nodes send a 'T' ping
     if ( this_node > 0 || to == 0 )
-      // Normal nodes send a 'T' ping
       ok = send_T(to);
+    
+    // Base node sends the current active nodes out
     else
-      // Base node sends the current active nodes out
       ok = send_N(to);
 
     // Notify us of the result
@@ -172,9 +180,10 @@ void loop(void)
  */
 bool send_T(uint16_t to)
 {
-  message = millis();
   RF24NetworkHeader header(/*to node*/ to, /*type*/ 'T' /*Time*/);
   
+  // The 'T' message that we send is just a ulong, containing the time
+  unsigned long message = millis();
   printf_P(PSTR("---------------------------------\n\r"));
   printf_P(PSTR("%lu: APP Sending %lu to 0%o...\n\r"),millis(),message,to);
   return network.write(header,&message,sizeof(unsigned long));
@@ -199,6 +208,8 @@ bool send_N(uint16_t to)
  */
 void handle_T(RF24NetworkHeader& header)
 {
+  // The 'T' message is just a ulong, containing the time
+  unsigned long message;
   network.read(header,&message,sizeof(unsigned long));
   printf_P(PSTR("%lu: APP Received %lu from 0%o\n\r"),millis(),message,header.from_node);
 
