@@ -128,7 +128,7 @@ void loop(void)
 
     // Who should we send to?
     // By default, send to base
-    uint16_t to = 0;
+    uint16_t to = 00;
     
     // Or if we have active nodes,
     if ( num_active_nodes )
@@ -142,15 +142,15 @@ void loop(void)
 	// Next time start at the beginning
 	next_ping_node_index = 0;
 
-	// This time, send to node 0.
-	to = 0;
+	// This time, send to node 00.
+	to = 00;
       }
     }
 
     bool ok;
 
     // Normal nodes send a 'T' ping
-    if ( this_node > 0 || to == 0 )
+    if ( this_node > 00 || to == 00 )
       ok = send_T(to);
     
     // Base node sends the current active nodes out
@@ -214,7 +214,7 @@ void handle_T(RF24NetworkHeader& header)
   printf_P(PSTR("%lu: APP Received %lu from 0%o\n\r"),millis(),message,header.from_node);
 
   // If this message is from ourselves or the base, don't bother adding it to the active nodes.
-  if ( header.from_node != this_node || header.from_node > 0 )
+  if ( header.from_node != this_node || header.from_node > 00 )
     add_node(header.from_node);
 }
 
@@ -229,7 +229,7 @@ void handle_N(RF24NetworkHeader& header)
   printf_P(PSTR("%lu: APP Received nodes from 0%o\n\r"),millis(),header.from_node);
 
   int i = 0;
-  while ( i < max_active_nodes && incoming_nodes[i] > 0 )
+  while ( i < max_active_nodes && incoming_nodes[i] > 00 )
     add_node(incoming_nodes[i++]);
 }
 
