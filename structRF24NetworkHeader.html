@@ -78,8 +78,8 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 Public Member Functions</h2></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structRF24NetworkHeader.html#aacf67806892c3bbcacfbff2554b64fd5">RF24NetworkHeader</a> ()</td></tr>
 <tr><td class="mdescLeft">&#160;</td><td class="mdescRight">Default constructor.  <a href="#aacf67806892c3bbcacfbff2554b64fd5"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structRF24NetworkHeader.html#a16b0dcbb70ec995003101fe33dcb7020">RF24NetworkHeader</a> (uint16_t _to)</td></tr>
-<tr><td class="mdescLeft">&#160;</td><td class="mdescRight">Send constructor.  <a href="#a16b0dcbb70ec995003101fe33dcb7020"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structRF24NetworkHeader.html#a99e675f31589d72cf2fe036e77988026">RF24NetworkHeader</a> (uint16_t _to, unsigned char _type=0)</td></tr>
+<tr><td class="mdescLeft">&#160;</td><td class="mdescRight">Send constructor.  <a href="#a99e675f31589d72cf2fe036e77988026"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structRF24NetworkHeader.html#a9df83cb9e4541615c0a5a145072ed9b5">toString</a> (void) const </td></tr>
 <tr><td class="mdescLeft">&#160;</td><td class="mdescRight">Create debugging string.  <a href="#a9df83cb9e4541615c0a5a145072ed9b5"></a><br/></td></tr>
 <tr><td colspan="2"><h2><a name="pub-attribs"></a>
@@ -93,6 +93,11 @@ uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="
 <tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad05daaac28b7d1e7a7ef749f7f0ce317"></a><!-- doxytag: member="RF24NetworkHeader::id" ref="ad05daaac28b7d1e7a7ef749f7f0ce317" args="" -->
 uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structRF24NetworkHeader.html#ad05daaac28b7d1e7a7ef749f7f0ce317">id</a></td></tr>
 <tr><td class="mdescLeft">&#160;</td><td class="mdescRight">Sequential message ID, incremented every message. <br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">unsigned char&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structRF24NetworkHeader.html#ac99ab14e561670f4445d1fea7775e2db">type</a></td></tr>
+<tr><td class="mdescLeft">&#160;</td><td class="mdescRight">Type of the packet.  <a href="#ac99ab14e561670f4445d1fea7775e2db"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a80672a22cedcf24db8abbcef2eea9cfd"></a><!-- doxytag: member="RF24NetworkHeader::reserved" ref="a80672a22cedcf24db8abbcef2eea9cfd" args="" -->
+unsigned char&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structRF24NetworkHeader.html#a80672a22cedcf24db8abbcef2eea9cfd">reserved</a></td></tr>
+<tr><td class="mdescLeft">&#160;</td><td class="mdescRight">Reserved for future use. <br/></td></tr>
 <tr><td colspan="2"><h2><a name="pub-static-attribs"></a>
 Static Public Attributes</h2></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af02a00fa410f6c34bb395f7d0afe2bfd"></a><!-- doxytag: member="RF24NetworkHeader::next_id" ref="af02a00fa410f6c34bb395f7d0afe2bfd" args="" -->
@@ -103,7 +108,7 @@ static uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el"
 <div class="textblock"><p>Header which is sent with each message. </p>
 <p>The frame put over the air consists of this header and a message </p>
 <dl><dt><b>Examples: </b></dt><dd>
-<p><a class="el" href="meshping_8pde-example.html#_a4">meshping.pde</a>, and <a class="el" href="sensornet_8pde-example.html#_a4">sensornet.pde</a>.</p>
+<p><a class="el" href="meshping_8pde-example.html#_a1">meshping.pde</a>, and <a class="el" href="sensornet_8pde-example.html#_a1">sensornet.pde</a>.</p>
 </dd>
 </dl></div><hr/><h2>Constructor &amp; Destructor Documentation</h2>
 <a class="anchor" id="aacf67806892c3bbcacfbff2554b64fd5"></a><!-- doxytag: member="RF24NetworkHeader::RF24NetworkHeader" ref="aacf67806892c3bbcacfbff2554b64fd5" args="()" -->
@@ -125,7 +130,7 @@ static uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el"
 
 </div>
 </div>
-<a class="anchor" id="a16b0dcbb70ec995003101fe33dcb7020"></a><!-- doxytag: member="RF24NetworkHeader::RF24NetworkHeader" ref="a16b0dcbb70ec995003101fe33dcb7020" args="(uint16_t _to)" -->
+<a class="anchor" id="a99e675f31589d72cf2fe036e77988026"></a><!-- doxytag: member="RF24NetworkHeader::RF24NetworkHeader" ref="a99e675f31589d72cf2fe036e77988026" args="(uint16_t _to, unsigned char _type=0)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -133,8 +138,18 @@ static uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el"
           <td class="memname">RF24NetworkHeader::RF24NetworkHeader </td>
           <td>(</td>
           <td class="paramtype">uint16_t&#160;</td>
-          <td class="paramname"><em>_to</em></td><td>)</td>
-          <td><code> [inline]</code></td>
+          <td class="paramname"><em>_to</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">unsigned char&#160;</td>
+          <td class="paramname"><em>_type</em> = <code>0</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td><code> [inline]</code></td>
         </tr>
       </table>
 </div>
@@ -142,11 +157,12 @@ static uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el"
 
 <p>Send constructor. </p>
 <p>Use this constructor to create a header and then send a message</p>
-<div class="fragment"><pre class="fragment">  <a class="code" href="structRF24NetworkHeader.html" title="Header which is sent with each message.">RF24NetworkHeader</a> header(recipient_address);
+<div class="fragment"><pre class="fragment">  <a class="code" href="structRF24NetworkHeader.html" title="Header which is sent with each message.">RF24NetworkHeader</a> header(recipient_address,<span class="charliteral">&#39;t&#39;</span>);
   network.write(header,&amp;message,<span class="keyword">sizeof</span>(message));
 </pre></div><dl><dt><b>Parameters:</b></dt><dd>
   <table class="params">
     <tr><td class="paramname">_to</td><td>The logical node address where the message is going </td></tr>
+    <tr><td class="paramname">_type</td><td>The type of message which follows. Only 0-127 are allowed for user messages. </td></tr>
   </table>
   </dd>
 </dl>
@@ -175,6 +191,24 @@ static uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el"
 
 </div>
 </div>
+<hr/><h2>Member Data Documentation</h2>
+<a class="anchor" id="ac99ab14e561670f4445d1fea7775e2db"></a><!-- doxytag: member="RF24NetworkHeader::type" ref="ac99ab14e561670f4445d1fea7775e2db" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">unsigned char <a class="el" href="structRF24NetworkHeader.html#ac99ab14e561670f4445d1fea7775e2db">RF24NetworkHeader::type</a></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Type of the packet. </p>
+<p>0-127 are user-defined types, 128-255 are reserved for system </p>
+<dl><dt><b>Examples: </b></dt><dd><a class="el" href="meshping_8pde-example.html#a2">meshping.pde</a>.</dd>
+</dl>
+</div>
+</div>
 <hr/>The documentation for this struct was generated from the following file:<ul>
 <li><a class="el" href="RF24Network_8h_source.html">RF24Network.h</a></li>
 </ul>
@@ -184,7 +218,7 @@ static uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el"
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Enumerations</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Defines</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Variables</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -193,7 +227,7 @@ static uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el"
 </iframe>
 </div>
 
-<hr class="footer"/><address class="footer"><small>Generated on Sat Jun 11 2011 22:54:24 for RF24Network by&#160;
+<hr class="footer"/><address class="footer"><small>Generated on Tue Jun 14 2011 21:43:49 for RF24Network by&#160;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.7.3 </small></address>
 </body>

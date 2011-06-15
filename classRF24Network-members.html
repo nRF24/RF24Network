@@ -64,22 +64,29 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="contents">
 This is the complete list of members for <a class="el" href="classRF24Network.html">RF24Network</a>, including all inherited members.<table>
   <tr class="memlist"><td><a class="el" href="classRF24Network.html#a0e111e70bb7b95d885983ce92c89159e">available</a>(void)</td><td><a class="el" href="classRF24Network.html">RF24Network</a></td><td></td></tr>
-  <tr class="memlist"><td><a class="el" href="classRF24Network.html#ab0692b7fa0c036c23e3b091183c72f50">begin</a>(uint8_t _channel, uint16_t _node_address, rf24_direction_e _direction)</td><td><a class="el" href="classRF24Network.html">RF24Network</a></td><td></td></tr>
+  <tr class="memlist"><td><a class="el" href="classRF24Network.html#abf0da46b2e78b2010171c9f20cba8bae">begin</a>(uint8_t _channel, uint16_t _node_address)</td><td><a class="el" href="classRF24Network.html">RF24Network</a></td><td></td></tr>
+  <tr bgcolor="#f0f0f0"><td><b>direct_child_route_to</b>(uint16_t node) (defined in <a class="el" href="classRF24Network.html">RF24Network</a>)</td><td><a class="el" href="classRF24Network.html">RF24Network</a></td><td><code> [protected]</code></td></tr>
   <tr bgcolor="#f0f0f0"><td><b>enqueue</b>(void) (defined in <a class="el" href="classRF24Network.html">RF24Network</a>)</td><td><a class="el" href="classRF24Network.html">RF24Network</a></td><td><code> [protected]</code></td></tr>
   <tr bgcolor="#f0f0f0"><td><b>find_node</b>(uint16_t current_node, uint16_t target_node) (defined in <a class="el" href="classRF24Network.html">RF24Network</a>)</td><td><a class="el" href="classRF24Network.html">RF24Network</a></td><td><code> [protected]</code></td></tr>
+  <tr bgcolor="#f0f0f0"><td><b>is_descendant</b>(uint16_t node) (defined in <a class="el" href="classRF24Network.html">RF24Network</a>)</td><td><a class="el" href="classRF24Network.html">RF24Network</a></td><td><code> [protected]</code></td></tr>
+  <tr bgcolor="#f0f0f0"><td><b>is_direct_child</b>(uint16_t node) (defined in <a class="el" href="classRF24Network.html">RF24Network</a>)</td><td><a class="el" href="classRF24Network.html">RF24Network</a></td><td><code> [protected]</code></td></tr>
   <tr bgcolor="#f0f0f0"><td><b>open_pipes</b>(void) (defined in <a class="el" href="classRF24Network.html">RF24Network</a>)</td><td><a class="el" href="classRF24Network.html">RF24Network</a></td><td><code> [protected]</code></td></tr>
+  <tr class="memlist"><td><a class="el" href="classRF24Network.html#a260de0bab4e167f85d002bb11e97d91e">peek</a>(RF24NetworkHeader &amp;header)</td><td><a class="el" href="classRF24Network.html">RF24Network</a></td><td></td></tr>
+  <tr bgcolor="#f0f0f0"><td><b>pipe_to_descendant</b>(uint16_t node) (defined in <a class="el" href="classRF24Network.html">RF24Network</a>)</td><td><a class="el" href="classRF24Network.html">RF24Network</a></td><td><code> [protected]</code></td></tr>
   <tr class="memlist"><td><a class="el" href="classRF24Network.html#aa19f775fcddd334f222ae1b3072dbbe8">read</a>(RF24NetworkHeader &amp;header, void *message, size_t maxlen)</td><td><a class="el" href="classRF24Network.html">RF24Network</a></td><td></td></tr>
-  <tr class="memlist"><td><a class="el" href="classRF24Network.html#a23892a07e5adeefbd27030080a461b7e">RF24Network</a>(RF24 &amp;_radio, const RF24NodeLine *_topology)</td><td><a class="el" href="classRF24Network.html">RF24Network</a></td><td></td></tr>
+  <tr class="memlist"><td><a class="el" href="classRF24Network.html#a814229a5a4e8e30f88a4bdce05807e50">RF24Network</a>(RF24 &amp;_radio)</td><td><a class="el" href="classRF24Network.html">RF24Network</a></td><td></td></tr>
+  <tr bgcolor="#f0f0f0"><td><b>setup_address</b>(void) (defined in <a class="el" href="classRF24Network.html">RF24Network</a>)</td><td><a class="el" href="classRF24Network.html">RF24Network</a></td><td><code> [protected]</code></td></tr>
   <tr class="memlist"><td><a class="el" href="classRF24Network.html#a4f0fe8e16100ad29ac106b5f8f596c10">update</a>(void)</td><td><a class="el" href="classRF24Network.html">RF24Network</a></td><td></td></tr>
   <tr class="memlist"><td><a class="el" href="classRF24Network.html#a6b90e07f0f89d64af07b5da0b31e3c87">write</a>(RF24NetworkHeader &amp;header, const void *message, size_t len)</td><td><a class="el" href="classRF24Network.html">RF24Network</a></td><td></td></tr>
   <tr bgcolor="#f0f0f0"><td><b>write</b>(uint16_t) (defined in <a class="el" href="classRF24Network.html">RF24Network</a>)</td><td><a class="el" href="classRF24Network.html">RF24Network</a></td><td><code> [protected]</code></td></tr>
+  <tr bgcolor="#f0f0f0"><td><b>write_to_pipe</b>(uint16_t node, uint8_t pipe) (defined in <a class="el" href="classRF24Network.html">RF24Network</a>)</td><td><a class="el" href="classRF24Network.html">RF24Network</a></td><td><code> [protected]</code></td></tr>
 </table></div>
 <!--- window showing the filter options -->
 <div id="MSearchSelectWindow"
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Enumerations</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Defines</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Variables</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -88,7 +95,7 @@ This is the complete list of members for <a class="el" href="classRF24Network.ht
 </iframe>
 </div>
 
-<hr class="footer"/><address class="footer"><small>Generated on Sat Jun 11 2011 22:54:24 for RF24Network by&#160;
+<hr class="footer"/><address class="footer"><small>Generated on Tue Jun 14 2011 21:43:49 for RF24Network by&#160;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.7.3 </small></address>
 </body>

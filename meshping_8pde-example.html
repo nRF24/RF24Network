@@ -56,7 +56,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <h1>meshping.pde</h1>  </div>
 </div>
 <div class="contents">
-<p>Example of a cross-pinging mesh network. Using this sketch, each node will send a ping to one other node every 2 seconds. The <a class="el" href="classRF24Network.html" title="Network Layer for RF24 Radios.">RF24Network</a> library will route the message across the mesh to the correct node.</p>
+<p>Example of pinging across a mesh network Using this sketch, each node will send a ping to the base every few seconds. The <a class="el" href="classRF24Network.html" title="Network Layer for RF24 Radios.">RF24Network</a> library will route the message across the mesh to the correct node.</p>
 <div class="fragment"><pre class="fragment"><span class="comment">/*</span>
 <span class="comment"> Copyright (C) 2011 James Coliz, Jr. &lt;maniacbug@ymail.com&gt;</span>
 <span class="comment"></span>
@@ -78,32 +78,35 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <span class="preprocessor"></span><span class="preprocessor">#undef PSTR </span>
 <span class="preprocessor"></span><span class="preprocessor">#define PSTR(s) (__extension__({static prog_char __c[] PROGMEM = (s); &amp;__c[0];}))</span>
 <span class="preprocessor"></span>
-<span class="comment">// This is a very simple example, using 2 nodes.  This exact same code will work</span>
-<span class="comment">// With an unlimited number of nodes connected in a giant mesh.  Increase the ping</span>
-<span class="comment">// interval with many more nodes!</span>
-<a name="_a0"></a><a class="code" href="structRF24NodeLine.html" title="Node configuration for a specific node.">RF24NodeLine</a> topology[] = 
-{
-  <a name="a1"></a><a class="code" href="RF24Network_8h.html#adad85002e762f33a451fb55960a62b14" title="Marker for the start of a topology list.">RF24NODELINE_LIST_BEGIN</a>
-  { 0xE7E7E7E7F1LL, 0xE7E7E7E701LL, 0 }, <span class="comment">// Node 1: Base, has no parent</span>
-  { 0xE7E7E7E7F8LL, 0xE7E7E7E708LL, 1 }, <span class="comment">// Node 2: Leaf, child of #1</span>
-  <a name="a2"></a><a class="code" href="RF24Network_8h.html#ab4492b11455ebc4432e3dcc1a70c1300" title="Marker for the end of a topology list.">RF24NODELINE_LIST_END</a>
-};
-
+<span class="comment">// This is for git version tracking.  Safe to ignore</span>
+<span class="preprocessor">#ifdef VERSION_H</span>
+<span class="preprocessor"></span><span class="preprocessor">#include &quot;version.h&quot;</span>
+<span class="preprocessor">#else</span>
+<span class="preprocessor"></span><span class="keyword">const</span> <span class="keywordtype">char</span> program_version[] = <span class="stringliteral">&quot;Unknown&quot;</span>;
+<span class="preprocessor">#endif</span>
+<span class="preprocessor"></span>
 RF24 radio(8,9);
-<a name="_a3"></a><a class="code" href="classRF24Network.html" title="Network Layer for RF24 Radios.">RF24Network</a> network(radio,topology);
+<a name="_a0"></a><a class="code" href="classRF24Network.html" title="Network Layer for RF24 Radios.">RF24Network</a> network(radio);
 
 <span class="comment">// Our node address</span>
 uint16_t this_node;
-uint16_t next_node_to;
-<span class="keyword">const</span> uint16_t max_node = <span class="keyword">sizeof</span>(topology) / <span class="keyword">sizeof</span>(<a class="code" href="structRF24NodeLine.html" title="Node configuration for a specific node.">RF24NodeLine</a>) - 2 ;
-
-<span class="comment">// The message that we send is just a ulong, containing the time</span>
-<span class="keywordtype">unsigned</span> <span class="keywordtype">long</span> message;
 
 <span class="comment">// Delay manager to send pings regularly</span>
 <span class="keyword">const</span> <span class="keywordtype">unsigned</span> <span class="keywordtype">long</span> interval = 2000; <span class="comment">// ms</span>
 <span class="keywordtype">unsigned</span> <span class="keywordtype">long</span> last_time_sent;
-<span class="keywordtype">bool</span> running = <span class="keyword">false</span>;
+
+<span class="comment">// Array of nodes we are aware of</span>
+<span class="keyword">const</span> <span class="keywordtype">short</span> max_active_nodes = 10;
+uint16_t active_nodes[max_active_nodes];
+<span class="keywordtype">short</span> num_active_nodes = 0;
+<span class="keywordtype">short</span> next_ping_node_index = 0;
+
+<span class="comment">// Prototypes for functions to send &amp; handle messages</span>
+<span class="keywordtype">bool</span> send_T(uint16_t to);
+<span class="keywordtype">bool</span> send_N(uint16_t to);
+<span class="keywordtype">void</span> handle_T(<a name="_a1"></a><a class="code" href="structRF24NetworkHeader.html" title="Header which is sent with each message.">RF24NetworkHeader</a>&amp; header);
+<span class="keywordtype">void</span> handle_N(<a class="code" href="structRF24NetworkHeader.html" title="Header which is sent with each message.">RF24NetworkHeader</a>&amp; header);
+<span class="keywordtype">void</span> add_node(uint16_t node);
 
 <span class="keywordtype">void</span> setup(<span class="keywordtype">void</span>)
 {
@@ -113,7 +116,8 @@ uint16_t next_node_to;
   
   Serial.begin(57600);
   printf_begin();
-  printf(<span class="stringliteral">&quot;\n\rRF24Network/examples/meshping/\n\r&quot;</span>);
+  printf_P(PSTR(<span class="stringliteral">&quot;\n\rRF24Network/examples/meshping/\n\r&quot;</span>));
+  printf_P(PSTR(<span class="stringliteral">&quot;VERSION: %s\n\r&quot;</span>),program_version);
   
   <span class="comment">//</span>
   <span class="comment">// Pull node address out of eeprom </span>
@@ -122,26 +126,13 @@ uint16_t next_node_to;
   <span class="comment">// Which node are we?</span>
   this_node = nodeconfig_read();
 
-  <span class="comment">// Decide which node to send to next</span>
-  next_node_to = this_node + 1;
-  <span class="keywordflow">if</span> ( next_node_to &gt; max_node )
-    next_node_to = 1;
-  
-  <span class="comment">// Node 1 starts running right away, the rest wait</span>
-  <span class="comment">// This makes it easier to test because we can set up</span>
-  <span class="comment">// a repeatable system.  Bring all the other nodes up</span>
-  <span class="comment">// first, and then bring up node 1, and it will all</span>
-  <span class="comment">// work the same every time.</span>
-  <span class="keywordflow">if</span> ( this_node == 1 )
-    running = <span class="keyword">true</span>;
-
   <span class="comment">//</span>
   <span class="comment">// Bring up the RF network</span>
   <span class="comment">//</span>
 
   SPI.begin();
   radio.begin();
-  network.begin(<span class="comment">/*channel*/</span> 100, <span class="comment">/*node address*/</span> this_node, <span class="comment">/*directionality*/</span> RF24_NET_BIDIRECTIONAL);
+  network.begin(<span class="comment">/*channel*/</span> 100, <span class="comment">/*node address*/</span> this_node );
 }
 
 <span class="keywordtype">void</span> loop(<span class="keywordtype">void</span>)
@@ -152,28 +143,64 @@ uint16_t next_node_to;
   <span class="comment">// Is there anything ready for us?</span>
   <span class="keywordflow">while</span> ( network.available() )
   {
-    <span class="comment">// If so, grab it and print it out</span>
-    <a name="_a4"></a><a class="code" href="structRF24NetworkHeader.html" title="Header which is sent with each message.">RF24NetworkHeader</a> header;
-    network.read(header,&amp;message,<span class="keyword">sizeof</span>(<span class="keywordtype">unsigned</span> <span class="keywordtype">long</span>));
-    printf_P(PSTR(<span class="stringliteral">&quot;%lu: APP Received %lu from %u\n\r&quot;</span>),millis(),message,header.<a name="a5"></a><a class="code" href="structRF24NetworkHeader.html#aff9461f6546b5b7c87465809eb4f9f56" title="Logical address where the message was generated.">from_node</a>);
+    <span class="comment">// If so, take a look at it </span>
+    <a class="code" href="structRF24NetworkHeader.html" title="Header which is sent with each message.">RF24NetworkHeader</a> header;
+    network.peek(header);
 
-    <span class="comment">// We can start running once we get our first message</span>
-    <span class="keywordflow">if</span> ( !running )
-      running = <span class="keyword">true</span>;
+    <span class="comment">// Dispatch the message to the correct handler.</span>
+    <span class="keywordflow">switch</span> (header.<a name="a2"></a><a class="code" href="structRF24NetworkHeader.html#ac99ab14e561670f4445d1fea7775e2db" title="Type of the packet.">type</a>)
+    {
+    <span class="keywordflow">case</span> <span class="charliteral">&#39;T&#39;</span>:
+      handle_T(header);
+      <span class="keywordflow">break</span>;
+    <span class="keywordflow">case</span> <span class="charliteral">&#39;N&#39;</span>:
+      handle_N(header);
+      <span class="keywordflow">break</span>;
+    <span class="keywordflow">default</span>:
+      printf_P(PSTR(<span class="stringliteral">&quot;*** WARNING *** Unknown message type %c\n\r&quot;</span>),header.<a class="code" href="structRF24NetworkHeader.html#ac99ab14e561670f4445d1fea7775e2db" title="Type of the packet.">type</a>);
+      network.read(header,0,0);
+      <span class="keywordflow">break</span>;
+    };
   }
 
-  <span class="comment">// Send a ping to the other guy every &#39;interval&#39; ms</span>
+  <span class="comment">// Send a ping to the next node every &#39;interval&#39; ms</span>
   <span class="keywordtype">unsigned</span> <span class="keywordtype">long</span> now = millis();
-  <span class="keywordflow">if</span> ( running &amp;&amp; now - last_time_sent &gt;= interval )
+  <span class="keywordflow">if</span> ( now - last_time_sent &gt;= interval )
   {
     last_time_sent = now;
 
-    printf_P(PSTR(<span class="stringliteral">&quot;---------------------------------\n\r&quot;</span>));
-    printf_P(PSTR(<span class="stringliteral">&quot;%lu: APP Sending %lu to %u...\n\r&quot;</span>),millis(),now,next_node_to);
+    <span class="comment">// Who should we send to?</span>
+    <span class="comment">// By default, send to base</span>
+    uint16_t to = 00;
     
-    message = now;
-    <a class="code" href="structRF24NetworkHeader.html" title="Header which is sent with each message.">RF24NetworkHeader</a> header(<span class="comment">/*to node*/</span> next_node_to);
-    <span class="keywordtype">bool</span> ok = network.write(header,&amp;message,<span class="keyword">sizeof</span>(<span class="keywordtype">unsigned</span> <span class="keywordtype">long</span>));
+    <span class="comment">// Or if we have active nodes,</span>
+    <span class="keywordflow">if</span> ( num_active_nodes )
+    {
+      <span class="comment">// Send to the next active node</span>
+      to = active_nodes[next_ping_node_index++];
+      
+      <span class="comment">// Have we rolled over?</span>
+      <span class="keywordflow">if</span> ( next_ping_node_index &gt; num_active_nodes )
+      {
+        <span class="comment">// Next time start at the beginning</span>
+        next_ping_node_index = 0;
+
+        <span class="comment">// This time, send to node 00.</span>
+        to = 00;
+      }
+    }
+
+    <span class="keywordtype">bool</span> ok;
+
+    <span class="comment">// Normal nodes send a &#39;T&#39; ping</span>
+    <span class="keywordflow">if</span> ( this_node &gt; 00 || to == 00 )
+      ok = send_T(to);
+    
+    <span class="comment">// Base node sends the current active nodes out</span>
+    <span class="keywordflow">else</span>
+      ok = send_N(to);
+
+    <span class="comment">// Notify us of the result</span>
     <span class="keywordflow">if</span> (ok)
     {
       printf_P(PSTR(<span class="stringliteral">&quot;%lu: APP Send ok\n\r&quot;</span>),millis());
@@ -185,15 +212,73 @@ uint16_t next_node_to;
       <span class="comment">// Try sending at a different time next time</span>
       last_time_sent -= 100;
     }
-    
-    <span class="comment">// Decide which node to send to next</span>
-    <span class="keywordflow">if</span> ( ++next_node_to &gt; max_node )
-      next_node_to = 1;
   }
 
   <span class="comment">// Listen for a new node address</span>
   nodeconfig_listen();
 }
+
+<span class="keywordtype">bool</span> send_T(uint16_t to)
+{
+  <a class="code" href="structRF24NetworkHeader.html" title="Header which is sent with each message.">RF24NetworkHeader</a> header(<span class="comment">/*to node*/</span> to, <span class="comment">/*type*/</span> <span class="charliteral">&#39;T&#39;</span> <span class="comment">/*Time*/</span>);
+  
+  <span class="comment">// The &#39;T&#39; message that we send is just a ulong, containing the time</span>
+  <span class="keywordtype">unsigned</span> <span class="keywordtype">long</span> message = millis();
+  printf_P(PSTR(<span class="stringliteral">&quot;---------------------------------\n\r&quot;</span>));
+  printf_P(PSTR(<span class="stringliteral">&quot;%lu: APP Sending %lu to 0%o...\n\r&quot;</span>),millis(),message,to);
+  <span class="keywordflow">return</span> network.write(header,&amp;message,<span class="keyword">sizeof</span>(<span class="keywordtype">unsigned</span> <span class="keywordtype">long</span>));
+}
+
+<span class="keywordtype">bool</span> send_N(uint16_t to)
+{
+  <a class="code" href="structRF24NetworkHeader.html" title="Header which is sent with each message.">RF24NetworkHeader</a> header(<span class="comment">/*to node*/</span> to, <span class="comment">/*type*/</span> <span class="charliteral">&#39;N&#39;</span> <span class="comment">/*Time*/</span>);
+  
+  printf_P(PSTR(<span class="stringliteral">&quot;---------------------------------\n\r&quot;</span>));
+  printf_P(PSTR(<span class="stringliteral">&quot;%lu: APP Sending active nodes to 0%o...\n\r&quot;</span>),millis(),to);
+  <span class="keywordflow">return</span> network.write(header,active_nodes,<span class="keyword">sizeof</span>(active_nodes));
+}
+
+<span class="keywordtype">void</span> handle_T(<a class="code" href="structRF24NetworkHeader.html" title="Header which is sent with each message.">RF24NetworkHeader</a>&amp; header)
+{
+  <span class="comment">// The &#39;T&#39; message is just a ulong, containing the time</span>
+  <span class="keywordtype">unsigned</span> <span class="keywordtype">long</span> message;
+  network.read(header,&amp;message,<span class="keyword">sizeof</span>(<span class="keywordtype">unsigned</span> <span class="keywordtype">long</span>));
+  printf_P(PSTR(<span class="stringliteral">&quot;%lu: APP Received %lu from 0%o\n\r&quot;</span>),millis(),message,header.<a name="a3"></a><a class="code" href="structRF24NetworkHeader.html#aff9461f6546b5b7c87465809eb4f9f56" title="Logical address where the message was generated.">from_node</a>);
+
+  <span class="comment">// If this message is from ourselves or the base, don&#39;t bother adding it to the active nodes.</span>
+  <span class="keywordflow">if</span> ( header.<a class="code" href="structRF24NetworkHeader.html#aff9461f6546b5b7c87465809eb4f9f56" title="Logical address where the message was generated.">from_node</a> != this_node || header.<a class="code" href="structRF24NetworkHeader.html#aff9461f6546b5b7c87465809eb4f9f56" title="Logical address where the message was generated.">from_node</a> &gt; 00 )
+    add_node(header.<a class="code" href="structRF24NetworkHeader.html#aff9461f6546b5b7c87465809eb4f9f56" title="Logical address where the message was generated.">from_node</a>);
+}
+
+<span class="keywordtype">void</span> handle_N(<a class="code" href="structRF24NetworkHeader.html" title="Header which is sent with each message.">RF24NetworkHeader</a>&amp; header)
+{
+  <span class="keyword">static</span> uint16_t incoming_nodes[max_active_nodes];
+
+  network.read(header,&amp;incoming_nodes,<span class="keyword">sizeof</span>(incoming_nodes));
+  printf_P(PSTR(<span class="stringliteral">&quot;%lu: APP Received nodes from 0%o\n\r&quot;</span>),millis(),header.<a class="code" href="structRF24NetworkHeader.html#aff9461f6546b5b7c87465809eb4f9f56" title="Logical address where the message was generated.">from_node</a>);
+
+  <span class="keywordtype">int</span> i = 0;
+  <span class="keywordflow">while</span> ( i &lt; max_active_nodes &amp;&amp; incoming_nodes[i] &gt; 00 )
+    add_node(incoming_nodes[i++]);
+}
+
+<span class="keywordtype">void</span> add_node(uint16_t node)
+{
+  <span class="comment">// Do we already know about this node?</span>
+  <span class="keywordtype">short</span> i = num_active_nodes;
+  <span class="keywordflow">while</span> (i--)
+  {
+    <span class="keywordflow">if</span> ( active_nodes[i] == node )
+      <span class="keywordflow">break</span>;
+  }
+  <span class="comment">// If not, add it to the table</span>
+  <span class="keywordflow">if</span> ( i == -1 &amp;&amp; num_active_nodes &lt; max_active_nodes )
+  {
+    active_nodes[num_active_nodes++] = node; 
+    printf_P(PSTR(<span class="stringliteral">&quot;%lu: APP Added 0%o to list of active nodes.\n\r&quot;</span>),millis(),node);
+  }
+}
+
 <span class="comment">// vim:ai:cin:sts=2 sw=2 ft=cpp</span>
 </pre></div> </div>
 </div>
@@ -202,7 +287,7 @@ uint16_t next_node_to;
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Enumerations</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Defines</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Variables</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -211,7 +296,7 @@ uint16_t next_node_to;
 </iframe>
 </div>
 
-<hr class="footer"/><address class="footer"><small>Generated on Sat Jun 11 2011 22:54:24 for RF24Network by&#160;
+<hr class="footer"/><address class="footer"><small>Generated on Tue Jun 14 2011 21:43:49 for RF24Network by&#160;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.7.3 </small></address>
 </body>

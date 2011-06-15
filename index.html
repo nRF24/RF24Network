@@ -57,20 +57,26 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div>
 <div class="contents">
 <div class="textblock"><p>This class implements an <a href="http://en.wikipedia.org/wiki/Network_layer">OSI Network Layer</a> using nRF24L01(+) radios driven by the <a href="http://maniacbug.github.com/RF24/">RF24</a> library. </p>
+<h2><a class="anchor" id="Purpose"></a>
+Purpose/Goal</h2>
+<p>Create an alternative to ZigBee radios for Arduino communication.</p>
+<p>Xbees are excellent little radios, backed up by a mature and robust standard protocol stack. They are also expensive.</p>
+<p>For many Arduino uses, they seem like overkill. So I am working to build an alternative using nRF24L01 radios. Modules are available for less than $6 from many sources. With the <a class="el" href="classRF24Network.html" title="Network Layer for RF24 Radios.">RF24Network</a> layer, I hope to cover many common communication scenarios.</p>
+<p>Please see the <a class="el" href="ZigBee.html">Comparison to ZigBee</a> page for a comparison against the ZigBee protocols</p>
 <h2><a class="anchor" id="Features"></a>
 Features</h2>
 <p>The layer provides: </p>
 <ul>
 <li>Host Addressing. Each node has a logical address on the local network. </li>
-<li>Message Forwarding. Messages can be sent from one node to any other, and this layer will get them there no matter how many hops it takes.</li>
+<li>Message Forwarding. Messages can be sent from one node to any other, and this layer will get them there no matter how many hops it takes. </li>
+<li>Ad-hoc Joining. A node can join a network without any changes to any existing nodes.</li>
 </ul>
 <p>The layer does not (yet) provide: </p>
 <ul>
 <li>Fragmentation/reassembly. Ability to send longer messages and put them all back together before exposing them up to the app. </li>
-<li>Dynamic topology / ad-hoc joining. The ability to add a new node to a network and have it automatically join in. </li>
-<li>Power-efficient listening. It would be useful for nodes who are listening to sleep for extended periods of time if they could know that they would miss no traffic.</li>
+<li>Power-efficient listening. It would be useful for nodes who are listening to sleep for extended periods of time if they could know that they would miss no traffic. </li>
+<li>Dynamic address assignment.</li>
 </ul>
-<p>Please read through the public interface for details on how this network operates.</p>
 <h2><a class="anchor" id="More"></a>
 How to learn more</h2>
 <ul>
@@ -82,15 +88,27 @@ How to learn more</h2>
 <h2><a class="anchor" id="Topology"></a>
 Topology for Mesh Networks using nRF24L01(+)</h2>
 <p>This network layer takes advantage of the fundamental capability of the nRF24L01(+) radio to listen actively to up to 6 other radios at once. The network is arranged in a <a href="http://en.wikipedia.org/wiki/Network_Topology#Tree">Tree Topology</a>, where one node is the base, and all other nodes are children either of that node, or of another. Unlike a true mesh network, multiple nodes are not connected together, so there is only one path to any given node.</p>
+<h2><a class="anchor" id="Octal"></a>
+Octal Addressing</h2>
+<p>Each node must be assigned an 15-bit address by the administrator. This address exactly describes the position of the node within the tree. The address is an octal number. Each digit in the address represents a position in the tree further from the base.</p>
+<ul>
+<li>Node 00 is the base node. </li>
+<li>Nodes 01-05 are nodes whose parent is the base. </li>
+<li>Node 021 is the second child of node 01. </li>
+<li>Node 0321 is the third child of node 021, an so on. </li>
+<li>The largest node address is 05555, so 3,125 nodes are allowed on a single channel.</li>
+</ul>
 <h2><a class="anchor" id="Routing"></a>
 How routing is handled</h2>
 <p>When sending a message using <a class="el" href="classRF24Network.html#a6b90e07f0f89d64af07b5da0b31e3c87" title="Send a message.">RF24Network::write()</a>, you fill in the header with the logical node address. The network layer figures out the right path to find that node, and sends it through the system until it gets to the right place. This works even if the two nodes are far separated, as it will send the message down to the base node, and then back out to the final destination.</p>
 <p>All of this work is handled by the <a class="el" href="classRF24Network.html#a4f0fe8e16100ad29ac106b5f8f596c10" title="Main layer loop.">RF24Network::update()</a> method, so be sure to call it regularly or your network will miss packets.</p>
+<h2><a class="anchor" id="Startup"></a>
+Starting up a node</h2>
+<p>When a node starts up, it only has to contact its parent to establish communication. No direct connection to the Base node is needed. This is useful in situations where relay nodes are being used to bridge the distance to the base, so leaf nodes are out of range of the base.</p>
 <h2><a class="anchor" id="Directionality"></a>
-Uni-directional mode versus bi-directional mode</h2>
-<p>In bi-directional mode, all nodes are always listening, so messages will quickly reach their destination.</p>
-<p>In uni-directional mode, only parent nodes listen to their children. Thus, it is impossible for a message to be sent outward. This is useful in a case where the outermost children (the leaf nodes) are operating on batteries and need to sleep. This is useful for a sensor network. The leaf nodes can sleep most of the time, and wake every few minutes to send in a reading.</p>
-<p>In this setup, the intermediate nodes (relay nodes) need to stay powered because they are always listening for messages from their children.</p>
+Directionality</h2>
+<p>By default all nodes are always listening, so messages will quickly reach their destination.</p>
+<p>You may choose to sleep any nodes which do not have any active children on the network (i.e. leaf nodes). This is useful in a case where the leaf nodes are operating on batteries and need to sleep. This is useful for a sensor network. The leaf nodes can sleep most of the time, and wake every few minutes to send in a reading. However, messages cannot be sent to these sleeping nodes.</p>
 <p>In the future, I plan to write a system where messages can still be passed upward from the base, and get delivered when a sleeping node is ready to receive them. The radio and underlying driver support 'ack payloads', which will be a handy mechanism for this. </p>
 </div></div>
 <!--- window showing the filter options -->
@@ -98,7 +116,7 @@ Uni-directional mode versus bi-directional mode</h2>
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Enumerations</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Defines</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Variables</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -107,7 +125,7 @@ Uni-directional mode versus bi-directional mode</h2>
 </iframe>
 </div>
 
-<hr class="footer"/><address class="footer"><small>Generated on Sat Jun 11 2011 22:54:24 for RF24Network by&#160;
+<hr class="footer"/><address class="footer"><small>Generated on Tue Jun 14 2011 21:43:49 for RF24Network by&#160;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.7.3 </small></address>
 </body>

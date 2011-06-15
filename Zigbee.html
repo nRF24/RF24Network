@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
-<title>RF24Network: Examples</title>
+<title>RF24Network: Comparison to ZigBee</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <link href="search/search.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="search/search.js"></script>
@@ -28,10 +28,10 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <div id="navrow1" class="tabs">
     <ul class="tablist">
       <li><a href="index.html"><span>Main&#160;Page</span></a></li>
-      <li><a href="pages.html"><span>Related&#160;Pages</span></a></li>
+      <li class="current"><a href="pages.html"><span>Related&#160;Pages</span></a></li>
       <li><a href="annotated.html"><span>Classes</span></a></li>
       <li><a href="files.html"><span>Files</span></a></li>
-      <li class="current"><a href="examples.html"><span>Examples</span></a></li>
+      <li><a href="examples.html"><span>Examples</span></a></li>
       <li id="searchli">
         <div id="MSearchBox" class="MSearchBoxInactive">
         <span class="left">
@@ -53,16 +53,30 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div>
 <div class="header">
   <div class="headertitle">
-<h1>Examples</h1>  </div>
+<h1>Comparison to ZigBee </h1>  </div>
 </div>
 <div class="contents">
-<div class="textblock">Here is a list of all examples:</div><ul>
-<li><a class="el" href="meshping_8pde-example.html">meshping.pde</a></li>
-
-<li><a class="el" href="sensornet_8pde-example.html">sensornet.pde</a></li>
-
+<div class="textblock"><p>This network layer is influenced by the design of ZigBee, but does not implement it directly.</p>
+<h2><a class="anchor" id="Advantage"></a>
+Which is better?</h2>
+<p>ZigBee is a much more robust, feature-rich set of protocols, with many different vendors providing compatible chips.</p>
+<p><a class="el" href="classRF24Network.html" title="Network Layer for RF24 Radios.">RF24Network</a> is cheap. While ZigBee radios are well over $20, nRF24L01 modules can be found for under $6. My personal favorite is <a href="http://www.mdfly.com/index.php?main_page=product_info&amp;products_id=82">MDFly RF-IS2401</a>.</p>
+<h2><a class="anchor" id="Contrast"></a>
+Similiarities &amp; Differences</h2>
+<p>Here are some comparisons between <a class="el" href="classRF24Network.html" title="Network Layer for RF24 Radios.">RF24Network</a> and ZigBee.</p>
+<ul>
+<li>Both networks support Star and Tree topologies. Only Zigbee supports a true mesh. </li>
+<li>In both networks, only leaf nodes can sleep (see <a class="el" href="ZigBee.html#NodeNames">Node Naming</a>). </li>
+<li>ZigBee nodes are configured using AT commands, or a separate Windows application. RF24 nodes are configured by recompiliing the firmware or writing to EEPROM.</li>
 </ul>
-</div>
+<h2><a class="anchor" id="NodeNames"></a>
+Node Naming</h2>
+<ul>
+<li>Leaf node: A node at the outer edge of the network with no children. ZigBee calls it an End Device node. </li>
+<li>Relay node: A node which has both parents and children, and relays messages from one to the other. ZigBee calls it a Router. </li>
+<li>Base node. The top of the tree node with no parents, only children. Typically this node will bridge to another kind of network like Ethernet. ZigBee calls it a Co-ordinator node. </li>
+</ul>
+</div></div>
 <!--- window showing the filter options -->
 <div id="MSearchSelectWindow"
      onmouseover="return searchBox.OnSearchSelectShow()"

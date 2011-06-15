@@ -53,7 +53,6 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <div id="navrow2" class="tabs2">
     <ul class="tablist">
       <li><a href="files.html"><span>File&#160;List</span></a></li>
-      <li><a href="globals.html"><span>File&#160;Members</span></a></li>
     </ul>
   </div>
 <div class="header">
@@ -76,67 +75,66 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <a name="l00019"></a>00019 
 <a name="l00020"></a>00020 <span class="keyword">class </span>RF24;
 <a name="l00021"></a>00021 
-<a name="l00038"></a><a class="code" href="structRF24NodeLine.html">00038</a> <span class="keyword">struct </span><a class="code" href="structRF24NodeLine.html" title="Node configuration for a specific node.">RF24NodeLine</a>
-<a name="l00039"></a>00039 {
-<a name="l00040"></a><a class="code" href="structRF24NodeLine.html#a23b435b8f989f259fad5dc3781beedcf">00040</a>   uint64_t <a class="code" href="structRF24NodeLine.html#a23b435b8f989f259fad5dc3781beedcf" title="Pipe address for talking to parent node.">talking_pipe</a>; 
-<a name="l00041"></a><a class="code" href="structRF24NodeLine.html#a386b8e144cea96d1f076e9f4fd5cae7c">00041</a>   uint64_t <a class="code" href="structRF24NodeLine.html#a386b8e144cea96d1f076e9f4fd5cae7c" title="Pipe address for listening to parent node.">listening_pipe</a>; 
-<a name="l00042"></a><a class="code" href="structRF24NodeLine.html#af1a344de8c5c6c624afac2d6023f792b">00042</a>   uint16_t <a class="code" href="structRF24NodeLine.html#af1a344de8c5c6c624afac2d6023f792b" title="Logical address of our parent node.">parent_node</a>; 
-<a name="l00043"></a>00043 };
-<a name="l00044"></a>00044 
-<a name="l00048"></a><a class="code" href="RF24Network_8h.html#adad85002e762f33a451fb55960a62b14">00048</a> <span class="preprocessor">#define RF24NODELINE_LIST_BEGIN  { 0xFFFFFFFFFFLL, 0xFFFFFFFFFFLL, 0 },</span>
-<a name="l00049"></a>00049 <span class="preprocessor"></span>
-<a name="l00053"></a><a class="code" href="RF24Network_8h.html#ab4492b11455ebc4432e3dcc1a70c1300">00053</a> <span class="preprocessor">#define RF24NODELINE_LIST_END  { 0xFFFFFFFFFFLL, 0xFFFFFFFFFFLL, -1 }</span>
-<a name="l00054"></a>00054 <span class="preprocessor"></span>
-<a name="l00060"></a><a class="code" href="structRF24NetworkHeader.html">00060</a> <span class="keyword">struct </span><a class="code" href="structRF24NetworkHeader.html" title="Header which is sent with each message.">RF24NetworkHeader</a>
-<a name="l00061"></a>00061 {
-<a name="l00062"></a><a class="code" href="structRF24NetworkHeader.html#aff9461f6546b5b7c87465809eb4f9f56">00062</a>   uint16_t <a class="code" href="structRF24NetworkHeader.html#aff9461f6546b5b7c87465809eb4f9f56" title="Logical address where the message was generated.">from_node</a>; 
-<a name="l00063"></a><a class="code" href="structRF24NetworkHeader.html#adb8d6d05bb359b4b89322d15055e73a1">00063</a>   uint16_t <a class="code" href="structRF24NetworkHeader.html#adb8d6d05bb359b4b89322d15055e73a1" title="Logical address where the message is going.">to_node</a>; 
-<a name="l00064"></a><a class="code" href="structRF24NetworkHeader.html#ad05daaac28b7d1e7a7ef749f7f0ce317">00064</a>   uint16_t <a class="code" href="structRF24NetworkHeader.html#ad05daaac28b7d1e7a7ef749f7f0ce317" title="Sequential message ID, incremented every message.">id</a>; 
-<a name="l00065"></a><a class="code" href="structRF24NetworkHeader.html#af02a00fa410f6c34bb395f7d0afe2bfd">00065</a>   <span class="keyword">static</span> uint16_t <a class="code" href="structRF24NetworkHeader.html#af02a00fa410f6c34bb395f7d0afe2bfd" title="The message ID of the next message to be sent.">next_id</a>; 
-<a name="l00072"></a><a class="code" href="structRF24NetworkHeader.html#aacf67806892c3bbcacfbff2554b64fd5">00072</a>   <a class="code" href="structRF24NetworkHeader.html#aacf67806892c3bbcacfbff2554b64fd5" title="Default constructor.">RF24NetworkHeader</a>() {}
-<a name="l00073"></a>00073 
-<a name="l00086"></a><a class="code" href="structRF24NetworkHeader.html#a16b0dcbb70ec995003101fe33dcb7020">00086</a>   <a class="code" href="structRF24NetworkHeader.html#a16b0dcbb70ec995003101fe33dcb7020" title="Send constructor.">RF24NetworkHeader</a>(uint16_t _to): <a class="code" href="structRF24NetworkHeader.html#adb8d6d05bb359b4b89322d15055e73a1" title="Logical address where the message is going.">to_node</a>(_to), <a class="code" href="structRF24NetworkHeader.html#ad05daaac28b7d1e7a7ef749f7f0ce317" title="Sequential message ID, incremented every message.">id</a>(<a class="code" href="structRF24NetworkHeader.html#af02a00fa410f6c34bb395f7d0afe2bfd" title="The message ID of the next message to be sent.">next_id</a>++) {}
-<a name="l00087"></a>00087 
-<a name="l00097"></a>00097   <span class="keyword">const</span> <span class="keywordtype">char</span>* <a class="code" href="structRF24NetworkHeader.html#a9df83cb9e4541615c0a5a145072ed9b5" title="Create debugging string.">toString</a>(<span class="keywordtype">void</span>) <span class="keyword">const</span>;
-<a name="l00098"></a>00098 };
-<a name="l00099"></a>00099 
-<a name="l00108"></a><a class="code" href="RF24Network_8h.html#a7ff67b5f75a46327cdd147694587a38f">00108</a> <span class="keyword">typedef</span> <span class="keyword">enum</span> { RF24_NET_UNIDIRECTIONAL = 0, RF24_NET_BIDIRECTIONAL } <a class="code" href="RF24Network_8h.html#a7ff67b5f75a46327cdd147694587a38f" title="Enumeration for directionality of the network.">rf24_direction_e</a>;
-<a name="l00109"></a>00109 
-<a name="l00117"></a><a class="code" href="classRF24Network.html">00117</a> <span class="keyword">class </span><a class="code" href="classRF24Network.html" title="Network Layer for RF24 Radios.">RF24Network</a>
-<a name="l00118"></a>00118 {
-<a name="l00119"></a>00119 <span class="keyword">public</span>:
-<a name="l00143"></a>00143   <a class="code" href="classRF24Network.html#a23892a07e5adeefbd27030080a461b7e" title="Construct the network.">RF24Network</a>( RF24&amp; _radio, <span class="keyword">const</span> <a class="code" href="structRF24NodeLine.html" title="Node configuration for a specific node.">RF24NodeLine</a>* _topology);
-<a name="l00144"></a>00144 
-<a name="l00163"></a>00163   <span class="keywordtype">void</span> <a class="code" href="classRF24Network.html#ab0692b7fa0c036c23e3b091183c72f50" title="Bring up the network.">begin</a>(uint8_t _channel, uint16_t _node_address, <a class="code" href="RF24Network_8h.html#a7ff67b5f75a46327cdd147694587a38f" title="Enumeration for directionality of the network.">rf24_direction_e</a> _direction );
-<a name="l00164"></a>00164   
-<a name="l00171"></a>00171   <span class="keywordtype">void</span> <a class="code" href="classRF24Network.html#a4f0fe8e16100ad29ac106b5f8f596c10" title="Main layer loop.">update</a>(<span class="keywordtype">void</span>);
-<a name="l00172"></a>00172 
-<a name="l00178"></a>00178   <span class="keywordtype">bool</span> <a class="code" href="classRF24Network.html#a0e111e70bb7b95d885983ce92c89159e" title="Test whether there is a message available for this node.">available</a>(<span class="keywordtype">void</span>);
-<a name="l00179"></a>00179 
-<a name="l00188"></a>00188   <span class="keywordtype">size_t</span> <a class="code" href="classRF24Network.html#aa19f775fcddd334f222ae1b3072dbbe8" title="Read a message.">read</a>(<a class="code" href="structRF24NetworkHeader.html" title="Header which is sent with each message.">RF24NetworkHeader</a>&amp; header, <span class="keywordtype">void</span>* message, <span class="keywordtype">size_t</span> maxlen);
-<a name="l00189"></a>00189   
-<a name="l00200"></a>00200   <span class="keywordtype">bool</span> <a class="code" href="classRF24Network.html#a6b90e07f0f89d64af07b5da0b31e3c87" title="Send a message.">write</a>(<a class="code" href="structRF24NetworkHeader.html" title="Header which is sent with each message.">RF24NetworkHeader</a>&amp; header,<span class="keyword">const</span> <span class="keywordtype">void</span>* message, <span class="keywordtype">size_t</span> len);
-<a name="l00201"></a>00201 
-<a name="l00202"></a>00202 <span class="keyword">protected</span>:
-<a name="l00203"></a>00203   <span class="keywordtype">void</span> open_pipes(<span class="keywordtype">void</span>);
-<a name="l00204"></a>00204   uint16_t find_node( uint16_t current_node, uint16_t target_node );
-<a name="l00205"></a>00205   <span class="keywordtype">bool</span> <a class="code" href="classRF24Network.html#a6b90e07f0f89d64af07b5da0b31e3c87" title="Send a message.">write</a>(uint16_t);
-<a name="l00206"></a>00206   <span class="keywordtype">bool</span> enqueue(<span class="keywordtype">void</span>);
-<a name="l00207"></a>00207 
-<a name="l00208"></a>00208 <span class="keyword">private</span>:
-<a name="l00209"></a>00209   RF24&amp; radio; 
-<a name="l00210"></a>00210   uint16_t node_address; 
-<a name="l00211"></a>00211   <span class="keyword">const</span> <a class="code" href="structRF24NodeLine.html" title="Node configuration for a specific node.">RF24NodeLine</a>* topology; 
-<a name="l00212"></a>00212   uint16_t num_nodes; 
-<a name="l00213"></a>00213   <span class="keyword">const</span> <span class="keyword">static</span> <span class="keywordtype">short</span> frame_size = 32; 
-<a name="l00214"></a>00214   uint8_t frame_buffer[frame_size]; 
-<a name="l00215"></a>00215   uint8_t frame_queue[5*frame_size]; 
-<a name="l00216"></a>00216   uint8_t* next_frame; 
-<a name="l00217"></a>00217   <span class="keywordtype">bool</span> bidirectional; 
-<a name="l00218"></a>00218 };
-<a name="l00219"></a>00219 
-<a name="l00308"></a>00308 <span class="preprocessor">#endif // __RF24NETWORK_H__</span>
-<a name="l00309"></a>00309 <span class="preprocessor"></span><span class="comment">// vim:ai:cin:sts=2 sw=2 ft=cpp</span>
+<a name="l00027"></a><a class="code" href="structRF24NetworkHeader.html">00027</a> <span class="keyword">struct </span><a class="code" href="structRF24NetworkHeader.html" title="Header which is sent with each message.">RF24NetworkHeader</a>
+<a name="l00028"></a>00028 {
+<a name="l00029"></a><a class="code" href="structRF24NetworkHeader.html#aff9461f6546b5b7c87465809eb4f9f56">00029</a>   uint16_t <a class="code" href="structRF24NetworkHeader.html#aff9461f6546b5b7c87465809eb4f9f56" title="Logical address where the message was generated.">from_node</a>; 
+<a name="l00030"></a><a class="code" href="structRF24NetworkHeader.html#adb8d6d05bb359b4b89322d15055e73a1">00030</a>   uint16_t <a class="code" href="structRF24NetworkHeader.html#adb8d6d05bb359b4b89322d15055e73a1" title="Logical address where the message is going.">to_node</a>; 
+<a name="l00031"></a><a class="code" href="structRF24NetworkHeader.html#ad05daaac28b7d1e7a7ef749f7f0ce317">00031</a>   uint16_t <a class="code" href="structRF24NetworkHeader.html#ad05daaac28b7d1e7a7ef749f7f0ce317" title="Sequential message ID, incremented every message.">id</a>; 
+<a name="l00032"></a><a class="code" href="structRF24NetworkHeader.html#ac99ab14e561670f4445d1fea7775e2db">00032</a>   <span class="keywordtype">unsigned</span> <span class="keywordtype">char</span> <a class="code" href="structRF24NetworkHeader.html#ac99ab14e561670f4445d1fea7775e2db" title="Type of the packet.">type</a>; 
+<a name="l00033"></a><a class="code" href="structRF24NetworkHeader.html#a80672a22cedcf24db8abbcef2eea9cfd">00033</a>   <span class="keywordtype">unsigned</span> <span class="keywordtype">char</span> <a class="code" href="structRF24NetworkHeader.html#a80672a22cedcf24db8abbcef2eea9cfd" title="Reserved for future use.">reserved</a>; 
+<a name="l00035"></a><a class="code" href="structRF24NetworkHeader.html#af02a00fa410f6c34bb395f7d0afe2bfd">00035</a>   <span class="keyword">static</span> uint16_t <a class="code" href="structRF24NetworkHeader.html#af02a00fa410f6c34bb395f7d0afe2bfd" title="The message ID of the next message to be sent.">next_id</a>; 
+<a name="l00042"></a><a class="code" href="structRF24NetworkHeader.html#aacf67806892c3bbcacfbff2554b64fd5">00042</a>   <a class="code" href="structRF24NetworkHeader.html#aacf67806892c3bbcacfbff2554b64fd5" title="Default constructor.">RF24NetworkHeader</a>() {}
+<a name="l00043"></a>00043 
+<a name="l00058"></a><a class="code" href="structRF24NetworkHeader.html#a99e675f31589d72cf2fe036e77988026">00058</a>   <a class="code" href="structRF24NetworkHeader.html#a99e675f31589d72cf2fe036e77988026" title="Send constructor.">RF24NetworkHeader</a>(uint16_t _to, <span class="keywordtype">unsigned</span> <span class="keywordtype">char</span> _type = 0): <a class="code" href="structRF24NetworkHeader.html#adb8d6d05bb359b4b89322d15055e73a1" title="Logical address where the message is going.">to_node</a>(_to), <a class="code" href="structRF24NetworkHeader.html#ad05daaac28b7d1e7a7ef749f7f0ce317" title="Sequential message ID, incremented every message.">id</a>(<a class="code" href="structRF24NetworkHeader.html#af02a00fa410f6c34bb395f7d0afe2bfd" title="The message ID of the next message to be sent.">next_id</a>++), <a class="code" href="structRF24NetworkHeader.html#ac99ab14e561670f4445d1fea7775e2db" title="Type of the packet.">type</a>(_type&amp;0x7f) {}
+<a name="l00059"></a>00059 
+<a name="l00069"></a>00069   <span class="keyword">const</span> <span class="keywordtype">char</span>* <a class="code" href="structRF24NetworkHeader.html#a9df83cb9e4541615c0a5a145072ed9b5" title="Create debugging string.">toString</a>(<span class="keywordtype">void</span>) <span class="keyword">const</span>;
+<a name="l00070"></a>00070 };
+<a name="l00071"></a>00071 
+<a name="l00079"></a><a class="code" href="classRF24Network.html">00079</a> <span class="keyword">class </span><a class="code" href="classRF24Network.html" title="Network Layer for RF24 Radios.">RF24Network</a>
+<a name="l00080"></a>00080 {
+<a name="l00081"></a>00081 <span class="keyword">public</span>:
+<a name="l00088"></a>00088   <a class="code" href="classRF24Network.html#a814229a5a4e8e30f88a4bdce05807e50" title="Construct the network.">RF24Network</a>( RF24&amp; _radio );
+<a name="l00089"></a>00089 
+<a name="l00098"></a>00098   <span class="keywordtype">void</span> <a class="code" href="classRF24Network.html#abf0da46b2e78b2010171c9f20cba8bae" title="Bring up the network.">begin</a>(uint8_t _channel, uint16_t _node_address );
+<a name="l00099"></a>00099   
+<a name="l00106"></a>00106   <span class="keywordtype">void</span> <a class="code" href="classRF24Network.html#a4f0fe8e16100ad29ac106b5f8f596c10" title="Main layer loop.">update</a>(<span class="keywordtype">void</span>);
+<a name="l00107"></a>00107 
+<a name="l00113"></a>00113   <span class="keywordtype">bool</span> <a class="code" href="classRF24Network.html#a0e111e70bb7b95d885983ce92c89159e" title="Test whether there is a message available for this node.">available</a>(<span class="keywordtype">void</span>);
+<a name="l00114"></a>00114  
+<a name="l00125"></a>00125   <span class="keywordtype">void</span> <a class="code" href="classRF24Network.html#a260de0bab4e167f85d002bb11e97d91e" title="Read the next available header.">peek</a>(<a class="code" href="structRF24NetworkHeader.html" title="Header which is sent with each message.">RF24NetworkHeader</a>&amp; header);
+<a name="l00126"></a>00126 
+<a name="l00135"></a>00135   <span class="keywordtype">size_t</span> <a class="code" href="classRF24Network.html#aa19f775fcddd334f222ae1b3072dbbe8" title="Read a message.">read</a>(<a class="code" href="structRF24NetworkHeader.html" title="Header which is sent with each message.">RF24NetworkHeader</a>&amp; header, <span class="keywordtype">void</span>* message, <span class="keywordtype">size_t</span> maxlen);
+<a name="l00136"></a>00136   
+<a name="l00147"></a>00147   <span class="keywordtype">bool</span> <a class="code" href="classRF24Network.html#a6b90e07f0f89d64af07b5da0b31e3c87" title="Send a message.">write</a>(<a class="code" href="structRF24NetworkHeader.html" title="Header which is sent with each message.">RF24NetworkHeader</a>&amp; header,<span class="keyword">const</span> <span class="keywordtype">void</span>* message, <span class="keywordtype">size_t</span> len);
+<a name="l00148"></a>00148 
+<a name="l00149"></a>00149 <span class="keyword">protected</span>:
+<a name="l00150"></a>00150   <span class="keywordtype">void</span> open_pipes(<span class="keywordtype">void</span>);
+<a name="l00151"></a>00151   uint16_t find_node( uint16_t current_node, uint16_t target_node );
+<a name="l00152"></a>00152   <span class="keywordtype">bool</span> <a class="code" href="classRF24Network.html#a6b90e07f0f89d64af07b5da0b31e3c87" title="Send a message.">write</a>(uint16_t);
+<a name="l00153"></a>00153   <span class="keywordtype">bool</span> write_to_pipe( uint16_t node, uint8_t pipe );
+<a name="l00154"></a>00154   <span class="keywordtype">bool</span> enqueue(<span class="keywordtype">void</span>);
+<a name="l00155"></a>00155 
+<a name="l00156"></a>00156   <span class="keywordtype">bool</span> is_direct_child( uint16_t node );
+<a name="l00157"></a>00157   <span class="keywordtype">bool</span> is_descendant( uint16_t node );
+<a name="l00158"></a>00158   uint16_t direct_child_route_to( uint16_t node );
+<a name="l00159"></a>00159   uint8_t pipe_to_descendant( uint16_t node );
+<a name="l00160"></a>00160   <span class="keywordtype">void</span> setup_address(<span class="keywordtype">void</span>);
+<a name="l00161"></a>00161 
+<a name="l00162"></a>00162 <span class="keyword">private</span>:
+<a name="l00163"></a>00163   RF24&amp; radio; 
+<a name="l00164"></a>00164   uint16_t node_address; 
+<a name="l00165"></a>00165   uint16_t num_nodes; 
+<a name="l00166"></a>00166   <span class="keyword">const</span> <span class="keyword">static</span> <span class="keywordtype">short</span> frame_size = 32; 
+<a name="l00167"></a>00167   uint8_t frame_buffer[frame_size]; 
+<a name="l00168"></a>00168   uint8_t frame_queue[5*frame_size]; 
+<a name="l00169"></a>00169   uint8_t* next_frame; 
+<a name="l00171"></a>00171   uint16_t parent_node; 
+<a name="l00172"></a>00172   uint8_t parent_pipe; 
+<a name="l00173"></a>00173   uint16_t node_mask; 
+<a name="l00174"></a>00174 };
+<a name="l00175"></a>00175 
+<a name="l00325"></a>00325 <span class="preprocessor">#endif // __RF24NETWORK_H__</span>
+<a name="l00326"></a>00326 <span class="preprocessor"></span><span class="comment">// vim:ai:cin:sts=2 sw=2 ft=cpp</span>
 </pre></div></div>
 </div>
 <!--- window showing the filter options -->
@@ -144,7 +142,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Enumerations</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Defines</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Variables</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -153,7 +151,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </iframe>
 </div>
 
-<hr class="footer"/><address class="footer"><small>Generated on Sat Jun 11 2011 22:54:24 for RF24Network by&#160;
+<hr class="footer"/><address class="footer"><small>Generated on Tue Jun 14 2011 21:43:49 for RF24Network by&#160;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.7.3 </small></address>
 </body>

@@ -79,32 +79,32 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <span class="preprocessor"></span><span class="preprocessor">#undef PSTR </span>
 <span class="preprocessor"></span><span class="preprocessor">#define PSTR(s) (__extension__({static prog_char __c[] PROGMEM = (s); &amp;__c[0];}))</span>
 <span class="preprocessor"></span>
-<span class="comment">// This exact same code will work with an unlimited number of nodes connected in a giant mesh.  </span>
-<span class="comment">// Increase the sleep delay with many more nodes!</span>
-<a name="_a0"></a><a class="code" href="structRF24NodeLine.html" title="Node configuration for a specific node.">RF24NodeLine</a> topology[] = 
-{
-  <a name="a1"></a><a class="code" href="RF24Network_8h.html#adad85002e762f33a451fb55960a62b14" title="Marker for the start of a topology list.">RF24NODELINE_LIST_BEGIN</a>
-  { 0xE7E7E7E7FELL, 0xE7E7E7E701LL, 0 }, <span class="comment">// Node 1: Base, has no parent</span>
-  { 0xE7E7E7E7F8LL, 0xE7E7E7E708LL, 1 }, <span class="comment">// Node 2: Leaf, child of #1</span>
-  { 0xE7E7E7E7F0LL, 0xE7E7E7E710LL, 1 }, <span class="comment">// Node 3: Leaf, child of #1</span>
-  { 0xE7E7E7E7E9LL, 0xE7E7E7E717LL, 1 }, <span class="comment">// Node 4: Leaf, child of #1</span>
-  { 0xE7E7E7E7E4LL, 0xE7E7E7E71CLL, 1 }, <span class="comment">// Node 5: Leaf, child of #1</span>
-  <a name="a2"></a><a class="code" href="RF24Network_8h.html#ab4492b11455ebc4432e3dcc1a70c1300" title="Marker for the end of a topology list.">RF24NODELINE_LIST_END</a>
-};
-
+<span class="comment">// This is for git version tracking.  Safe to ignore</span>
+<span class="preprocessor">#ifdef VERSION_H</span>
+<span class="preprocessor"></span><span class="preprocessor">#include &quot;version.h&quot;</span>
+<span class="preprocessor">#else</span>
+<span class="preprocessor"></span><span class="keyword">const</span> <span class="keywordtype">char</span> program_version[] = <span class="stringliteral">&quot;Unknown&quot;</span>;
+<span class="preprocessor">#endif</span>
+<span class="preprocessor"></span>
 RF24 radio(8,9);
-<a name="_a3"></a><a class="code" href="classRF24Network.html" title="Network Layer for RF24 Radios.">RF24Network</a> network(radio,topology);
+<a name="_a0"></a><a class="code" href="classRF24Network.html" title="Network Layer for RF24 Radios.">RF24Network</a> network(radio);
 
 <span class="comment">// Our node address</span>
 uint16_t this_node;
 
-<span class="comment">// The message that we send is just a ulong, containing the time</span>
-<span class="keywordtype">unsigned</span> <span class="keywordtype">long</span> message;
+<span class="comment">// The message that we send is just an unsigned int, containing a sensor reading. </span>
+<span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> message;
+
+<span class="comment">// The pin our sensor is on</span>
+<span class="keyword">const</span> <span class="keywordtype">short</span> sensor_pin = A0;
+
+<span class="comment">// How many measurements to take.  64*1024 = 65536, so 64 is the max we can fit in an unsigned int.</span>
+<span class="keyword">const</span> <span class="keywordtype">short</span> num_measurements = 64;
 
 <span class="comment">// Sleep constants.  In this example, the watchdog timer wakes up</span>
 <span class="comment">// every 1s, and every 4th wakeup we power up the radio and send</span>
 <span class="comment">// a reading.  In real use, these numbers which be much higher.</span>
-<span class="comment">// Try wdt_8s and 7 cycles for one reading per minute.</span>
+<span class="comment">// Try wdt_8s and 7 cycles for one reading per minute.&gt; 1</span>
 <span class="keyword">const</span> wdt_prescalar_e wdt_prescalar = wdt_1s;
 <span class="keyword">const</span> <span class="keywordtype">short</span> sleep_cycles_per_transmission = 4;
 
@@ -116,7 +116,8 @@ uint16_t this_node;
   
   Serial.begin(57600);
   printf_begin();
-  printf(<span class="stringliteral">&quot;\n\rRF24Network/examples/sensornet/\n\r&quot;</span>);
+  printf_P(PSTR(<span class="stringliteral">&quot;\n\rRF24Network/examples/sensornet/\n\r&quot;</span>));
+  printf_P(PSTR(<span class="stringliteral">&quot;VERSION: %s\n\r&quot;</span>),program_version);
   
   <span class="comment">//</span>
   <span class="comment">// Pull node address out of eeprom </span>
@@ -130,8 +131,8 @@ uint16_t this_node;
   <span class="comment">//</span>
 
   <span class="comment">// Only the leaves sleep.  </span>
-  <span class="keywordflow">if</span> ( this_node &gt; 1 ) 
-    sleep_begin(wdt_prescalar,sleep_cycles_per_transmission);
+  <span class="keywordflow">if</span> ( this_node &gt; 0 ) 
+    Sleep.begin(wdt_prescalar,sleep_cycles_per_transmission);
 
   <span class="comment">//</span>
   <span class="comment">// Bring up the RF network</span>
@@ -148,25 +149,28 @@ uint16_t this_node;
   network.update();
 
   <span class="comment">// If we are the base, is there anything ready for us?</span>
-  <span class="keywordflow">while</span> ( this_node == 1 &amp;&amp; network.available() )
+  <span class="keywordflow">while</span> ( network.available() )
   {
     <span class="comment">// If so, grab it and print it out</span>
-    <a name="_a4"></a><a class="code" href="structRF24NetworkHeader.html" title="Header which is sent with each message.">RF24NetworkHeader</a> header;
+    <a name="_a1"></a><a class="code" href="structRF24NetworkHeader.html" title="Header which is sent with each message.">RF24NetworkHeader</a> header;
     network.read(header,&amp;message,<span class="keyword">sizeof</span>(<span class="keywordtype">unsigned</span> <span class="keywordtype">long</span>));
-    printf_P(PSTR(<span class="stringliteral">&quot;%lu: APP Received %lu from %u\n\r&quot;</span>),millis(),message,header.<a name="a5"></a><a class="code" href="structRF24NetworkHeader.html#aff9461f6546b5b7c87465809eb4f9f56" title="Logical address where the message was generated.">from_node</a>);
+    printf_P(PSTR(<span class="stringliteral">&quot;%lu: APP Received %lu from %u\n\r&quot;</span>),millis(),message,header.<a name="a2"></a><a class="code" href="structRF24NetworkHeader.html#aff9461f6546b5b7c87465809eb4f9f56" title="Logical address where the message was generated.">from_node</a>);
   }
 
   <span class="comment">// If we are not the base, send sensor readings to the base</span>
-  <span class="keywordflow">if</span> ( this_node &gt; 1 )
+  <span class="keywordflow">if</span> ( this_node &gt; 0 )
   {
-    <span class="comment">// Take a &#39;reading&#39;.  Just using the millis() clock for an example &#39;reading&#39;</span>
-    message = millis();
+    <span class="comment">// Take a reading.</span>
+    <span class="keywordtype">int</span> i = num_measurements;
+    message = 0;
+    <span class="keywordflow">while</span>(i--)
+      message += analogRead(sensor_pin); 
 
     printf_P(PSTR(<span class="stringliteral">&quot;---------------------------------\n\r&quot;</span>));
     printf_P(PSTR(<span class="stringliteral">&quot;%lu: APP Sending %lu to %u...\n\r&quot;</span>),millis(),message,1);
     
     <span class="comment">// Send it to the base</span>
-    <a class="code" href="structRF24NetworkHeader.html" title="Header which is sent with each message.">RF24NetworkHeader</a> header(<span class="comment">/*to node*/</span> 1);
+    <a class="code" href="structRF24NetworkHeader.html" title="Header which is sent with each message.">RF24NetworkHeader</a> header(<span class="comment">/*to node*/</span> 0, <span class="comment">/*type*/</span> <span class="charliteral">&#39;S&#39;</span>);
     <span class="keywordtype">bool</span> ok = network.write(header,&amp;message,<span class="keyword">sizeof</span>(<span class="keywordtype">unsigned</span> <span class="keywordtype">long</span>));
     <span class="keywordflow">if</span> (ok)
       printf_P(PSTR(<span class="stringliteral">&quot;%lu: APP Send ok\n\r&quot;</span>),millis());
@@ -179,7 +183,7 @@ uint16_t this_node;
 
     <span class="comment">// Sleep the MCU.  The watchdog timer will awaken in a short while, and</span>
     <span class="comment">// continue execution here.</span>
-    sleep_now();
+    Sleep.go();
   }
 
   <span class="comment">// Listen for a new node address</span>
@@ -193,7 +197,7 @@ uint16_t this_node;
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Enumerations</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Defines</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Variables</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -202,7 +206,7 @@ uint16_t this_node;
 </iframe>
 </div>
 
-<hr class="footer"/><address class="footer"><small>Generated on Sat Jun 11 2011 22:54:24 for RF24Network by&#160;
+<hr class="footer"/><address class="footer"><small>Generated on Tue Jun 14 2011 21:43:49 for RF24Network by&#160;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.7.3 </small></address>
 </body>
