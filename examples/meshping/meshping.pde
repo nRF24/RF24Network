@@ -124,6 +124,7 @@ void loop(void)
       break;
     default:
       printf_P(PSTR("*** WARNING *** Unknown message type %c\n\r"),header.type);
+      network.read(header,0,0);
       break;
     };
   }
