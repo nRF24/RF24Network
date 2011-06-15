@@ -44,6 +44,13 @@
 #undef PSTR 
 #define PSTR(s) (__extension__({static prog_char __c[] PROGMEM = (s); &__c[0];}))
 
+// This is for git version tracking.  Safe to ignore
+#ifdef VERSION_H
+#include "version.h"
+#else
+const char program_version[] = "Unknown";
+#endif
+
 RF24 radio(8,9);
 RF24Network network(radio);
 
@@ -75,7 +82,8 @@ void setup(void)
   
   Serial.begin(57600);
   printf_begin();
-  printf("\n\rRF24Network/examples/meshping/\n\r");
+  printf_P(PSTR("\n\rRF24Network/examples/meshping/\n\r"));
+  printf_P(PSTR("VERSION: %s\n\r"),program_version);
   
   //
   // Pull node address out of eeprom 
