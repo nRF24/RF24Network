@@ -48,8 +48,10 @@ void RF24Network::begin(uint8_t _channel, uint16_t _node_address )
   // Setup our address helper cache
   setup_address();
   
-  // Open up our listening pipe
-  radio.openReadingPipe(0,pipe_address(_node_address,0));
+  // Open up all listening pipes
+  int i = 6;
+  while (i--)
+    radio.openReadingPipe(i,pipe_address(_node_address,i));
   radio.startListening();
 
   // Spew debugging state about the radio
@@ -89,6 +91,8 @@ void RF24Network::update(void)
 	// Relay it
 	write(header.to_node);
 
+      // NOT NEEDED anymore.  Now all reading pipes are open to start.
+#if 0
       // If this was for us, from one of our children, but on our listening
       // pipe, it could mean that we are not listening to them.  If so, open up
       // and listen to their talking pipe
@@ -101,6 +105,7 @@ void RF24Network::update(void)
 	// Also need to open pipe 1 so the system can get the full 5-byte address of the pipe.
 	radio.openReadingPipe(1,pipe_address(node_address,1));
       }
+#endif
     }
   }
 }
@@ -241,13 +246,16 @@ bool RF24Network::write(uint16_t to_node)
   // Put the frame on the pipe
   ok = write_to_pipe( send_node, send_pipe );
 
+      // NOT NEEDED anymore.  Now all reading pipes are open to start.
+#if 0
   // If we are talking on our talking pipe, it's possible that no one is listening.
   // If this fails, try sending it on our parent's listening pipe.  That will wake
   // it up, and next time it will listen to us.
 
   if ( !ok && send_node == parent_node )
     ok = write_to_pipe( parent_node, 0 );
-  
+#endif
+
   // Now, continue listening
   radio.startListening();
 
