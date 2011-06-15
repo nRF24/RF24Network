@@ -27,6 +27,7 @@
 uint16_t RF24NetworkHeader::next_id = 1;
 
 uint64_t pipe_address( uint16_t node, uint8_t pipe );
+bool is_valid_address( uint16_t node );
 
 /******************************************************************/
 
@@ -38,6 +39,9 @@ RF24Network::RF24Network( RF24& _radio ): radio(_radio), next_frame(frame_queue)
 
 void RF24Network::begin(uint8_t _channel, uint16_t _node_address )
 {
+  if (! is_valid_address(_node_address) )
+    return;
+
   node_address = _node_address;
 
   // Set up the radio the way we want it to look
@@ -78,6 +82,10 @@ void RF24Network::update(void)
 
       IF_SERIAL_DEBUG(printf_P(PSTR("%lu: MAC Received on %u %s\n\r"),millis(),pipe_num,header.toString()));
       IF_SERIAL_DEBUG(const uint16_t* i = reinterpret_cast<const uint16_t*>(frame_buffer + sizeof(RF24NetworkHeader));printf_P(PSTR("%lu: NET message %04x\n\r"),millis(),*i));
+
+      // Throw it away if it's not a valid address
+      if ( !is_valid_address(header.to_node) )
+	continue;
 
       // Is this for us?
       if ( header.to_node == node_address )
@@ -204,6 +212,10 @@ bool RF24Network::write(uint16_t to_node)
 {
   bool ok = false;
   
+  // Throw it away if it's not a valid address
+  if ( !is_valid_address(to_node) )
+    return false;
+
   // First, stop listening so we can talk.
   radio.stopListening();
 
@@ -373,6 +385,27 @@ uint8_t RF24Network::pipe_to_descendant( uint16_t node )
   }
 
   return i & 0B111;
+}
+
+/******************************************************************/
+
+bool is_valid_address( uint16_t node )
+{
+  bool result = true;
+
+  while(node)
+  {
+    uint8_t digit = node & 0B111;
+    if (digit < 1 || digit > 5)
+    {
+      result = false;
+      printf_P(PSTR("*** WARNING *** Invalid address 0%o\n\r"),node);
+      break;
+    }
+    node >>= 3;
+  }
+
+  return result;
 }
 
 /******************************************************************/
