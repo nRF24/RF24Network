@@ -13,7 +13,7 @@
 
 #define SERIAL_DEBUG
 #ifdef SERIAL_DEBUG
-#define IF_SERIAL_DEBUG(x) (x)
+#define IF_SERIAL_DEBUG(x) ({x;})
 #else
 #define IF_SERIAL_DEBUG(x)
 #endif
@@ -77,11 +77,7 @@ void RF24Network::update(void)
       const RF24NetworkHeader& header = * reinterpret_cast<RF24NetworkHeader*>(frame_buffer);
 
       IF_SERIAL_DEBUG(printf_P(PSTR("%lu: MAC Received on %u %s\n\r"),millis(),pipe_num,header.toString()));
-
-#ifdef SERIAL_DEBUG
-      const uint16_t* i = reinterpret_cast<const uint16_t*>(frame_buffer + sizeof(RF24NetworkHeader));
-      printf_P(PSTR("%lu: NET message %04x\n\r"),millis(),*i);
-#endif  
+      IF_SERIAL_DEBUG(const uint16_t* i = reinterpret_cast<const uint16_t*>(frame_buffer + sizeof(RF24NetworkHeader));printf_P(PSTR("%lu: NET message %04x\n\r"),millis(),*i));
 
       // Is this for us?
       if ( header.to_node == node_address )
@@ -191,11 +187,7 @@ bool RF24Network::write(RF24NetworkHeader& header,const void* message, size_t le
   memcpy(frame_buffer + sizeof(RF24NetworkHeader),message,min(frame_size-sizeof(RF24NetworkHeader),len));
 
   IF_SERIAL_DEBUG(printf_P(PSTR("%lu: NET Sending %s\n\r"),millis(),header.toString()));
-
-#ifdef SERIAL_DEBUG
-  const uint16_t* i = reinterpret_cast<const uint16_t*>(message);
-  printf_P(PSTR("%lu: NET message %04x\n\r"),millis(),*i);
-#endif  
+  IF_SERIAL_DEBUG(const uint16_t* i = reinterpret_cast<const uint16_t*>(message);printf_P(PSTR("%lu: NET message %04x\n\r"),millis(),*i));
 
   // If the user is trying to send it to himself
   if ( header.to_node == node_address )
@@ -406,12 +398,7 @@ uint64_t pipe_address( uint16_t node, uint8_t pipe )
     shift -= 4;
   }
 
-#ifdef SERIAL_DEBUG
-
-  uint32_t* top = reinterpret_cast<uint32_t*>(out+1);
-  printf_P(PSTR("pipe_address(%x,%u)=%lx%x\n\r"),node,pipe,*top,*out);
-
-#endif
+  IF_SERIAL_DEBUG(uint32_t* top = reinterpret_cast<uint32_t*>(out+1);printf_P(PSTR("%lu: NET Pipe %i on node 0%o has address %lx%x\n\r"),millis(),pipe,node,*top,*out));
 
   return result;
 }
