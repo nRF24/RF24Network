@@ -30,18 +30,15 @@ uint64_t pipe_address( uint16_t node, uint8_t pipe );
 
 /******************************************************************/
 
-RF24Network::RF24Network( RF24& _radio ): radio(_radio), next_frame(frame_queue), bidirectional(true)
+RF24Network::RF24Network( RF24& _radio ): radio(_radio), next_frame(frame_queue)
 {
 }
 
 /******************************************************************/
 
-void RF24Network::begin(uint8_t _channel, uint16_t _node_address, rf24_direction_e _direction )
+void RF24Network::begin(uint8_t _channel, uint16_t _node_address )
 {
   node_address = _node_address;
-
-  if ( _direction == RF24_NET_UNIDIRECTIONAL )
-    bidirectional = false;
 
   // Set up the radio the way we want it to look
   radio.setChannel(_channel);
@@ -281,93 +278,6 @@ bool RF24Network::write_to_pipe( uint16_t node, uint8_t pipe )
   return ok;
 }
 
-/******************************************************************/
-#if 0
-void RF24Network::open_pipes(void)
-{
-  // In order to open the right pipes, we need to know whether the node has parents
-  // and/or children
-  bool has_parent = ( topology[node_address].parent_node != 0 );
-  bool has_children = false;
-
-  // If there are any nodes in the topology table which consider this
-  // a parent, then we do have children 
-  int i = num_nodes;
-  while (i-- && !has_children)
-    if ( topology[i].parent_node == node_address )
-      has_children = true; 
-
-  // Open pipes for parent 
-  if ( has_parent )
-  {
-    // Writing pipe to speak to our parent
-    radio.openWritingPipe(topology[node_address].talking_pipe);
-
-    // In bi-directional mode only...
-    if ( bidirectional )
-    {
-      // Listen to our parent.  If we have children, we need to do so
-      // on pipe 0 to make room for more children
-      if ( has_children )
-	radio.openReadingPipe(0,topology[node_address].listening_pipe);
-      else
-	radio.openReadingPipe(1,topology[node_address].listening_pipe);
-    }
-  }
-
-  // Listen on children's talking pipes
-  if ( has_children )
-  {
-    // First child listening pipe is #1
-    uint8_t current_pipe = 1;
-  
-    // The topology table tells us who our children are
-    int i = num_nodes;
-    while (i--)
-      if ( topology[i].parent_node == node_address )
-	radio.openReadingPipe(current_pipe++,topology[i].talking_pipe);
-  }
-
-  //if ( bidirectional || has_children )
-    radio.startListening();
-}
-/******************************************************************/
-
-/**
- * Find where to send a message to reach the target node
- *
- * Given the @p target_node, find the child or parent of
- * the @p current_node which will relay messages for the target.
- *
- * This is needed in a multi-hop system where the @p current_node
- * is not adjacent to the @p target_node in the topology
- */
-uint16_t RF24Network::find_node( uint16_t current_node, uint16_t target_node )
-{
-  uint16_t out_node = target_node;
-  bool found_target = false;
-  while ( ! found_target )
-  {
-    if ( topology[out_node].parent_node == current_node )
-    {
-      found_target = true; 
-    }
-    else
-    {
-      out_node = topology[out_node].parent_node;
-
-      // If we've made it all the way back to the base without finding
-      // common lineage with the to_node, we will just send it to our parent
-      if ( out_node == 0 || out_node == 0xFFFF )
-      {
-	out_node = topology[current_node].parent_node;
-	found_target = true;
-      }
-    }
-  }
-  return out_node;
-}
-#endif
 /******************************************************************/
 
 const char* RF24NetworkHeader::toString(void) const

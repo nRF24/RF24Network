@@ -91,16 +91,6 @@ struct RF24NetworkHeader
 };
 
 /**
- * @enum rf24_direction_e Enumeration for directionality of the network
- *
- * Uni-directional networks can only talk to the base.  This is what you would set up in
- * a mesh of sensor nodes who were sending readings to the base.  Bi-directional mode
- * allows any node to address any other node, up or down any part of the tree.
- */
-
-typedef enum { RF24_NET_UNIDIRECTIONAL = 0, RF24_NET_BIDIRECTIONAL } rf24_direction_e;
-
-/**
  * Network Layer for RF24 Radios
  *
  * This class implements an OSI Network Layer using nRF24L01(+) radios driven
@@ -121,22 +111,12 @@ public:
   /**
    * Bring up the network
    *
-   * Uni-directional networks can only talk to the base.  This is what you would set up in
-   * a mesh of sensor nodes who were sending readings to the base.  Bi-directional mode
-   * allows any node to address any other node, up or down any part of the tree.
-   *
-   * In uni-directional mode, only nodes with children always need to listen.  This allows
-   * the leaf nodes (those with no children) to sleep.  In bi-directional mode, all nodes
-   * are listening all the time.  Listening is relatively expensive (12-13mA), so it's not
-   * ideal for battery-operated nodes.
-   *
    * @warning Be sure to 'begin' the radio first.
    *
    * @param _channel The RF channel to operate on
    * @param _node_address The logical address of this node
-   * @param _direction Whether this is a bi- or uni-directional network.
    */
-  void begin(uint8_t _channel, uint16_t _node_address, rf24_direction_e _direction );
+  void begin(uint8_t _channel, uint16_t _node_address );
   
   /**
    * Main layer loop
@@ -209,7 +189,6 @@ private:
   uint8_t frame_buffer[frame_size]; /**< Space to put the frame that will be sent/received over the air */
   uint8_t frame_queue[5*frame_size]; /**< Space for a small set of frames that need to be delivered to the app layer */
   uint8_t* next_frame; /**< Pointer into the @p frame_queue where we should place the next received frame */
-  bool bidirectional; /**< Whether we are in bi-dir (true) or uni-dir (false) mode */
 
   uint16_t parent_node; /**< Our parent's node address */
   uint8_t parent_pipe; /**< The pipe our parent uses to listen to us */
@@ -303,7 +282,7 @@ private:
  * No direction connection to the Base node is needed.  This is useful in situations where
  * relay nodes are being used to bridge the distance to the base.
  *
- * @section Directionality Uni-directional mode versus bi-directional mode
+ * @section Directionality Directionality 
  *
  * In bi-directional mode, all nodes are always listening, so messages will quickly reach
  * their destination.  
