@@ -75,6 +75,8 @@ struct RF24NetworkHeader
    * @endcode
    *
    * @param _to The logical node address where the message is going
+   * @param _type The type of message which follows.  Only 0-127 are allowed for
+   * user messages.
    */
   RF24NetworkHeader(uint16_t _to, unsigned char _type = 0): to_node(_to), id(next_id++), type(_type&0x7f) {}
 
@@ -291,22 +293,21 @@ private:
  * @section Startup Starting up a node
  *
  * When a node starts up, it only has to contact its parent to establish communication.
- * No direction connection to the Base node is needed.  This is useful in situations where
- * relay nodes are being used to bridge the distance to the base.
+ * No direct connection to the Base node is needed.  This is useful in situations where
+ * relay nodes are being used to bridge the distance to the base, so leaf nodes are out
+ * of range of the base.
  *
  * @section Directionality Directionality 
  *
- * In bi-directional mode, all nodes are always listening, so messages will quickly reach
+ * By default all nodes are always listening, so messages will quickly reach
  * their destination.  
  * 
- * In uni-directional mode, only parent nodes listen to their children.
- * Thus, it is impossible for a message to be sent outward.  This is useful in a case where
- * the outermost children (the leaf nodes) are operating on batteries and need to sleep.
+ * You may choose to sleep any nodes which do not have any active children on the network
+ * (i.e. leaf nodes).  This is useful in a case where
+ * the leaf nodes are operating on batteries and need to sleep.
  * This is useful for a sensor network.  The leaf nodes can sleep most of the time, and wake
- * every few minutes to send in a reading.
- *
- * In this setup, the intermediate nodes (relay nodes) need to stay powered because they
- * are always listening for messages from their children.
+ * every few minutes to send in a reading.  However, messages cannot be sent to these 
+ * sleeping nodes.
  *
  * In the future, I plan to write a system where messages can still be passed upward from
  * the base, and get delivered when a sleeping node is ready to receive them.  The radio
