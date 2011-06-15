@@ -218,14 +218,28 @@ private:
  * This class implements an <a href="http://en.wikipedia.org/wiki/Network_layer">OSI Network Layer</a> using nRF24L01(+) radios driven
  * by the <a href="http://maniacbug.github.com/RF24/">RF24</a> library.
  *
+ * @section Purpose Purpose/Goal
+ *
+ * Create an alternative to ZigBee radios for Arduino communication.
+ *
+ * Xbees are excellent little radios, backed up by a mature and robust standard 
+ * protocol stack.  They are also expensive.
+ *
+ * For many Arduino uses, they seem like overkill.  So I am working to build
+ * an alternative using nRF24L01 radios.  Modules are available for less than 
+ * $6 from many sources.  With the RF24Network layer, I hope to cover many
+ * common communication scenarios.
+ *
+ * Please see the @ref ZigBee page for a comparison against the ZigBee protocols
+ *
  * @section Features Features
  *
  * The layer provides:
  * @li Host Addressing.  Each node has a logical address on the local network.
  * @li Message Forwarding.  Messages can be sent from one node to any other, and
  * this layer will get them there no matter how many hops it takes.
- * @li Ad-hoc Joining.  A node can join a network without any changes to the
- * existing node.
+ * @li Ad-hoc Joining.  A node can join a network without any changes to any
+ * existing nodes.
  *
  * The layer does not (yet) provide:
  * @li Fragmentation/reassembly.  Ability to send longer messages and put them
@@ -241,8 +255,6 @@ private:
  * @li <a href="http://maniacbug.github.com/RF24Network/classRF24Network.html">RF24Network Class Documentation</a>
  * @li <a href="https://github.com/maniacbug/RF24Network/">Source Code</a>
  * @li <a href="https://github.com/maniacbug/RF24Network/archives/master">Downloads Page</a>
- * 
- * Please see the @ref ZigBee page for a comparison against the ZigBee protocols
  *
  * @section Topology Topology for Mesh Networks using nRF24L01(+)
  *
