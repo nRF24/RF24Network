@@ -20,29 +20,6 @@
 class RF24;
 
 /**
- * Node configuration for a specific node
- *
- * Each logical node address needs one of these.  The pipe addresses are
- * the 'physical' pipes that the underlying radio will listen/talk on.
- * Each node needs a pipe to talk to its parent, and a pipe to listen to
- * its parent.  Make sure that no pipe address is repeated anywhere in
- * the table.
- *
- * nRF24L01(+) pipe address have a peculiarity that is important to
- * keep in mind.  All nodes which share the same direct parent should
- * have the top 4 bytes of their talking pipe be identical.
- *
- * @todo The network should validate that no pipe addresses are duplicated
- * and throw an error in this case.
- */
-struct RF24NodeLine
-{
-  uint64_t talking_pipe; /**< Pipe address for talking to parent node */
-  uint64_t listening_pipe; /**< Pipe address for listening to parent node */
-  uint16_t parent_node; /**< Logical address of our parent node */
-};
-
-/**
  * Header which is sent with each message
  *
  * The frame put over the air consists of this header and a message
@@ -185,7 +162,6 @@ protected:
 private:
   RF24& radio; /**< Underlying radio driver, provides link/physical layers */ 
   uint16_t node_address; /**< Logical node address of this unit, 1 .. UINT_MAX */
-  const RF24NodeLine* topology; /**< Mapping table of logical node addresses to physical RF pipes */
   uint16_t num_nodes; /**< Number of nodes in the topology table */
   const static short frame_size = 32; /**< How large is each frame over the air */ 
   uint8_t frame_buffer[frame_size]; /**< Space to put the frame that will be sent/received over the air */
