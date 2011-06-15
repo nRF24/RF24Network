@@ -52,8 +52,8 @@ struct RF24NetworkHeader
   uint16_t from_node; /**< Logical address where the message was generated */
   uint16_t to_node; /**< Logical address where the message is going */
   uint16_t id; /**< Sequential message ID, incremented every message */
-  uint16_t time; /**< Time of the sending machine when sent. */
   unsigned char type; /**< Type of the packet.  0-127 are user-defined types, 128-255 are reserved for system */
+  unsigned char reserved; /**< Reserved for future use */
 
   static uint16_t next_id; /**< The message ID of the next message to be sent */
 
@@ -76,7 +76,7 @@ struct RF24NetworkHeader
    *
    * @param _to The logical node address where the message is going
    */
-  RF24NetworkHeader(uint16_t _to, unsigned char _type = 0): to_node(_to), id(next_id++), time(millis()&0xffff), type(_type&0x7f) {}
+  RF24NetworkHeader(uint16_t _to, unsigned char _type = 0): to_node(_to), id(next_id++), type(_type&0x7f) {}
 
   /**
    * Create debugging string
