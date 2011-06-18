@@ -96,7 +96,7 @@ void setup(void)
 
   SPI.begin();
   radio.begin();
-  network.begin(/*channel*/ 95, /*node address*/ this_node, /*directionality*/ RF24_NET_UNIDIRECTIONAL);
+  network.begin(/*channel*/ 95, /*node address*/ this_node);
 }
 
 void loop(void)
