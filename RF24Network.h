@@ -174,6 +174,22 @@ private:
 };
 
 /**
+ * @example helloworld_tx.pde
+ *
+ * Simplest possible example of using RF24Network.  Put this sketch
+ * on one node, and helloworld_rx.pde on the other.  Tx will send
+ * Rx a nice message every 2 seconds which rx will print out for us.
+ */
+
+/**
+ * @example helloworld_rx.pde
+ *
+ * Simplest possible example of using RF24Network.  Put this sketch
+ * on one node, and helloworld_tx.pde on the other.  Tx will send
+ * Rx a nice message every 2 seconds which rx will print out for us.
+ */
+
+/**
  * @example meshping.pde
  *
  * Example of pinging across a mesh network
@@ -230,9 +246,10 @@ private:
  * @section More How to learn more
  *
  * @li <a href="http://maniacbug.github.com/RF24/">RF24: Underlying radio driver</a>
- * @li <a href="http://maniacbug.github.com/RF24Network/classRF24Network.html">RF24Network Class Documentation</a>
+ * @li <a href="classRF24Network.html">RF24Network Class Documentation</a>
  * @li <a href="https://github.com/maniacbug/RF24Network/">Source Code</a>
  * @li <a href="https://github.com/maniacbug/RF24Network/archives/master">Downloads Page</a>
+ * @li <a href="examples.html">Examples Page</a>.  Start with <a href="helloworld_rx_8pde-example.html">helloworld_rx</a> and <a href="helloworld_tx_8pde-example.html">helloworld_tx</a>.
  *
  * @section Topology Topology for Mesh Networks using nRF24L01(+)
  *
