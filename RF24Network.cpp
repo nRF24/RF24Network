@@ -11,7 +11,6 @@
 #include <RF24Network.h>
 #include <RF24.h>
 
-#define SERIAL_DEBUG
 #ifdef SERIAL_DEBUG
 #define IF_SERIAL_DEBUG(x) ({x;})
 #else
