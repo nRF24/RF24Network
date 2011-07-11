@@ -15,6 +15,7 @@
  * Class declaration for RF24Network
  */
 
+#include <stddef.h>
 #include <stdint.h>
 
 class RF24;
