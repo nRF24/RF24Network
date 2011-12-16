@@ -1,4 +1,7 @@
+16000000/
+out/
 docs/
 .*.swp
 Session.vim
 *.swp
+version.h

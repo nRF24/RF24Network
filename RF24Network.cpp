@@ -6,28 +6,9 @@
  version 2 as published by the Free Software Foundation.
  */
 
-#include <avr/pgmspace.h>
-
-#if ARDUINO == 100
-#include <Arduino.h>
-#else
-#include <WProgram.h>
-#endif
-
-#include <RF24Network.h>
-#include <RF24.h>
-
-#ifdef SERIAL_DEBUG
-#define IF_SERIAL_DEBUG(x) ({x;})
-#else
-#define IF_SERIAL_DEBUG(x)
-#endif
-
-// Avoid spurious warnings
-#undef PROGMEM 
-#define PROGMEM __attribute__(( section(".progmem.data") )) 
-#undef PSTR 
-#define PSTR(s) (__extension__({static prog_char __c[] PROGMEM = (s); &__c[0];}))
+#include "RF24Network_config.h"
+#include "RF24.h"
+#include "RF24Network.h"
 
 uint16_t RF24NetworkHeader::next_id = 1;
 
