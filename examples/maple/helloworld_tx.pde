@@ -88,6 +88,7 @@ void loop(void)
   {
     last_sent = now;
 
+    toggleLED();
     printf("Sending...\r\n");
     const char* hello = "Hello, world!";
     RF24NetworkHeader header(/*to node*/ other_node);
@@ -95,7 +96,11 @@ void loop(void)
     if (ok)
       printf("\tok.\r\n");
     else
+    {
       printf("\tfailed.\r\n");
+      delay(250); // extra delay on fail to keep light on longer
+    }
+    toggleLED();
   }
 }
 // vim:ai:cin:sts=2 sw=2 ft=cpp
