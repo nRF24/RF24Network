@@ -16,27 +16,35 @@
 #include <cxxtest/TestSuite.h>
 // Project headers
 // This component's header
-#include <Template.h>
+#include <RF24Network.h>
+#include <RF24.h>
+
+#include "WProgram.h"
+
+HardwareSPI SPI(2);
+
+// Radio on Maple Native w/ Getting Started board
+RF24 radio(7,6);
+RF24Network network(radio);
 
 using namespace std;
 
 class TemplateTestSuite: public CxxTest::TestSuite
 {
-  Template* pTemplate ;
 public:
   void setUp()
   {
-    pTemplate = new Template();
+    SPI.begin();
+    radio.begin();
+    network.begin(100,0);
   }
   
   void tearDown()
   {
-    delete pTemplate;
   }
 
   void testEmpty( void )
   {
-    TS_ASSERT(pTemplate);
   }
 };
 // vim:cin:ai:sts=2 sw=2 ft=cpp
