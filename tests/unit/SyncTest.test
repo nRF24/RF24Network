@@ -11,13 +11,15 @@
 #include <string>
 #include <iostream>
 // C headers
+#include <stdlib.h>
 // Framework headers
 // Library headers
 #include <cxxtest/TestSuite.h>
 // Project headers
-// This component's header
 #include <RF24Network.h>
 #include <RF24.h>
+// This component's header
+#include <Sync.h>
 
 #include "WProgram.h"
 
@@ -29,22 +31,76 @@ RF24Network network(radio);
 
 using namespace std;
 
-class TemplateTestSuite: public CxxTest::TestSuite
+class SyncTestSuite: public CxxTest::TestSuite
 {
+  struct sync_data_t
+  {
+    uint16_t first;
+    uint16_t second;
+
+    sync_data_t(void): first(1), second(2) {}
+  };
+
+  sync_data_t* p_sync_data;
+
+  Sync* pSync;
+
 public:
   void setUp()
   {
     SPI.begin();
     radio.begin();
-    network.begin(100,0);
+    network.begin(/* channel */100,/* this node */0);
+
+    pSync = new Sync(network);
+    pSync->begin(/* other node*/ 1);
+    p_sync_data = new(sync_data_t);
+
+    // Reset remote to initial state
+    RF24NetworkHeader header(/*to node*/ 1, /*type*/ 'R' /*Reset*/);
+    network.write(header,0,0);
+    
+    // Wait a bit for the message to take
+    delay(50);
   }
   
   void tearDown()
   {
+    delete p_sync_data;
+    delete pSync;
   }
 
+  void testNoUpdate( void )
+  {
+    pSync->register_me(*p_sync_data);
+
+    int i = 10;
+    while (i--)
+      pSync->update();
+
+    TS_ASSERT_EQUALS(p_sync_data->first,1);
+  }
   void testEmpty( void )
   {
+    pSync->register_me(*p_sync_data);
+
+    int i = 10;
+    while (i--)
+      pSync->update();
+
+    const uint16_t testval = 10;
+    p_sync_data->first = testval;
+
+    // wait a little while.  During this time, the 'first' value will be propagated
+    // out to the other unit, it will set the value onto 'second', and it should get
+    // propagated back.
+
+    const unsigned long interval = 1000;
+    unsigned long sent_at = millis();
+    while ( millis() - sent_at < interval && p_sync_data->second != testval )
+      pSync->update();
+
+    TS_ASSERT_EQUALS(p_sync_data->second,testval);
   }
 };
 // vim:cin:ai:sts=2 sw=2 ft=cpp

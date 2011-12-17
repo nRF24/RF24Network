@@ -5,3 +5,5 @@ docs/
 Session.vim
 *.swp
 version.h
+*.orig
+*.bak
