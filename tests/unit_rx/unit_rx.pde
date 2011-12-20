@@ -48,6 +48,8 @@ uint16_t old_first;
 // Message buffer space
 uint8_t message[32];
 
+void send_finder_request(void);
+
 void setup(void)
 {
   Serial.begin(57600);
@@ -107,6 +109,18 @@ void loop(void)
       printf_P(PSTR("%lu: APP Received ECHO request from %o\n\r"),millis(),from);
       network.write(header = RF24NetworkHeader(from,'E'),message,sizeof(message));
       break;
+
+    // Find child nodes
+    case 'F':
+      network.read(header,message,sizeof(message));
+      from = header.from_node;
+      printf_P(PSTR("%lu: APP Received FINDER request from %o\n\r"),millis(),from);
+
+      // Send an 'E' Echo response back to the BASE
+      network.write(header = RF24NetworkHeader(00,'E'),message,sizeof(message));
+
+      send_finder_request();
+      break;
     
     // Unrecognized message type
     default:
@@ -114,6 +128,45 @@ void loop(void)
       network.read(header,0,0);
       break;
     };
+  }
+}
+
+// 'Finder' message
+void send_finder_request(void)
+{
+  // Send a 'F' Finder message to each child.  Only do this if it's possible for us
+  // to have children.  Four-digit nodes (e.g. 05555) cannot have children
+  if ( ! ( this_node & 07000 ) )
+  {
+    // Figure out the address of the first child.  e.g. if our node is 045, our
+    // first child is 0145.  So we need to shift 01 up enough places to be the
+    // highest digit
+    uint16_t child = 01;
+    uint16_t temp = this_node;
+    while ( temp )
+    {
+      child <<= 3;
+      temp >>= 3;
+    }
+    
+    // Loop through each child address, and send an 'F' Finder message to them.
+    uint16_t to_node = child + this_node;
+    int i = 5;
+    while ( i-- )
+    {
+      RF24NetworkHeader header(to_node,'F');
+      bool ok = network.write(header,message,sizeof(message));
+      to_node += child;
+
+      // If it worked, let the base know to expect a response
+      if ( ok )
+      {
+	printf_P(PSTR("%lu: APP Sent FINDER request to %o\n\r"),millis(),to_node);
+	network.write(header = RF24NetworkHeader(00,'F'),&to_node,sizeof(to_node));
+      }
+      else
+	printf_P(PSTR("%lu: APP Failed sending FINDER request to %o\n\r"),millis(),to_node);
+    }
   }
 }
 // vim:ai:cin:sts=2 sw=2 ft=cpp
