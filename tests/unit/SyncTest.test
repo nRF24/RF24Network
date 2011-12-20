@@ -23,11 +23,7 @@
 
 #include "WProgram.h"
 
-HardwareSPI SPI(2);
-
-// Radio on Maple Native w/ Getting Started board
-RF24 radio(7,6);
-RF24Network network(radio);
+#include "Globals.h"
 
 using namespace std;
 

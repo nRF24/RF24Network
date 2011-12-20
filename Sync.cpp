@@ -50,7 +50,7 @@ void Sync::update(void)
     // TODO handle the case where this has to be broken into
     // multiple messages
     RF24NetworkHeader header(/*to node*/ to_node, /*type*/ 'S' /*Sync*/);
-    network.write(header,message,sizeof(unsigned long));
+    network.write(header,message,sizeof(message));
   }
 
   // Look for messages from the network

@@ -45,6 +45,9 @@ sync_data_t sync_data;
 // Old value of 'first'
 uint16_t old_first;
 
+// Message buffer space
+uint8_t message[32];
+
 void setup(void)
 {
   Serial.begin(57600);
@@ -68,7 +71,7 @@ void loop(void)
   if ( old_first != sync_data.first )
   {
     printf_P(PSTR("%lu: APP Updated first to %u\n\r"),millis(),sync_data.first);
-    
+
       // Move the first value over to the second
     sync_data.second = sync_data.first;
 
@@ -79,10 +82,12 @@ void loop(void)
   // Are there any messages for us?
   while ( network.available() )
   {
+    uint16_t from;
+    
     // If so, take a look at it 
     RF24NetworkHeader header;
     network.peek(header);
-
+    
     // Dispatch the message to the correct handler.
     switch (header.type)
     {
@@ -94,6 +99,16 @@ void loop(void)
       sync_data = sync_data_t();
       old_first = sync_data.first;
       break;
+    
+    // Echo back to the sender.
+    case 'E':
+      network.read(header,message,sizeof(message));
+      from = header.from_node;
+      printf_P(PSTR("%lu: APP Received ECHO request from %o\n\r"),millis(),from);
+      network.write(header = RF24NetworkHeader(from,'E'),message,sizeof(message));
+      break;
+    
+    // Unrecognized message type
     default:
       printf_P(PSTR("*** WARNING *** Unknown message type %c\n\r"),header.type);
       network.read(header,0,0);
