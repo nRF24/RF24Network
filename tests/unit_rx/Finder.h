@@ -12,18 +12,29 @@
 // STL headers
 // C headers
 // Framework headers
+#include <Arduino.h>
 // Library headers
 // Project headers
 
 /**
- * Example for how classes should be declared
+ * Manage a child-finder request 
  */
 
 class Finder
 {
 private:
+  uint16_t this_node;
+  enum state_e { state_none = 0, state_waiting, state_sending, state_done, state_invalid };
+  state_e state;
+  static const unsigned long interval = 50;
+  unsigned long last_sent;
+  uint16_t to_node;
+  uint16_t child_increment;
 protected:
+  
 public:
+  Finder(uint16_t _this_node);
+  void update(void);
 };
 
 #endif // __FINDER_H__
