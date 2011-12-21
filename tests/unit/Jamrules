@@ -86,8 +86,7 @@ CORE_MODULES	= [ GLOB $(CORE_DIRS) : $(MODULE_EXT) ] ;
 
 # Unit test framework
 CXXTEST_DIR	= $(HOME)/Source/cxxtest ;
-#CXXTEST_GEN	= $(CXXTEST_DIR)/cxxtestgen.py ;
-CXXTEST_GEN	= $(CXXTEST_DIR)/python/scripts/cxxtestgen ;
+CXXTEST_GEN	= $(CXXTEST_DIR)/bin/cxxtestgen ;
 HDRS		+= $(CXXTEST_DIR) ;
 
 # Linker script
