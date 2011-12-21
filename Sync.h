@@ -64,9 +64,17 @@ public:
     app_data = reinterpret_cast<uint8_t*>(&_data);
     len = sizeof(_data);
     internal_data = reinterpret_cast<uint8_t*>(malloc(len));
-    memcpy(internal_data,app_data,len);
+    reset();
   }
 
+  /**
+   * Reset the internal copy of the shared data set 
+   */
+  void reset(void)
+  {
+    memcpy(internal_data,app_data,len);
+  }
+  
   /**
    * Update the network and the shared data set
    */

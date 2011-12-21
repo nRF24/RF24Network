@@ -111,6 +111,7 @@ void loop(void)
 
       sync_data = sync_data_t();
       old_first = sync_data.first;
+      sync.reset();
       break;
     
     // Echo back to the sender.
