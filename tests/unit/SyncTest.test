@@ -42,6 +42,24 @@ class SyncTestSuite: public CxxTest::TestSuite
   Sync* pSync;
 
 public:
+  // 'Delay' but update the network for a bit
+  void net_delay(unsigned long amount)
+  {
+    unsigned long start = millis();
+    while ( millis() - start < amount )
+    {
+      pSync->update();
+      // Is there anything ready for us?
+      if ( network.available() )
+      {
+	// If so, take a look at it
+	RF24NetworkHeader header;
+	network.read(header,0,0);
+
+	cout << millis() << ": net_delay got " << header.type << " from " << header.from_node << "\r\n";
+      }
+    }
+  }
   void setUp()
   {
     SPI.begin();
@@ -57,11 +75,12 @@ public:
     network.write(header,0,0);
     
     // Wait a bit for the message to take
-    delay(50);
+    net_delay(200);
   }
   
   void tearDown()
   {
+    net_delay(100);
     delete p_sync_data;
     delete pSync;
   }

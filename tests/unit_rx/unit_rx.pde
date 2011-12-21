@@ -26,7 +26,11 @@ RF24Network network(radio);
 Sync sync(network);
 
 // Address of our node
+#if NODE > 0
+const uint16_t this_node = NODE;
+#else
 const uint16_t this_node = 1;
+#endif
 
 // Address of the other node
 const uint16_t other_node = 0;
@@ -49,6 +53,7 @@ uint16_t old_first;
 uint8_t message[32];
 
 void send_finder_request(void);
+void net_delay(unsigned long amount);
 
 void setup(void)
 {
@@ -116,10 +121,11 @@ void loop(void)
       from = header.from_node;
       printf_P(PSTR("%lu: APP Received FINDER request from %o\n\r"),millis(),from);
 
+      send_finder_request();
+      
       // Send an 'E' Echo response back to the BASE
       network.write(header = RF24NetworkHeader(00,'E'),message,sizeof(message));
 
-      send_finder_request();
       break;
     
     // Unrecognized message type
@@ -128,6 +134,16 @@ void loop(void)
       network.read(header,0,0);
       break;
     };
+  }
+}
+
+// 'Delay' but update the network for a bit
+void net_delay(unsigned long amount)
+{
+  unsigned long start = millis();
+  while ( millis() - start < amount )
+  {
+    sync.update();
   }
 }
 
@@ -156,16 +172,19 @@ void send_finder_request(void)
     {
       RF24NetworkHeader header(to_node,'F');
       bool ok = network.write(header,message,sizeof(message));
-      to_node += child;
+      net_delay(100);
 
       // If it worked, let the base know to expect a response
       if ( ok )
       {
 	printf_P(PSTR("%lu: APP Sent FINDER request to %o\n\r"),millis(),to_node);
 	network.write(header = RF24NetworkHeader(00,'F'),&to_node,sizeof(to_node));
+	net_delay(100);
       }
       else
 	printf_P(PSTR("%lu: APP Failed sending FINDER request to %o\n\r"),millis(),to_node);
+      
+      to_node += child;
     }
   }
 }

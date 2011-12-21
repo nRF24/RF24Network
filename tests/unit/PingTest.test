@@ -30,6 +30,24 @@ class PingTestSuite: public CxxTest::TestSuite
 {
 
 public:
+  // 'Delay' but update the network for a bit
+  void net_delay(unsigned long amount)
+  {
+    unsigned long start = millis();
+    while ( millis() - start < amount )
+    {
+      network.update();
+      // Is there anything ready for us?
+      if ( network.available() )
+      {
+	// If so, take a look at it
+	RF24NetworkHeader header;
+	network.read(header,0,0);
+
+	cout << millis() << ": net_delay got " << header.type << " from " << header.from_node << "\r\n";
+      }
+    }
+  }
   void setUp()
   {
     SPI.begin();
@@ -41,11 +59,12 @@ public:
     network.write(header,0,0);
     
     // Wait a bit for the message to take
-    delay(50);
+    net_delay(50);
   }
   
   void tearDown()
   {
+    net_delay(100);
   }
 
   void testPing()
@@ -59,7 +78,7 @@ public:
     unsigned long sent_at = millis();
     while ( millis() - sent_at < timeout && ! gotval )
     {
-      network.update();
+      net_delay(100);
 
       // Is there anything ready for us?
       if ( network.available() )
@@ -79,6 +98,33 @@ public:
 	  gotval = -1;
 	  break;
 	};
+      }
+    }
+    TS_ASSERT_EQUALS( gotval, testval );
+  }
+
+  void testFinder()
+  {
+    // Send a child finder to the other unit 
+    RF24NetworkHeader header(/*to node*/ 1, /*type*/ 'F' /*Echo*/);
+    uint32_t testval = 0x12345678, gotval = 0;
+    network.write(header,&testval,sizeof(testval));
+
+    const unsigned long timeout = 3000;
+    unsigned long sent_at = millis();
+    while ( millis() - sent_at < timeout ) // && ! gotval )
+    {
+      network.update();
+
+      // Is there anything ready for us?
+      if ( network.available() )
+      {
+	// If so, take a look at it
+	RF24NetworkHeader header;
+	network.peek(header);
+	network.read(header,&gotval,sizeof(gotval));
+
+	cout << millis() << ": FINDER " << header.from_node << " " << hex << gotval << dec << "\r\n";
       }
     }
 
