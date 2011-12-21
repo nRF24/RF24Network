@@ -50,10 +50,6 @@ public:
   }
   void setUp()
   {
-    SPI.begin();
-    radio.begin();
-    network.begin(/* channel */100,/* this node */0);
-
     // Reset remote to initial state
     RF24NetworkHeader header(/*to node*/ 1, /*type*/ 'R' /*Reset*/);
     network.write(header,0,0);

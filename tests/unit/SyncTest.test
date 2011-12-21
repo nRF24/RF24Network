@@ -62,10 +62,6 @@ public:
   }
   void setUp()
   {
-    SPI.begin();
-    radio.begin();
-    network.begin(/* channel */100,/* this node */0);
-
     pSync = new Sync(network);
     pSync->begin(/* other node*/ 1);
     p_sync_data = new(sync_data_t);
