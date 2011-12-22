@@ -225,7 +225,7 @@ private:
  * $6 from many sources.  With the RF24Network layer, I hope to cover many
  * common communication scenarios.
  *
- * Please see the @ref ZigBee page for a comparison against the ZigBee protocols
+ * Please see the @ref Zigbee page for a comparison against the ZigBee protocols
  *
  * @section Features Features
  *
@@ -307,7 +307,7 @@ private:
  * the base, and get delivered when a sleeping node is ready to receive them.  The radio
  * and underlying driver support 'ack payloads', which will be a handy mechanism for this.
  *
- * @page ZigBee Comparison to ZigBee
+ * @page Zigbee Comparison to ZigBee
  *
  * This network layer is influenced by the design of ZigBee, but does not implement it
  * directly.  
