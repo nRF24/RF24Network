@@ -23,22 +23,32 @@ static uint8_t message[32];
 
 /****************************************************************************/
   
-Finder::Finder(uint16_t _this_node): this_node(_this_node), state(state_waiting), 
+Finder::Finder(void): this_node(0), state(state_waiting), 
   last_sent(millis()-interval), child_increment(-1) 
 {
+}
+
+/****************************************************************************/
+
+void Finder::begin(uint16_t _this_node)
+{
+  this_node = _this_node;
+  
   if ( ! ( this_node & 07000 ) )
   {
     // Figure out the address of the first child.  e.g. if our node is 045, our
     // first child is 0145.  So we need to shift 01 up enough places to be the
     // highest digit
-    uint16_t child_increment = 01;
+    child_increment = 01;
     uint16_t temp = this_node;
     while ( temp )
     {
       child_increment <<= 3;
       temp >>= 3;
     }
-  } 
+  }
+
+  printf_P(PSTR("%lu: Node %o increment %o\r\n"),millis(),this_node,child_increment);
 }
 
 /****************************************************************************/
@@ -48,30 +58,34 @@ void Finder::update(void)
   // Check the network for traffic
 
   // If we got a new finder request, launch!
-  RF24NetworkHeader header;
-  network.peek(header);
-  if ( header.type == 'F' )
+  if ( network.available() )
   {
-    network.read(header,message,sizeof(message));
-    uint16_t from = header.from_node;
-    printf_P(PSTR("%lu: APP Received FINDER request from %o\r\n"),millis(),from);
+    RF24NetworkHeader header;
+    network.peek(header);
+    if ( header.type == 'F' )
+    {
+      network.read(header,message,sizeof(message));
+      uint16_t from = header.from_node;
+      printf_P(PSTR("%lu: APP Received FINDER request from %o\r\n"),millis(),from);
 
-    if ( state == state_sending )
-    {
-      printf_P(PSTR("%li: APP ERROR, already sending a finder request\r\n"));
-    }
-    else if ( child_increment == 0xffff )
-    {
-      printf_P(PSTR("%li: APP This app has no children, done.\r\n"));
-      last_sent = millis() - interval;
-      state = state_done;
-      goto finish;
-    }
-    else
-    {
-      last_sent = millis() - interval;
-      state = state_sending;
-      goto finish;
+      if ( state == state_sending )
+      {
+	printf_P(PSTR("%lu: APP ERROR, already sending a finder request\r\n"),millis());
+      }
+      else if ( child_increment == 0xffff )
+      {
+	printf_P(PSTR("%lu: APP This app has no children, done.\r\n"),millis());
+	last_sent = millis() - interval;
+	state = state_done;
+	goto finish;
+      }
+      else
+      {
+	last_sent = millis() - interval;
+	to_node = this_node + child_increment;
+	state = state_sending;
+	goto finish;
+      }
     }
   }
 
@@ -100,7 +114,8 @@ void Finder::update(void)
   if ( state == state_done )
   {
     // Send an 'E' Echo response back to the BASE
-    network.write(header = RF24NetworkHeader(00,'E'),message,sizeof(message));
+    RF24NetworkHeader header(00,'E');
+    network.write(header,message,sizeof(message));
     
     state = state_waiting;
     goto finish;

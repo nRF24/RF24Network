@@ -37,6 +37,7 @@ public:
     while ( millis() - start < amount )
     {
       network.update();
+#if 0
       // Is there anything ready for us?
       if ( network.available() )
       {
@@ -46,6 +47,7 @@ public:
 
 	cout << millis() << ": net_delay got " << header.type << " from " << header.from_node << "\r\n";
       }
+#endif     
     }
   }
   void setUp()
@@ -61,10 +63,19 @@ public:
   void tearDown()
   {
     net_delay(100);
+    //cout << "\r\n Complete. Press any key \r\n";
+    //SerialUSB.read();
+  }
+
+  void testNothing()
+  {
+    cout << "\r\n STARTING " << __FUNCTION__ << "\r\n";
   }
 
   void testPing()
   {
+    cout << "\r\n STARTING " << __FUNCTION__ << "\r\n";
+
     // Send an echo ping to the other unit 
     RF24NetworkHeader header(/*to node*/ 1, /*type*/ 'E' /*Echo*/);
     uint32_t testval = 0x12345678, gotval = 0;
@@ -96,11 +107,14 @@ public:
 	};
       }
     }
+
     TS_ASSERT_EQUALS( gotval, testval );
   }
 
   void testFinder()
   {
+    cout << "\r\n STARTING " << __FUNCTION__ << "\r\n";
+    
     // Send a child finder to the other unit 
     RF24NetworkHeader header(/*to node*/ 1, /*type*/ 'F' /*Echo*/);
     uint32_t testval = 0x12345678, gotval = 0;
@@ -120,10 +134,10 @@ public:
 	network.peek(header);
 	network.read(header,&gotval,sizeof(gotval));
 
-	cout << millis() << ": FINDER " << header.from_node << " " << hex << gotval << dec << "\r\n";
+	cout << millis() << ": FINDER " << header.type << " from " << header.from_node << " " << hex << gotval << dec << "\r\n";
       }
     }
-
+    
     TS_ASSERT_EQUALS( gotval, testval );
   }
 

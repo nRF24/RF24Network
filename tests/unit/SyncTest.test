@@ -77,22 +77,28 @@ public:
   void tearDown()
   {
     net_delay(100);
+    //cout << "\r\n Complete. Press any key \r\n";
+    //SerialUSB.read();
+    
     delete p_sync_data;
     delete pSync;
   }
 
   void testNoUpdate( void )
   {
+    cout << "\r\n STARTING " << __FUNCTION__ << "\r\n";
+    
     pSync->register_me(*p_sync_data);
 
     int i = 10;
     while (i--)
       pSync->update();
-
+    
     TS_ASSERT_EQUALS(p_sync_data->first,1);
   }
-  void testEmpty( void )
+  void testSync( void )
   {
+    cout << "\r\n STARTING " << __FUNCTION__ << "\r\n";
     pSync->register_me(*p_sync_data);
 
     int i = 10;

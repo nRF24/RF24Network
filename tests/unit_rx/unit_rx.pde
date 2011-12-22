@@ -56,7 +56,7 @@ uint8_t message[32];
 void send_finder_request(void);
 void net_delay(unsigned long amount);
 
-Finder finder(this_node);
+Finder finder;
 
 void setup(void)
 {
@@ -67,6 +67,7 @@ void setup(void)
   SPI.begin();
   radio.begin();
   network.begin(/*channel*/ 100, /*node address*/ this_node);
+  finder.begin(this_node);
 
   sync.register_me(sync_data);
   old_first = sync_data.first;

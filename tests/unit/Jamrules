@@ -64,7 +64,7 @@ DFU		= dfu-util ;
 DEFINES  	+= VECT_TAB_FLASH BOARD_$(BOARD) MCU_$(CHIP) ERROR_LED_PORT=GPIOC ERROR_LED_PIN=15 STM32_HIGH_DENSITY MAPLE_IDE ;
 OPTIM		= -Os ;
 MFLAGS		= cpu=$(MCU) thumb arch=armv7-m ;
-CCFLAGS  	= -Wall -Wno-strict-aliasing -m$(MFLAGS) -g -nostdlib -ffunction-sections -fdata-sections -Wl,--gc-sections ;
+CCFLAGS  	= -Wall -Wno-strict-aliasing -Wno-format -m$(MFLAGS) -g -nostdlib -ffunction-sections -fdata-sections -Wl,--gc-sections ;
 C++FLAGS  	= $(CCFLAGS) -fno-rtti -fno-exceptions ; 
 LINKFLAGS  	+= -m$(MFLAGS) -Xlinker --gc-sections ;
 DFUFLAGS	= -a1 -d 0x1eaf:0x0003 -R ;

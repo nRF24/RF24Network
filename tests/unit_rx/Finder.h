@@ -33,7 +33,8 @@ private:
 protected:
   
 public:
-  Finder(uint16_t _this_node);
+  Finder(void);
+  void begin(uint16_t);
   void update(void);
 };
 
