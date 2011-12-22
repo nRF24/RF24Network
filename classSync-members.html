@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
-<title>RF24Network: helloworld_rx.pde</title>
+<title>RF24Network: Member List</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <link href="search/search.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="search/search.js"></script>
@@ -29,7 +29,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
     <ul class="tablist">
       <li><a href="index.html"><span>Main&#160;Page</span></a></li>
       <li><a href="pages.html"><span>Related&#160;Pages</span></a></li>
-      <li><a href="annotated.html"><span>Classes</span></a></li>
+      <li class="current"><a href="annotated.html"><span>Classes</span></a></li>
       <li><a href="files.html"><span>Files</span></a></li>
       <li><a href="examples.html"><span>Examples</span></a></li>
       <li id="searchli">
@@ -50,66 +50,25 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
       </li>
     </ul>
   </div>
+  <div id="navrow2" class="tabs2">
+    <ul class="tablist">
+      <li><a href="annotated.html"><span>Class&#160;List</span></a></li>
+      <li><a href="functions.html"><span>Class&#160;Members</span></a></li>
+    </ul>
+  </div>
 </div>
 <div class="header">
   <div class="headertitle">
-<h1>helloworld_rx.pde</h1>  </div>
+<h1>Sync Member List</h1>  </div>
 </div>
 <div class="contents">
-<p>Simplest possible example of using <a class="el" href="classRF24Network.html" title="Network Layer for RF24 Radios.">RF24Network</a>. Put this sketch on one node, and helloworld_tx.pde on the other. Tx will send Rx a nice message every 2 seconds which rx will print out for us.</p>
-<div class="fragment"><pre class="fragment"><span class="comment">/*</span>
-<span class="comment"> Copyright (C) 2011 James Coliz, Jr. &lt;maniacbug@ymail.com&gt;</span>
-<span class="comment"></span>
-<span class="comment"> This program is free software; you can redistribute it and/or</span>
-<span class="comment"> modify it under the terms of the GNU General Public License</span>
-<span class="comment"> version 2 as published by the Free Software Foundation.</span>
-<span class="comment"> */</span>
-
-<span class="preprocessor">#include &lt;<a class="code" href="RF24Network_8h.html" title="Class declaration for RF24Network.">RF24Network.h</a>&gt;</span>
-<span class="preprocessor">#include &lt;RF24.h&gt;</span>
-<span class="preprocessor">#include &lt;SPI.h&gt;</span>
-
-<span class="comment">// nRF24L01(+) radio attached to SPI and pins 8 &amp; 9</span>
-RF24 radio(8,9);
-
-<span class="comment">// Network uses that radio</span>
-<a name="_a0"></a><a class="code" href="classRF24Network.html" title="Network Layer for RF24 Radios.">RF24Network</a> network(radio);
-
-<span class="comment">// Address of our node</span>
-<span class="keyword">const</span> uint16_t this_node = 0;
-
-<span class="comment">// Address of the other node</span>
-<span class="keyword">const</span> uint16_t other_node = 1;
-
-<span class="keywordtype">void</span> setup(<span class="keywordtype">void</span>)
-{
-  Serial.begin(57600);
-  Serial.println(<span class="stringliteral">&quot;RF24Network/examples/helloworld_rx/&quot;</span>);
- 
-  SPI.begin();
-  radio.begin();
-  network.begin(<span class="comment">/*channel*/</span> 90, <span class="comment">/*node address*/</span> this_node);
-}
-
-<span class="keywordtype">void</span> loop(<span class="keywordtype">void</span>)
-{
-  <span class="comment">// Pump the network regularly</span>
-  network.update();
-
-  <span class="comment">// Is there anything ready for us?</span>
-  <span class="keywordflow">while</span> ( network.available() )
-  {
-    <span class="comment">// If so, grab it and print it out</span>
-    <a name="_a1"></a><a class="code" href="structRF24NetworkHeader.html" title="Header which is sent with each message.">RF24NetworkHeader</a> header;
-    <span class="keyword">static</span> <span class="keywordtype">char</span> message[32];
-    network.read(header,message,<span class="keyword">sizeof</span>(message));
-    Serial.print(<span class="stringliteral">&quot;Received: &quot;</span>);
-    Serial.println(message);
-  }
-}
-<span class="comment">// vim:ai:cin:sts=2 sw=2 ft=cpp</span>
-</pre></div> </div>
-</div>
+This is the complete list of members for <a class="el" href="classSync.html">Sync</a>, including all inherited members.<table>
+  <tr class="memlist"><td><a class="el" href="classSync.html#acae494c0b068716c27e18d590f7a56fa">begin</a>(uint16_t _to_node)</td><td><a class="el" href="classSync.html">Sync</a></td><td><code> [inline]</code></td></tr>
+  <tr class="memlist"><td><a class="el" href="classSync.html#ae0bf014b87068f706946a7c875db6850">register_me</a>(T &amp;_data)</td><td><a class="el" href="classSync.html">Sync</a></td><td><code> [inline]</code></td></tr>
+  <tr class="memlist"><td><a class="el" href="classSync.html#afda273968c32f23f02631501101ddf03">reset</a>(void)</td><td><a class="el" href="classSync.html">Sync</a></td><td><code> [inline]</code></td></tr>
+  <tr class="memlist"><td><a class="el" href="classSync.html#a25ef5713f388ddc4dc294e1ce8776872">Sync</a>(RF24Network &amp;_network)</td><td><a class="el" href="classSync.html">Sync</a></td><td><code> [inline]</code></td></tr>
+  <tr class="memlist"><td><a class="el" href="classSync.html#a97b1bbb0e0116096ad2fbf25500c7d60">update</a>(void)</td><td><a class="el" href="classSync.html">Sync</a></td><td></td></tr>
+</table></div>
 <!--- window showing the filter options -->
 <div id="MSearchSelectWindow"
      onmouseover="return searchBox.OnSearchSelectShow()"

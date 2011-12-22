@@ -69,8 +69,40 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <span class="preprocessor">#include &lt;RF24.h&gt;</span>
 <span class="preprocessor">#include &lt;SPI.h&gt;</span>
 
-<span class="comment">// nRF24L01(+) radio attached to SPI and pins 8 &amp; 9</span>
-RF24 radio(8,9);
+<span class="comment">//</span>
+<span class="comment">// Maple specific setup.  Other than this section, the sketch is the same on Maple as on</span>
+<span class="comment">// Arduino</span>
+<span class="comment">//</span>
+
+<span class="preprocessor">#ifdef MAPLE_IDE</span>
+<span class="preprocessor"></span>
+<span class="comment">// External startup function</span>
+<span class="keyword">extern</span> <span class="keywordtype">void</span> board_start(<span class="keyword">const</span> <span class="keywordtype">char</span>* program_name);
+
+<span class="comment">// Use SPI #2.</span>
+HardwareSPI SPI(2);
+
+<span class="keyword">inline</span> <span class="keywordtype">void</span> serial_begin(<span class="keywordtype">int</span> _baud)
+{
+}
+<span class="preprocessor">#else</span>
+<span class="preprocessor"></span><span class="keyword">inline</span> <span class="keywordtype">void</span> serial_begin(<span class="keywordtype">int</span> _baud)
+{
+  Serial.begin(_baud);
+}
+<span class="preprocessor">#define board_startup printf</span>
+<span class="preprocessor"></span><span class="preprocessor">#define toggleLED(x) (x)</span>
+<span class="preprocessor"></span><span class="preprocessor">#endif</span>
+<span class="preprocessor"></span>
+<span class="comment">//</span>
+<span class="comment">// Hardware configuration</span>
+<span class="comment">//</span>
+
+<span class="comment">// Set up nRF24L01 radio on SPI bus plus pins 7 &amp; 6</span>
+<span class="comment">// (This works for the Getting Started board plugged into the</span>
+<span class="comment">// Maple Native backwards.)</span>
+
+RF24 radio(7,6);
 
 <span class="comment">// Network uses that radio</span>
 <a name="_a0"></a><a class="code" href="classRF24Network.html" title="Network Layer for RF24 Radios.">RF24Network</a> network(radio);
@@ -89,8 +121,8 @@ RF24 radio(8,9);
 
 <span class="keywordtype">void</span> setup(<span class="keywordtype">void</span>)
 {
-  Serial.begin(57600);
-  Serial.println(<span class="stringliteral">&quot;RF24Network/examples/helloworld_tx/&quot;</span>);
+  serial_begin(57600);
+  board_start(<span class="stringliteral">&quot;RF24Network/examples/helloworld_tx/&quot;</span>);
  
   SPI.begin();
   radio.begin();
@@ -108,14 +140,19 @@ RF24 radio(8,9);
   {
     last_sent = now;
 
-    Serial.print(<span class="stringliteral">&quot;Sending...&quot;</span>);
+    toggleLED();
+    printf(<span class="stringliteral">&quot;Sending...\r\n&quot;</span>);
     <span class="keyword">const</span> <span class="keywordtype">char</span>* hello = <span class="stringliteral">&quot;Hello, world!&quot;</span>;
     <a name="_a1"></a><a class="code" href="structRF24NetworkHeader.html" title="Header which is sent with each message.">RF24NetworkHeader</a> header(<span class="comment">/*to node*/</span> other_node);
     <span class="keywordtype">bool</span> ok = network.write(header,hello,strlen(hello));
     <span class="keywordflow">if</span> (ok)
-      Serial.println(<span class="stringliteral">&quot;ok.&quot;</span>);
+      printf(<span class="stringliteral">&quot;\tok.\r\n&quot;</span>);
     <span class="keywordflow">else</span>
-      Serial.println(<span class="stringliteral">&quot;failed.&quot;</span>);
+    {
+      printf(<span class="stringliteral">&quot;\tfailed.\r\n&quot;</span>);
+      delay(250); <span class="comment">// extra delay on fail to keep light on longer</span>
+    }
+    toggleLED();
   }
 }
 <span class="comment">// vim:ai:cin:sts=2 sw=2 ft=cpp</span>
@@ -135,7 +172,7 @@ RF24 radio(8,9);
 </iframe>
 </div>
 
-<hr class="footer"/><address class="footer"><small>Generated on Fri Jun 17 2011 21:08:09 for RF24Network by&#160;
+<hr class="footer"/><address class="footer"><small>Generated on Wed Dec 21 2011 21:22:25 for RF24Network by&#160;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.7.3 </small></address>
 </body>
