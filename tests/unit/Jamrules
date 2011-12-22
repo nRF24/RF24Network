@@ -64,7 +64,7 @@ DFU		= dfu-util ;
 DEFINES  	+= VECT_TAB_FLASH BOARD_$(BOARD) MCU_$(CHIP) ERROR_LED_PORT=GPIOC ERROR_LED_PIN=15 STM32_HIGH_DENSITY MAPLE_IDE ;
 OPTIM		= -Os ;
 MFLAGS		= cpu=$(MCU) thumb arch=armv7-m ;
-CCFLAGS  	= -Wall -m$(MFLAGS) -g -nostdlib -ffunction-sections -fdata-sections -Wl,--gc-sections ;
+CCFLAGS  	= -Wall -Wno-strict-aliasing -Wno-format -m$(MFLAGS) -g -nostdlib -ffunction-sections -fdata-sections -Wl,--gc-sections ;
 C++FLAGS  	= $(CCFLAGS) -fno-rtti -fno-exceptions ; 
 LINKFLAGS  	+= -m$(MFLAGS) -Xlinker --gc-sections ;
 DFUFLAGS	= -a1 -d 0x1eaf:0x0003 -R ;
@@ -77,7 +77,7 @@ MAPLE_SUBDIRS	?= libmaple libmaple/usb libmaple/usb/usb_lib wirish wirish/comm w
 
 SKETCH_DIR	= $(HOME)/Source/Maple ;
 
-CORE_DIRS	= $(MAPLE_DIR)/$(MAPLE_SUBDIRS) $(MAPLE_DIR)/libraries/$(MAPLE_LIBS) ;
+CORE_DIRS	= $(MAPLE_DIR)/$(MAPLE_SUBDIRS) $(MAPLE_DIR)/libraries/$(MAPLE_LIBS) $(MAPLE_DIR)/libraries/$(MAPLE_LIBS)/utility ;
 HDRS		= $(CORE_DIRS) ;
 
 # Modules
@@ -86,8 +86,7 @@ CORE_MODULES	= [ GLOB $(CORE_DIRS) : $(MODULE_EXT) ] ;
 
 # Unit test framework
 CXXTEST_DIR	= $(HOME)/Source/cxxtest ;
-#CXXTEST_GEN	= $(CXXTEST_DIR)/cxxtestgen.py ;
-CXXTEST_GEN	= $(CXXTEST_DIR)/python/scripts/cxxtestgen ;
+CXXTEST_GEN	= $(CXXTEST_DIR)/bin/cxxtestgen ;
 HDRS		+= $(CXXTEST_DIR) ;
 
 # Linker script
@@ -196,12 +195,26 @@ rule Upload
 	Depends up : $(<) ;
 	NotFile up ;
 	Always $(<) ;
-	Always up ;
 }
 
 actions Upload
 {
-	$(DFU) $(DFUFLAGS)  -D $(<)
+	$(MAPLE_DIR)/support/scripts/reset.py
+	sleep 1
+	$(DFU) $(DFUFLAGS) -D $(<)
+	sleep 5
+}
+
+rule Login
+{
+	MakeLocate $(<) : $(LOCATE_TARGET) ;
+	Always $(<) ;
+}
+
+actions Login
+{
+	ls > $(<)
+	screen $(>) 
 }
 
 # Override base objects rule, so all output can go in the output dir
@@ -234,4 +247,5 @@ rule Maple
 	Main $(<) : $(>) $(CORE_MODULES) ; 
 	Binary $(<:B).bin : $(<) ;
 	Upload $(<:B).bin ;
+	Login login : /dev/tty.usbmodemfa441 ;
 }

@@ -62,7 +62,7 @@ AVRDUDE 	= $(AVR_BIN)/avrdude ;
 
 # Flags
 
-DEFINES  	+= F_CPU=$(F_CPU)L ARDUINO=$(ARDUINO_VERSION) VERSION_H ;
+DEFINES  	+= NODE=$(NODE) F_CPU=$(F_CPU)L ARDUINO=$(ARDUINO_VERSION) VERSION_H ;
 OPTIM		= -Os ;
 CCFLAGS  	= -Wall -Wextra -mmcu=$(MCU) -ffunction-sections -fdata-sections ;
 C++FLAGS  	= $(CCFLAGS) -fno-exceptions -fno-strict-aliasing ;
