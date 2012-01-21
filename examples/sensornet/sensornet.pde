@@ -13,6 +13,9 @@
  * manage a set of low-power sensor nodes which mostly sleep but
  * awake regularly to send readings to the base.
  *
+ * The example uses TWO sensors, a 'temperature' sensor and a 'voltage'
+ * sensor.
+ *
  * To see the underlying frames being relayed, compile RF24Network with
  * #define SERIAL_DEBUG.
  *
@@ -48,21 +51,27 @@ RF24Network network(radio);
 // Our node address
 uint16_t this_node;
 
-// The message that we send is just an unsigned int, containing a sensor reading. 
-unsigned int message;
+// The message that we send is just an unsigned int, containing a sensor reading.
+struct message_t
+{
+  uint16_t temp_reading;
+  uint16_t voltage_reading;
+  message_t(void): temp_reading(0), voltage_reading(0) {}
+};
 
 // The pin our sensor is on
-const short sensor_pin = A0;
+const int temp_sensor_pin = A2;
+const int voltage_sensor_pin = A3;
 
-// How many measurements to take.  64*1024 = 65536, so 64 is the max we can fit in an unsigned int.
-const short num_measurements = 64;
+// How many measurements to take.  64*1024 = 65536, so 64 is the max we can fit in a uint16_t.
+const int num_measurements = 64;
 
 // Sleep constants.  In this example, the watchdog timer wakes up
 // every 1s, and every 4th wakeup we power up the radio and send
 // a reading.  In real use, these numbers which be much higher.
 // Try wdt_8s and 7 cycles for one reading per minute.> 1
 const wdt_prescalar_e wdt_prescalar = wdt_1s;
-const short sleep_cycles_per_transmission = 4;
+const int sleep_cycles_per_transmission = 4;
 
 void setup(void)
 {
@@ -109,25 +118,33 @@ void loop(void)
   {
     // If so, grab it and print it out
     RF24NetworkHeader header;
-    network.read(header,&message,sizeof(unsigned long));
-    printf_P(PSTR("%lu: APP Received %lu from %u\n\r"),millis(),message,header.from_node);
+    message_t message;
+    network.read(header,&message,sizeof(message));
+    printf_P(PSTR("%lu: APP Received %x/%x from %u\n\r"),millis(),message.temp_reading,message.voltage_reading,header.from_node);
   }
 
   // If we are not the base, send sensor readings to the base
   if ( this_node > 0 )
   {
-    // Take a reading.
-    int i = num_measurements;
-    message = 0;
+    int i;
+    message_t message;
+    
+    // Take the temp reading 
+    i = num_measurements;
     while(i--)
-      message += analogRead(sensor_pin); 
+      message.temp_reading += analogRead(temp_sensor_pin); 
+   
+    // Take the voltage reading 
+    i = num_measurements;
+    while(i--)
+      message.voltage_reading += analogRead(voltage_sensor_pin);
 
     printf_P(PSTR("---------------------------------\n\r"));
-    printf_P(PSTR("%lu: APP Sending %lu to %u...\n\r"),millis(),message,1);
+    printf_P(PSTR("%lu: APP Sending %x/%x to %u...\n\r"),millis(),message.temp_reading,message.voltage_reading,0);
     
     // Send it to the base
     RF24NetworkHeader header(/*to node*/ 0, /*type*/ 'S');
-    bool ok = network.write(header,&message,sizeof(unsigned long));
+    bool ok = network.write(header,&message,sizeof(message));
     if (ok)
       printf_P(PSTR("%lu: APP Send ok\n\r"),millis());
     else
@@ -137,6 +154,10 @@ void loop(void)
     // on the next write() call.
     radio.powerDown();
 
+    // Be sure to flush the serial first before sleeping, so everything
+    // gets printed properly
+    Serial.flush();
+    
     // Sleep the MCU.  The watchdog timer will awaken in a short while, and
     // continue execution here.
     Sleep.go();
