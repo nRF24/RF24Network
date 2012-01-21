@@ -6,7 +6,7 @@
  version 2 as published by the Free Software Foundation.
  */
 
-#include <WProgram.h>
+#include "RF24Network_config.h"
 #include <avr/eeprom.h>
 #include <avr/pgmspace.h>
 #include "nodeconfig.h"

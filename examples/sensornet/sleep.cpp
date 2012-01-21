@@ -13,7 +13,7 @@
  * Sleep helpers, definitions
  */
 
-#include <WProgram.h>
+#include "RF24Network_config.h"
 #include <avr/sleep.h>
 #include "sleep.h" 
 
