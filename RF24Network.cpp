@@ -275,7 +275,7 @@ bool RF24Network::write_to_pipe( uint16_t node, uint8_t pipe )
   }
   while ( !ok && --attempts );
 
-  IF_SERIAL_DEBUG(printf_P(PSTR("%lu: MAC Sent on %lx %s\n\r"),millis(),(uint32_t)out_pipe,ok?"ok":"failed"));
+  IF_SERIAL_DEBUG(printf_P(PSTR("%lu: MAC Sent on %lx %S\n\r"),millis(),(uint32_t)out_pipe,ok?PSTR("ok"):PSTR("failed")));
 
   return ok;
 }
@@ -285,7 +285,7 @@ bool RF24Network::write_to_pipe( uint16_t node, uint8_t pipe )
 const char* RF24NetworkHeader::toString(void) const
 {
   static char buffer[45];
-  snprintf(buffer,sizeof(buffer),"id %04x from 0%o to 0%o type %c",id,from_node,to_node,type);
+  snprintf_P(buffer,sizeof(buffer),PSTR("id %04x from 0%o to 0%o type %c"),id,from_node,to_node,type);
   return buffer;
 }
 
