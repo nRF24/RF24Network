@@ -105,7 +105,7 @@ void setup(void)
 
   SPI.begin();
   radio.begin();
-  network.begin(/*channel*/ 95, /*node address*/ this_node);
+  network.begin(/*channel*/ 92, /*node address*/ this_node);
 }
 
 void loop(void)
