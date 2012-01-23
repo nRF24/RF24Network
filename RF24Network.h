@@ -163,8 +163,7 @@ protected:
 private:
   RF24& radio; /**< Underlying radio driver, provides link/physical layers */ 
   uint16_t node_address; /**< Logical node address of this unit, 1 .. UINT_MAX */
-  uint16_t num_nodes; /**< Number of nodes in the topology table */
-  const static short frame_size = 32; /**< How large is each frame over the air */ 
+  const static int frame_size = 32; /**< How large is each frame over the air */ 
   uint8_t frame_buffer[frame_size]; /**< Space to put the frame that will be sent/received over the air */
   uint8_t frame_queue[5*frame_size]; /**< Space for a small set of frames that need to be delivered to the app layer */
   uint8_t* next_frame; /**< Pointer into the @p frame_queue where we should place the next received frame */
