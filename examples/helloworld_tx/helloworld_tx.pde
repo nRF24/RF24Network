@@ -1,5 +1,5 @@
 /*
- Copyright (C) 2011 James Coliz, Jr. <maniacbug@ymail.com>
+ Copyright (C) 2012 James Coliz, Jr. <maniacbug@ymail.com>
 
  This program is free software; you can redistribute it and/or
  modify it under the terms of the GNU General Public License
@@ -10,15 +10,15 @@
  * Simplest possible example of using RF24Network 
  *
  * TRANSMITTER NODE
- * Every 2 seconds, says hello to the receiver node.
+ * Every 2 seconds, send a payload to the receiver node.
  */
 
 #include <RF24Network.h>
 #include <RF24.h>
 #include <SPI.h>
 
-// nRF24L01(+) radio attached to SPI and pins 8 & 9
-RF24 radio(8,9);
+// nRF24L01(+) radio attached using Getting Started board 
+RF24 radio(9,10);
 
 // Network uses that radio
 RF24Network network(radio);
@@ -34,6 +34,16 @@ const unsigned long interval = 2000; //ms
 
 // When did we last send?
 unsigned long last_sent;
+
+// How many have we sent already
+unsigned long packets_sent;
+
+// Structure of our payload
+struct payload_t
+{
+  unsigned long ms;
+  unsigned long counter;
+};
 
 void setup(void)
 {
@@ -52,14 +62,14 @@ void loop(void)
 
   // If it's time to send a message, send it!
   unsigned long now = millis();
-  if ( now - last_sent > interval  )
+  if ( now - last_sent >= interval  )
   {
     last_sent = now;
 
     Serial.print("Sending...");
-    const char* hello = "Hello, world!";
+    payload_t payload = { millis(), packets_sent++ };
     RF24NetworkHeader header(/*to node*/ other_node);
-    bool ok = network.write(header,hello,strlen(hello));
+    bool ok = network.write(header,&payload,sizeof(payload));
     if (ok)
       Serial.println("ok.");
     else

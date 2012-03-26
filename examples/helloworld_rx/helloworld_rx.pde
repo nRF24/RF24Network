@@ -1,5 +1,5 @@
 /*
- Copyright (C) 2011 James Coliz, Jr. <maniacbug@ymail.com>
+ Copyright (C) 2012 James Coliz, Jr. <maniacbug@ymail.com>
 
  This program is free software; you can redistribute it and/or
  modify it under the terms of the GNU General Public License
@@ -17,8 +17,8 @@
 #include <RF24.h>
 #include <SPI.h>
 
-// nRF24L01(+) radio attached to SPI and pins 8 & 9
-RF24 radio(8,9);
+// nRF24L01(+) radio attached using Getting Started board 
+RF24 radio(9,10);
 
 // Network uses that radio
 RF24Network network(radio);
@@ -28,6 +28,13 @@ const uint16_t this_node = 0;
 
 // Address of the other node
 const uint16_t other_node = 1;
+
+// Structure of our payload
+struct payload_t
+{
+  unsigned long ms;
+  unsigned long counter;
+};
 
 void setup(void)
 {
@@ -49,10 +56,12 @@ void loop(void)
   {
     // If so, grab it and print it out
     RF24NetworkHeader header;
-    static char message[32];
-    network.read(header,message,sizeof(message));
-    Serial.print("Received: ");
-    Serial.println(message);
+    payload_t payload;
+    network.read(header,&payload,sizeof(payload));
+    Serial.print("Received packet #");
+    Serial.print(payload.counter);
+    Serial.print(" at ");
+    Serial.println(payload.ms);
   }
 }
 // vim:ai:cin:sts=2 sw=2 ft=cpp
