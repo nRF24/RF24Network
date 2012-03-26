@@ -38,12 +38,6 @@
 #include "nodeconfig.h"
 #include "printf.h"
 
-// Avoid spurious warnings
-#undef PROGMEM 
-#define PROGMEM __attribute__(( section(".progmem.data") )) 
-#undef PSTR 
-#define PSTR(s) (__extension__({static prog_char __c[] PROGMEM = (s); &__c[0];}))
-
 // This is for git version tracking.  Safe to ignore
 #ifdef VERSION_H
 #include "version.h"
@@ -51,7 +45,8 @@
 const char program_version[] = "Unknown";
 #endif
 
-RF24 radio(8,9);
+// nRF24L01(+) radio using the Getting Started board
+RF24 radio(9,10);
 RF24Network network(radio);
 
 // Our node address

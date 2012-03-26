@@ -11,12 +11,6 @@
 #include <avr/pgmspace.h>
 #include "nodeconfig.h"
 
-// Avoid spurious warnings
-#undef PROGMEM 
-#define PROGMEM __attribute__(( section(".progmem.data") )) 
-#undef PSTR 
-#define PSTR(s) (__extension__({static prog_char __c[] PROGMEM = (s); &__c[0];}))
-
 // Where in EEPROM is the address stored?
 uint8_t* address_at_eeprom_location = (uint8_t*)10;
 
