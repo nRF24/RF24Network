@@ -109,7 +109,7 @@ bool RF24Network::enqueue(void)
   IF_SERIAL_DEBUG(printf_P(PSTR("%lu: NET Enqueue @%x "),millis(),next_frame-frame_queue));
 
   // Copy the current frame into the frame queue
-  if ( next_frame <= frame_queue + sizeof(frame_queue) )
+  if ( next_frame < frame_queue + sizeof(frame_queue) )
   {
     memcpy(next_frame,frame_buffer, frame_size );
     next_frame += frame_size; 
@@ -207,7 +207,7 @@ bool RF24Network::write(uint16_t to_node)
     return false;
 
   // First, stop listening so we can talk.
-  radio.stopListening();
+  //radio.stopListening();
 
   // Where do we send this?  By default, to our parent
   uint16_t send_node = parent_node;
