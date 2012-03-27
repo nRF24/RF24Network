@@ -161,7 +161,7 @@ void loop(void)
 
     // Convert the voltage reading to celcius*256
     // This is the formula for MCP9700.
-    // C = ( V - 1/2 ) / 100
+    // C = ( V - 1/2 ) * 100
     message.temp_reading = ( reading - 0x8000 ) * 0x100 / ( 0x10000 / 100 );
 
     // Take the voltage reading 
