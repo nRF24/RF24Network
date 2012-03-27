@@ -113,6 +113,9 @@ void setup(void)
     digitalWrite(red_led_pin,LOW);
   }
 
+  // Sensors use the stable internal 1.1V voltage
+  analogReference(INTERNAL);
+
   //
   // Bring up the RF network
   //
@@ -168,21 +171,24 @@ void loop(void)
     else
       printf_P(PSTR("%lu: APP Send failed\n\r"),millis());
      
-    // Power down the radio.  Note that the radio will get powered back up
-    // on the next write() call.
-    radio.powerDown();
-
-    // Be sure to flush the serial first before sleeping, so everything
-    // gets printed properly
-    Serial.flush();
-    
     // Transmission complete, TX LED OFF
     if ( red_led_pin )
       digitalWrite(red_led_pin,LOW);
-    
-    // Sleep the MCU.  The watchdog timer will awaken in a short while, and
-    // continue execution here.
-    Sleep.go();
+   
+    if ( Sleep )
+    {
+      // Power down the radio.  Note that the radio will get powered back up
+      // on the next write() call.
+      radio.powerDown();
+
+      // Be sure to flush the serial first before sleeping, so everything
+      // gets printed properly
+      Serial.flush();
+      
+      // Sleep the MCU.  The watchdog timer will awaken in a short while, and
+      // continue execution here.
+      Sleep.go();
+    }
   }
 
   // Listen for a new node address
