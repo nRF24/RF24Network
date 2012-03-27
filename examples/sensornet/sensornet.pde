@@ -43,11 +43,18 @@ const char program_version[] = "Unknown";
 
 // Pin definitions
 #ifndef PINS_DEFINED
+#define __PLATFORM__ "Getting Started board"
+
+// Pins for radio
 const int rf_ce_pin = 9;
 const int rf_csn_pin = 10;
+
+// Pins for sensors
 const int temp_pin = A2;
 const int voltage_pin = A3;
-#define __PLATFORM__ "Getting Started board"
+
+// Pins for status LED, or '0' for no LED connected
+const int red_led_pin = 0; 
 #endif
 
 RF24 radio(rf_ce_pin,rf_csn_pin);
@@ -97,6 +104,16 @@ void setup(void)
     Sleep.begin(wdt_prescalar,sleep_cycles_per_transmission);
 
   //
+  // Set up board hardware
+  //
+
+  if ( red_led_pin )
+  {
+    pinMode(red_led_pin,OUTPUT);
+    digitalWrite(red_led_pin,LOW);
+  }
+
+  //
   // Bring up the RF network
   //
 
@@ -123,6 +140,10 @@ void loop(void)
   // If we are not the base, send sensor readings to the base
   if ( this_node > 0 && ( Sleep || send_timer ) )
   {
+    // Transmission beginning, TX LED ON
+    if ( red_led_pin )
+      digitalWrite(red_led_pin,HIGH);
+
     int i;
     S_message message;
     
@@ -154,6 +175,10 @@ void loop(void)
     // Be sure to flush the serial first before sleeping, so everything
     // gets printed properly
     Serial.flush();
+    
+    // Transmission complete, TX LED OFF
+    if ( red_led_pin )
+      digitalWrite(red_led_pin,LOW);
     
     // Sleep the MCU.  The watchdog timer will awaken in a short while, and
     // continue execution here.
