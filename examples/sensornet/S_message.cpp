@@ -22,9 +22,10 @@ char S_message::buffer[32];
 
 char* S_message::toString(void)
 {
-  snprintf(buffer,sizeof(buffer),"#%06u %04x /%2u.%02uV",
+  snprintf(buffer,sizeof(buffer),"#%06u %2u.%02uC /%2u.%02uV",
       counter,
-      temp_reading,
+      temp_reading >> 8,
+      ( temp_reading & 0xFF ) * 100 / 256,
       voltage_reading >> 8,
       ( voltage_reading & 0xFF ) * 100 / 256
       );
