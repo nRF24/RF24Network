@@ -32,12 +32,6 @@
 #include "sleep.h"
 #include "printf.h"
 
-// Avoid spurious warnings
-#undef PROGMEM 
-#define PROGMEM __attribute__(( section(".progmem.data") )) 
-#undef PSTR 
-#define PSTR(s) (__extension__({static prog_char __c[] PROGMEM = (s); &__c[0];}))
-
 // This is for git version tracking.  Safe to ignore
 #ifdef VERSION_H
 #include "version.h"
@@ -45,13 +39,13 @@
 const char program_version[] = "Unknown";
 #endif
 
-RF24 radio(8,9);
+RF24 radio(9,10);
 RF24Network network(radio);
 
 // Our node address
 uint16_t this_node;
 
-// The message that we send is just an unsigned int, containing a sensor reading.
+// The message that we send is a set of sensor readings 
 struct message_t
 {
   uint16_t temp_reading;
@@ -67,11 +61,11 @@ const int voltage_sensor_pin = A3;
 const int num_measurements = 64;
 
 // Sleep constants.  In this example, the watchdog timer wakes up
-// every 1s, and every 4th wakeup we power up the radio and send
+// every 4s, and every single wakeup we power up the radio and send
 // a reading.  In real use, these numbers which be much higher.
 // Try wdt_8s and 7 cycles for one reading per minute.> 1
-const wdt_prescalar_e wdt_prescalar = wdt_1s;
-const int sleep_cycles_per_transmission = 4;
+const wdt_prescalar_e wdt_prescalar = wdt_4s;
+const int sleep_cycles_per_transmission = 1;
 
 void setup(void)
 {

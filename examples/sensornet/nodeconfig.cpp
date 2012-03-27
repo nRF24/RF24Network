@@ -11,33 +11,27 @@
 #include <avr/pgmspace.h>
 #include "nodeconfig.h"
 
-// Avoid spurious warnings
-#undef PROGMEM 
-#define PROGMEM __attribute__(( section(".progmem.data") )) 
-#undef PSTR 
-#define PSTR(s) (__extension__({static prog_char __c[] PROGMEM = (s); &__c[0];}))
-
 // Where in EEPROM is the address stored?
 uint8_t* address_at_eeprom_location = (uint8_t*)10;
 
 // What flag value is stored there so we know the value is valid?
-const uint8_t valid_eeprom_flag = 0xdf;
+const uint8_t valid_eeprom_flag = 0xde;
 
-uint8_t nodeconfig_read(void)
+uint16_t nodeconfig_read(void)
 {
-  uint8_t result = 0;
+  uint16_t result = 0;
 
   // Look for the token in EEPROM to indicate the following value is
   // a validly set node address 
   if ( eeprom_read_byte(address_at_eeprom_location) == valid_eeprom_flag )
   {
     // Read the address from EEPROM
-    result = eeprom_read_byte(address_at_eeprom_location+1);
-    printf_P(PSTR("ADDRESS: %u\n\r"),result);
+    result = eeprom_read_byte(address_at_eeprom_location+1) | ((uint16_t)eeprom_read_byte(address_at_eeprom_location+2) << 8 );
+    printf_P(PSTR("ADDRESS: %o\n\r"),result);
   }
   else
   {
-    printf_P(PSTR("*** No valid address found.  Send 0-9 via serial to set node address\n\r"));
+    printf_P(PSTR("*** No valid address found.  Send node address via serial of the form 011<cr>\n\r"));
     while(1)
     {
       nodeconfig_listen();
@@ -46,6 +40,10 @@ uint8_t nodeconfig_read(void)
   
   return result;
 }
+
+char serialdata[10];
+char* nextserialat = serialdata;
+const char* maxserial = serialdata + sizeof(serialdata) - 1;
 
 void nodeconfig_listen(void)
 {
@@ -56,15 +54,35 @@ void nodeconfig_listen(void)
   {
     // If the character on serial input is in a valid range...
     char c = Serial.read();
-    if ( c >= '0' && c <= '9' )
+    if ( c >= '0' && c <= '5' )
     {
+      *nextserialat++ = c;
+      if ( nextserialat == maxserial )
+      {
+	*nextserialat = 0;
+	printf_P(PSTR("\r\n*** Unknown serial command: %s\r\n"),serialdata);
+	nextserialat = serialdata;
+      }
+    }
+    else if ( c == 13 )
+    {
+      // Convert to octal
+      char *pc = serialdata;
+      uint16_t address = 0;
+      while ( pc < nextserialat )
+      {
+	address <<= 3;
+	address |= (*pc++ - '0');
+      }
+
       // It is our address
       eeprom_write_byte(address_at_eeprom_location,valid_eeprom_flag);
-      eeprom_write_byte(address_at_eeprom_location+1,c-'0');
+      eeprom_write_byte(address_at_eeprom_location+1,address & 0xff);
+      eeprom_write_byte(address_at_eeprom_location+2,address >> 8);
 
       // And we are done right now (no easy way to soft reset)
-      printf_P(PSTR("\n\rManually reset address to: %c\n\rPress RESET to continue!"),c);
-      while(1) ;
+      printf_P(PSTR("\n\rManually set to address 0%o\n\rPress RESET to continue!"),address);
+      while(1);
     }
   }
 }
