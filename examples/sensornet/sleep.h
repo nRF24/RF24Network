@@ -56,6 +56,16 @@ public:
    */
   void go(void);
 
+  /**
+   * Test whether the node sleeps
+   *
+   * @retval true if the node will sleep
+   */
+  operator bool(void) const 
+  {
+    return sleep_cycles_per_transmission;
+  }
+
 private:
   volatile short sleep_cycles_remaining;
   short sleep_cycles_per_transmission; 

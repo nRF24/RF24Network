@@ -30,6 +30,8 @@
 #include <SPI.h>
 #include "nodeconfig.h"
 #include "sleep.h"
+#include "timer.h"
+#include "S_message.h"
 #include "printf.h"
 
 // This is for git version tracking.  Safe to ignore
@@ -39,23 +41,20 @@
 const char program_version[] = "Unknown";
 #endif
 
-RF24 radio(9,10);
+// Pin definitions
+#ifndef PINS_DEFINED
+const int rf_ce_pin = 9;
+const int rf_csn_pin = 10;
+const int temp_pin = A2;
+const int voltage_pin = A3;
+#define __PLATFORM__ "Getting Started board"
+#endif
+
+RF24 radio(rf_ce_pin,rf_csn_pin);
 RF24Network network(radio);
 
 // Our node address
 uint16_t this_node;
-
-// The message that we send is a set of sensor readings 
-struct message_t
-{
-  uint16_t temp_reading;
-  uint16_t voltage_reading;
-  message_t(void): temp_reading(0), voltage_reading(0) {}
-};
-
-// The pin our sensor is on
-const int temp_sensor_pin = A2;
-const int voltage_sensor_pin = A3;
 
 // How many measurements to take.  64*1024 = 65536, so 64 is the max we can fit in a uint16_t.
 const int num_measurements = 64;
@@ -67,6 +66,9 @@ const int num_measurements = 64;
 const wdt_prescalar_e wdt_prescalar = wdt_4s;
 const int sleep_cycles_per_transmission = 1;
 
+// Non-sleeping nodes need a timer to regulate their sending interval
+timer_t send_timer(4000);
+
 void setup(void)
 {
   //
@@ -76,6 +78,7 @@ void setup(void)
   Serial.begin(57600);
   printf_begin();
   printf_P(PSTR("\n\rRF24Network/examples/sensornet/\n\r"));
+  printf_P(PSTR("PLATFORM: " __PLATFORM__ "\n\r"),program_version);
   printf_P(PSTR("VERSION: %s\n\r"),program_version);
   
   //
@@ -89,8 +92,8 @@ void setup(void)
   // Prepare sleep parameters
   //
 
-  // Only the leaves sleep.  
-  if ( this_node > 0 ) 
+  // Only the leaves sleep.  Nodes 01-05 are presumed to be relay nodes. 
+  if ( this_node > 05 ) 
     Sleep.begin(wdt_prescalar,sleep_cycles_per_transmission);
 
   //
@@ -112,29 +115,29 @@ void loop(void)
   {
     // If so, grab it and print it out
     RF24NetworkHeader header;
-    message_t message;
+    S_message message;
     network.read(header,&message,sizeof(message));
-    printf_P(PSTR("%lu: APP Received %x/%x from %u\n\r"),millis(),message.temp_reading,message.voltage_reading,header.from_node);
+    printf_P(PSTR("%lu: APP Received %s from %u\n\r"),millis(),message.toString(),header.from_node);
   }
 
   // If we are not the base, send sensor readings to the base
-  if ( this_node > 0 )
+  if ( this_node > 0 && ( Sleep || send_timer ) )
   {
     int i;
-    message_t message;
+    S_message message;
     
     // Take the temp reading 
     i = num_measurements;
     while(i--)
-      message.temp_reading += analogRead(temp_sensor_pin); 
+      message.temp_reading += analogRead(temp_pin); 
    
     // Take the voltage reading 
     i = num_measurements;
     while(i--)
-      message.voltage_reading += analogRead(voltage_sensor_pin);
+      message.voltage_reading += analogRead(voltage_pin);
 
     printf_P(PSTR("---------------------------------\n\r"));
-    printf_P(PSTR("%lu: APP Sending %x/%x to %u...\n\r"),millis(),message.temp_reading,message.voltage_reading,0);
+    printf_P(PSTR("%lu: APP Sending %s to %u...\n\r"),millis(),message.toString(),0);
     
     // Send it to the base
     RF24NetworkHeader header(/*to node*/ 0, /*type*/ 'S');
