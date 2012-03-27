@@ -55,6 +55,9 @@ const int voltage_pin = A3;
 
 // Pins for status LED, or '0' for no LED connected
 const int red_led_pin = 0; 
+
+// What voltage is a reading of 1023?
+const unsigned voltage_reference = 5 * 256; // 5.0V
 #endif
 
 RF24 radio(rf_ce_pin,rf_csn_pin);
@@ -157,8 +160,12 @@ void loop(void)
    
     // Take the voltage reading 
     i = num_measurements;
+    uint32_t reading = 0;
     while(i--)
-      message.voltage_reading += analogRead(voltage_pin);
+      reading += analogRead(voltage_pin);
+
+    // Convert the voltage reading to volts*256
+    message.voltage_reading = ( reading * voltage_reference ) >> 16; 
 
     printf_P(PSTR("---------------------------------\n\r"));
     printf_P(PSTR("%lu: APP Sending %s to %u...\n\r"),millis(),message.toString(),0);
