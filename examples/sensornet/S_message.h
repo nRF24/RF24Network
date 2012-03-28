@@ -23,10 +23,8 @@ struct S_message
 {
   uint16_t temp_reading;
   uint16_t voltage_reading;
-  uint16_t counter;
-  static uint16_t next_counter;
   static char buffer[];
-  S_message(void): temp_reading(0), voltage_reading(0), counter(next_counter++) {}
+  S_message(void): temp_reading(0), voltage_reading(0) {}
   char* toString(void);
 };
 

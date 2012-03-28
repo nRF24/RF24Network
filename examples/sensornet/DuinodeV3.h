@@ -12,13 +12,13 @@
 
 const int rf_irq = 0;
 
-const int red_led_pin = 3;
-const int yel_led_pin = 4;
-const int grn_led_pin = 5;
-const int button_1_pin = 6;
+const int led_red = 3;
+const int led_yellow = 4;
+const int led_green = 5;
+const int button_a = 6;
 
-const int rf_ce_pin = 8;
-const int rf_csn_pin = 7;
+const int rf_ce = 8;
+const int rf_csn = 7;
 
 const int temp_pin = 2; // analog
 const int voltage_pin = 3; // analog

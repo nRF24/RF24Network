@@ -46,21 +46,21 @@ const char program_version[] = "Unknown";
 #define __PLATFORM__ "Getting Started board"
 
 // Pins for radio
-const int rf_ce_pin = 9;
-const int rf_csn_pin = 10;
+const int rf_ce = 9;
+const int rf_csn = 10;
 
 // Pins for sensors
 const int temp_pin = A2;
 const int voltage_pin = A3;
 
 // Pins for status LED, or '0' for no LED connected
-const int red_led_pin = 0; 
+const int led_red = 0; 
 
 // What voltage is a reading of 1023?
 const unsigned voltage_reference = 5 * 256; // 5.0V
 #endif
 
-RF24 radio(rf_ce_pin,rf_csn_pin);
+RF24 radio(rf_ce,rf_csn);
 RF24Network network(radio);
 
 // Our node address
@@ -110,14 +110,18 @@ void setup(void)
   // Set up board hardware
   //
 
-  if ( red_led_pin )
+  if ( led_red )
   {
-    pinMode(red_led_pin,OUTPUT);
-    digitalWrite(red_led_pin,LOW);
+    pinMode(led_red,OUTPUT);
+    digitalWrite(led_red,LOW);
   }
 
   // Sensors use the stable internal 1.1V voltage
+#ifdef INTERNAL1V1
+  analogReference(INTERNAL1V1);
+#else
   analogReference(INTERNAL);
+#endif
 
   //
   // Bring up the RF network
@@ -140,15 +144,15 @@ void loop(void)
     RF24NetworkHeader header;
     S_message message;
     network.read(header,&message,sizeof(message));
-    printf_P(PSTR("%lu: APP Received %s from %u\n\r"),millis(),message.toString(),header.from_node);
+    printf_P(PSTR("%lu: APP Received #%u %s from 0%o\n\r"),millis(),header.id,message.toString(),header.from_node);
   }
 
   // If we are not the base, send sensor readings to the base
   if ( this_node > 0 && ( Sleep || send_timer ) )
   {
     // Transmission beginning, TX LED ON
-    if ( red_led_pin )
-      digitalWrite(red_led_pin,HIGH);
+    if ( led_red )
+      digitalWrite(led_red,HIGH);
 
     int i;
     S_message message;
@@ -174,7 +178,7 @@ void loop(void)
     message.voltage_reading = ( reading * voltage_reference ) >> 16; 
 
     printf_P(PSTR("---------------------------------\n\r"));
-    printf_P(PSTR("%lu: APP Sending %s to %u...\n\r"),millis(),message.toString(),0);
+    printf_P(PSTR("%lu: APP Sending %s to 0%o...\n\r"),millis(),message.toString(),0);
     
     // Send it to the base
     RF24NetworkHeader header(/*to node*/ 0, /*type*/ 'S');
@@ -185,8 +189,8 @@ void loop(void)
       printf_P(PSTR("%lu: APP Send failed\n\r"),millis());
      
     // Transmission complete, TX LED OFF
-    if ( red_led_pin )
-      digitalWrite(red_led_pin,LOW);
+    if ( led_red )
+      digitalWrite(led_red,LOW);
    
     if ( Sleep )
     {
