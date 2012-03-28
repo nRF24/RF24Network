@@ -163,10 +163,11 @@ void loop(void)
     while(i--)
       reading += analogRead(temp_pin);
 
-    // Convert the voltage reading to celcius*256
+    // Convert the reading to celcius*256
     // This is the formula for MCP9700.
+    // C = reading * 1.1
     // C = ( V - 1/2 ) * 100
-    message.temp_reading = ( reading - 0x8000 ) * 0x100 / ( 0x10000 / 100 );
+    message.temp_reading = ( ( ( reading * 0x120 ) - 0x800000 ) * 0x64 ) >> 16;
 
     // Take the voltage reading 
     i = num_measurements;
