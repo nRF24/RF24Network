@@ -89,19 +89,50 @@ Timer send_timer(2000);
 // Button controls functionality of the unit
 Button ButtonA(button_a);
 
+/**
+ * Convenience class for handling LEDs.  Handles the case where the
+ * LED may not be populated on the board, so always checks whether
+ * the pin is valid before setting a value.
+ */
+
+class LED
+{
+private:
+  int pin;
+public:
+  LED(int _pin): pin(_pin)
+  {
+    if (pin)
+    {
+      pinMode(pin,OUTPUT);
+      digitalWrite(pin,LOW);
+    }
+  }
+  void set(int state) const
+  {
+    if (pin)
+      digitalWrite(pin,state);
+  }
+
+};
+
+/**
+ * Startup LED sequence.  Lights up the LEDs in sequence first, then dims 
+ * them in the same sequence.
+ */
+
 class Startup: public Timer
 {
 private:
-  const int* leds;
-  const int* current;
-  const int* end;
+  const LED** leds;
+  const LED** current;
+  const LED** end;
   int state;
 protected:
   virtual void onFired(void)
   {
-    int pin = *current++;
-    if ( pin )
-      digitalWrite(pin,state);
+    (*current)->set(state);
+    ++current;
     if ( current >= end )
     {
       if ( state == HIGH )
@@ -114,12 +145,14 @@ protected:
     }
   }
 public:
-  Startup(const int* _leds, int _num): Timer(250), leds(_leds), current(_leds), end(_leds+_num), state(HIGH)
+  Startup(const LED** _leds, int _num): Timer(250), leds(_leds), current(_leds), end(_leds+_num), state(HIGH)
   {
   }
 };
 
-const int leds[] = { led_red, led_yellow, led_green };
+LED Red(led_red), Yellow(led_yellow), Green(led_green);
+
+const LED* leds[] = { &Red, &Yellow, &Green }; 
 const int num_leds = sizeof(leds)/sizeof(leds[0]);
 Startup startup(leds,num_leds);
 
@@ -156,23 +189,6 @@ void setup(void)
   //
   // Set up board hardware
   //
-
-  if ( led_red )
-  {
-    pinMode(led_red,OUTPUT);
-    digitalWrite(led_red,LOW);
-  }
-  if ( led_yellow )
-  {
-    pinMode(led_yellow,OUTPUT);
-    digitalWrite(led_yellow,LOW);
-  }
-  if ( led_green )
-  {
-    pinMode(led_green,OUTPUT);
-    digitalWrite(led_green,LOW);
-  }
-
   ButtonA.begin();
 
   // Sensors use the stable internal 1.1V voltage
@@ -211,14 +227,11 @@ void loop(void)
   if ( this_node > 0 && ( Sleep || send_timer.wasFired() ) )
   {
     // Transmission beginning, TX LED ON
-    if ( led_yellow )
-      digitalWrite(led_yellow,HIGH);
+    Yellow.set(HIGH);
     if ( test_mode )
     {
-      if ( led_green )
-	digitalWrite(led_green,LOW);
-      if ( led_red )
-	digitalWrite(led_red,LOW);
+      Green.set(LOW);
+      Red.set(LOW);
     }
 
     int i;
@@ -253,20 +266,19 @@ void loop(void)
     bool ok = network.write(header,&message,sizeof(message));
     if (ok)
     {
-      if ( test_mode && led_green )
-	digitalWrite(led_green,HIGH);
+      if ( test_mode )
+	Green.set(HIGH);
       printf_P(PSTR("%lu: APP Send ok\n\r"),millis());
     }
     else
     {
-      if ( test_mode && led_red )
-	digitalWrite(led_red,HIGH);
+      if ( test_mode )
+	Red.set(HIGH);
       printf_P(PSTR("%lu: APP Send failed\n\r"),millis());
     }
 
     // Transmission complete, TX LED OFF
-    if ( led_yellow )
-      digitalWrite(led_yellow,LOW);
+    Yellow.set(LOW);
    
     if ( Sleep && ! test_mode )
     {
@@ -288,8 +300,17 @@ void loop(void)
   ButtonA.update();
   if ( ButtonA.wasPressed() )
   {
+    // Pressing the button during startup sequences engages test mode.
+    // Pressing it after turns off test mode.
     if ( startup )
       test_mode = true;
+    else
+      if ( test_mode )
+      {
+	test_mode = false;
+	Green.set(LOW);
+	Red.set(LOW);
+      }
   }
 
   // Continue the startup sequence
