@@ -84,7 +84,7 @@ const wdt_prescalar_e wdt_prescalar = wdt_4s;
 const int sleep_cycles_per_transmission = 1;
 
 // Non-sleeping nodes need a timer to regulate their sending interval
-Timer send_timer(4000);
+Timer send_timer(2000);
 
 // Button controls functionality of the unit
 Button ButtonA(button_a);
@@ -211,8 +211,15 @@ void loop(void)
   if ( this_node > 0 && ( Sleep || send_timer.wasFired() ) )
   {
     // Transmission beginning, TX LED ON
-    if ( led_red )
-      digitalWrite(led_red,HIGH);
+    if ( led_yellow )
+      digitalWrite(led_yellow,HIGH);
+    if ( test_mode )
+    {
+      if ( led_green )
+	digitalWrite(led_green,LOW);
+      if ( led_red )
+	digitalWrite(led_red,LOW);
+    }
 
     int i;
     S_message message;
@@ -245,15 +252,23 @@ void loop(void)
     RF24NetworkHeader header(/*to node*/ 0, /*type*/ 'S');
     bool ok = network.write(header,&message,sizeof(message));
     if (ok)
+    {
+      if ( test_mode && led_green )
+	digitalWrite(led_green,HIGH);
       printf_P(PSTR("%lu: APP Send ok\n\r"),millis());
+    }
     else
+    {
+      if ( test_mode && led_red )
+	digitalWrite(led_red,HIGH);
       printf_P(PSTR("%lu: APP Send failed\n\r"),millis());
-     
+    }
+
     // Transmission complete, TX LED OFF
-    if ( led_red )
-      digitalWrite(led_red,LOW);
+    if ( led_yellow )
+      digitalWrite(led_yellow,LOW);
    
-    if ( Sleep )
+    if ( Sleep && ! test_mode )
     {
       // Power down the radio.  Note that the radio will get powered back up
       // on the next write() call.
@@ -276,11 +291,8 @@ void loop(void)
     if ( startup )
       test_mode = true;
   }
-  if ( test_mode )
-    if ( led_yellow )
-      digitalWrite(led_yellow,HIGH);
 
-  //
+  // Continue the startup sequence
   startup.update();
 
   // Listen for a new node address
