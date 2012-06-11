@@ -28,9 +28,11 @@
 #include <RF24Network.h>
 #include <RF24.h>
 #include <SPI.h>
+#include <Tictocs.h>
+#include <Button.h>
+#include <TictocTimer.h>
 #include "nodeconfig.h"
 #include "sleep.h"
-#include "timer.h"
 #include "S_message.h"
 #include "printf.h"
 
@@ -55,6 +57,11 @@ const int voltage_pin = A3;
 
 // Pins for status LED, or '0' for no LED connected
 const int led_red = 0; 
+const int led_yellow = 0; 
+const int led_green = 0; 
+
+// Button to control modes
+const int button_a = 4;
 
 // What voltage is a reading of 1023?
 const unsigned voltage_reference = 5 * 256; // 5.0V
@@ -77,7 +84,47 @@ const wdt_prescalar_e wdt_prescalar = wdt_4s;
 const int sleep_cycles_per_transmission = 1;
 
 // Non-sleeping nodes need a timer to regulate their sending interval
-timer_t send_timer(4000);
+Timer send_timer(4000);
+
+// Button controls functionality of the unit
+Button ButtonA(button_a);
+
+class Startup: public Timer
+{
+private:
+  const int* leds;
+  const int* current;
+  const int* end;
+  int state;
+protected:
+  virtual void onFired(void)
+  {
+    int pin = *current++;
+    if ( pin )
+      digitalWrite(pin,state);
+    if ( current >= end )
+    {
+      if ( state == HIGH )
+      {
+	state = LOW;
+	current = leds;
+      }
+      else
+	disable();
+    }
+  }
+public:
+  Startup(const int* _leds, int _num): Timer(250), leds(_leds), current(_leds), end(_leds+_num), state(HIGH)
+  {
+  }
+};
+
+const int leds[] = { led_red, led_yellow, led_green };
+const int num_leds = sizeof(leds)/sizeof(leds[0]);
+Startup startup(leds,num_leds);
+
+// Nodes in test mode do not sleep, but instead constantly try to send
+bool test_mode = false;
 
 void setup(void)
 {
@@ -115,6 +162,18 @@ void setup(void)
     pinMode(led_red,OUTPUT);
     digitalWrite(led_red,LOW);
   }
+  if ( led_yellow )
+  {
+    pinMode(led_yellow,OUTPUT);
+    digitalWrite(led_yellow,LOW);
+  }
+  if ( led_green )
+  {
+    pinMode(led_green,OUTPUT);
+    digitalWrite(led_green,LOW);
+  }
+
+  ButtonA.begin();
 
   // Sensors use the stable internal 1.1V voltage
 #ifdef INTERNAL1V1
@@ -148,7 +207,8 @@ void loop(void)
   }
 
   // If we are not the base, send sensor readings to the base
-  if ( this_node > 0 && ( Sleep || send_timer ) )
+  send_timer.update();
+  if ( this_node > 0 && ( Sleep || send_timer.wasFired() ) )
   {
     // Transmission beginning, TX LED ON
     if ( led_red )
@@ -208,6 +268,20 @@ void loop(void)
       Sleep.go();
     }
   }
+
+  // Button
+  ButtonA.update();
+  if ( ButtonA.wasPressed() )
+  {
+    if ( startup )
+      test_mode = true;
+  }
+  if ( test_mode )
+    if ( led_yellow )
+      digitalWrite(led_yellow,HIGH);
+
+  //
+  startup.update();
 
   // Listen for a new node address
   nodeconfig_listen();
