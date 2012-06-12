@@ -89,6 +89,9 @@ Timer send_timer(2000);
 // Button controls functionality of the unit
 Button ButtonA(button_a);
 
+// Long-press button
+Button ButtonLong(button_a,1000);
+
 /**
  * Convenience class for handling LEDs.  Handles the case where the
  * LED may not be populated on the board, so always checks whether
@@ -150,14 +153,61 @@ public:
   }
 };
 
+/**
+ * Calibration LED sequence.  Flashes all 3 in unison
+ */
+class CalibrationLEDs: public Timer
+{
+  const LED** leds;
+  const LED** end;
+  int state;
+protected:
+  void write()
+  {
+    const LED** current = end;
+    while (current-- > leds)
+      (*current)->set(state);
+  }
+  virtual void onFired() 
+  {
+    state = state ^ HIGH;
+    write();
+  }
+public:
+  CalibrationLEDs(const LED** _leds, int _num, unsigned long duration = 500): Timer(duration), leds(_leds), end(_leds+_num), state(LOW)
+  {
+    Timer::disable();
+  }
+  void begin()
+  {
+    Updatable::begin();
+  }
+  void reset()
+  {
+    state = HIGH;
+    write();
+    Timer::reset();
+  }
+  void disable()
+  {
+    state = LOW;
+    write();
+    Timer::disable();
+  }
+};
+
 LED Red(led_red), Yellow(led_yellow), Green(led_green);
 
 const LED* leds[] = { &Red, &Yellow, &Green }; 
 const int num_leds = sizeof(leds)/sizeof(leds[0]);
 Startup startup(leds,num_leds);
+CalibrationLEDs calibration_leds(leds,num_leds);
 
 // Nodes in test mode do not sleep, but instead constantly try to send
 bool test_mode = false;
+
+// Nodes in calibration mode are looking for temperature calibration
+bool calibration_mode = false;
 
 void setup(void)
 {
@@ -190,6 +240,7 @@ void setup(void)
   // Set up board hardware
   //
   ButtonA.begin();
+  ButtonLong.begin();
 
   // Sensors use the stable internal 1.1V voltage
 #ifdef INTERNAL1V1
@@ -197,6 +248,11 @@ void setup(void)
 #else
   analogReference(INTERNAL);
 #endif
+
+  // Prepare the startup sequence
+  startup.begin();
+  send_timer.begin();
+  calibration_leds.begin();
 
   //
   // Bring up the RF network
@@ -209,6 +265,9 @@ void setup(void)
 
 void loop(void)
 {
+  // Update objects
+  theUpdater.update();
+
   // Pump the network regularly
   network.update();
 
@@ -222,9 +281,9 @@ void loop(void)
     printf_P(PSTR("%lu: APP Received #%u %s from 0%o\n\r"),millis(),header.id,message.toString(),header.from_node);
   }
 
-  // If we are not the base, send sensor readings to the base
-  send_timer.update();
-  if ( this_node > 0 && ( Sleep || send_timer.wasFired() ) )
+  // If we are the kind of node that sends readings, AND it's time to send
+  // a reading AND we're in the mode where we send readings...
+  if ( this_node > 0 && ( Sleep || send_timer.wasFired() ) && ! calibration_mode )
   {
     // Transmission beginning, TX LED ON
     Yellow.set(HIGH);
@@ -262,7 +321,7 @@ void loop(void)
     printf_P(PSTR("%lu: APP Sending %s to 0%o...\n\r"),millis(),message.toString(),0);
     
     // Send it to the base
-    RF24NetworkHeader header(/*to node*/ 0, /*type*/ 'S');
+    RF24NetworkHeader header(/*to node*/ 0, /*type*/ test_mode ? 's' : 'S');
     bool ok = network.write(header,&message,sizeof(message));
     if (ok)
     {
@@ -297,24 +356,34 @@ void loop(void)
   }
 
   // Button
-  ButtonA.update();
-  if ( ButtonA.wasPressed() )
+  unsigned a = ButtonA.wasReleased();
+  if ( a && a < 500 )
   {
     // Pressing the button during startup sequences engages test mode.
     // Pressing it after turns off test mode.
     if ( startup )
       test_mode = true;
-    else
-      if ( test_mode )
-      {
-	test_mode = false;
-	Green.set(LOW);
-	Red.set(LOW);
-      }
+    else if ( test_mode )
+    {
+      test_mode = false;
+      Green.set(LOW);
+      Red.set(LOW);
+    }
+    else if ( calibration_mode )
+    {
+      calibration_mode = false;
+      test_mode = true;
+      calibration_leds.disable();
+    }
   }
 
-  // Continue the startup sequence
-  startup.update();
+  // Long press
+  if ( ButtonLong.wasPressed() && test_mode )
+  {
+    test_mode = false;
+    calibration_mode = true;
+    calibration_leds.reset();
+  }
 
   // Listen for a new node address
   nodeconfig_listen();
