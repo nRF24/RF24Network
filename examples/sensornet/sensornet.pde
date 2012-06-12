@@ -111,10 +111,10 @@ public:
       digitalWrite(pin,LOW);
     }
   }
-  void set(int state) const
+  void write(bool state) const
   {
     if (pin)
-      digitalWrite(pin,state);
+      digitalWrite(pin,state?HIGH:LOW);
   }
 
 };
@@ -130,17 +130,17 @@ private:
   const LED** leds;
   const LED** current;
   const LED** end;
-  int state;
+  bool state;
 protected:
   virtual void onFired(void)
   {
-    (*current)->set(state);
+    (*current)->write(state);
     ++current;
     if ( current >= end )
     {
-      if ( state == HIGH )
+      if ( state )
       {
-	state = LOW;
+	state = false;
 	current = leds;
       }
       else
@@ -148,7 +148,7 @@ protected:
     }
   }
 public:
-  Startup(const LED** _leds, int _num): Timer(250), leds(_leds), current(_leds), end(_leds+_num), state(HIGH)
+  Startup(const LED** _leds, int _num): Timer(250), leds(_leds), current(_leds), end(_leds+_num), state(true)
   {
   }
 };
@@ -160,21 +160,21 @@ class CalibrationLEDs: public Timer
 {
   const LED** leds;
   const LED** end;
-  int state;
+  bool state;
 protected:
   void write()
   {
     const LED** current = end;
     while (current-- > leds)
-      (*current)->set(state);
+      (*current)->write(state);
   }
   virtual void onFired() 
   {
-    state = state ^ HIGH;
+    state = ! state;
     write();
   }
 public:
-  CalibrationLEDs(const LED** _leds, int _num, unsigned long duration = 500): Timer(duration), leds(_leds), end(_leds+_num), state(LOW)
+  CalibrationLEDs(const LED** _leds, int _num, unsigned long duration = 500): Timer(duration), leds(_leds), end(_leds+_num), state(false)
   {
     Timer::disable();
   }
@@ -286,11 +286,11 @@ void loop(void)
   if ( this_node > 0 && ( Sleep || send_timer.wasFired() ) && ! calibration_mode )
   {
     // Transmission beginning, TX LED ON
-    Yellow.set(HIGH);
+    Yellow.write(true);
     if ( test_mode )
     {
-      Green.set(LOW);
-      Red.set(LOW);
+      Green.write(false);
+      Red.write(false);
     }
 
     int i;
@@ -326,18 +326,18 @@ void loop(void)
     if (ok)
     {
       if ( test_mode )
-	Green.set(HIGH);
+	Green.write(true);
       printf_P(PSTR("%lu: APP Send ok\n\r"),millis());
     }
     else
     {
       if ( test_mode )
-	Red.set(HIGH);
+	Red.write(true);
       printf_P(PSTR("%lu: APP Send failed\n\r"),millis());
     }
 
     // Transmission complete, TX LED OFF
-    Yellow.set(LOW);
+    Yellow.write(false);
    
     if ( Sleep && ! test_mode )
     {
@@ -366,8 +366,8 @@ void loop(void)
     else if ( test_mode )
     {
       test_mode = false;
-      Green.set(LOW);
-      Red.set(LOW);
+      Green.write(false);
+      Red.write(false);
     }
     else if ( calibration_mode )
     {
