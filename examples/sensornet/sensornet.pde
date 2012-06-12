@@ -116,6 +116,10 @@ public:
     if (pin)
       digitalWrite(pin,state?HIGH:LOW);
   }
+  void operator=(bool state)
+  {
+    write(state);
+  }
 
 };
 
@@ -184,13 +188,13 @@ public:
   }
   void reset()
   {
-    state = HIGH;
+    state = true;
     write();
     Timer::reset();
   }
   void disable()
   {
-    state = LOW;
+    state = false;
     write();
     Timer::disable();
   }
@@ -286,11 +290,11 @@ void loop(void)
   if ( this_node > 0 && ( Sleep || send_timer.wasFired() ) && ! calibration_mode )
   {
     // Transmission beginning, TX LED ON
-    Yellow.write(true);
+    Yellow = true;
     if ( test_mode )
     {
-      Green.write(false);
-      Red.write(false);
+      Green = false;
+      Red = false;
     }
 
     int i;
@@ -326,18 +330,18 @@ void loop(void)
     if (ok)
     {
       if ( test_mode )
-	Green.write(true);
+	Green = true;
       printf_P(PSTR("%lu: APP Send ok\n\r"),millis());
     }
     else
     {
       if ( test_mode )
-	Red.write(true);
+	Red = true;
       printf_P(PSTR("%lu: APP Send failed\n\r"),millis());
     }
 
     // Transmission complete, TX LED OFF
-    Yellow.write(false);
+    Yellow = false;
    
     if ( Sleep && ! test_mode )
     {
@@ -366,8 +370,8 @@ void loop(void)
     else if ( test_mode )
     {
       test_mode = false;
-      Green.write(false);
-      Red.write(false);
+      Green = false;
+      Red = false;
     }
     else if ( calibration_mode )
     {
