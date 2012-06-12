@@ -105,7 +105,7 @@ private:
 public:
   LED(int _pin): pin(_pin)
   {
-    if (pin)
+    if (pin > 0)
     {
       pinMode(pin,OUTPUT);
       digitalWrite(pin,LOW);
@@ -113,7 +113,7 @@ public:
   }
   void write(bool state) const
   {
-    if (pin)
+    if (pin > 0)
       digitalWrite(pin,state?HIGH:LOW);
   }
   void operator=(bool state)
@@ -128,7 +128,7 @@ public:
  * them in the same sequence.
  */
 
-class Startup: public Timer
+class StartupLEDs: public Timer
 {
 private:
   const LED** leds;
@@ -152,7 +152,7 @@ protected:
     }
   }
 public:
-  Startup(const LED** _leds, int _num): Timer(250), leds(_leds), current(_leds), end(_leds+_num), state(true)
+  StartupLEDs(const LED** _leds, int _num): Timer(250), leds(_leds), current(_leds), end(_leds+_num), state(true)
   {
   }
 };
@@ -204,7 +204,7 @@ LED Red(led_red), Yellow(led_yellow), Green(led_green);
 
 const LED* leds[] = { &Red, &Yellow, &Green }; 
 const int num_leds = sizeof(leds)/sizeof(leds[0]);
-Startup startup(leds,num_leds);
+StartupLEDs startup_leds(leds,num_leds);
 CalibrationLEDs calibration_leds(leds,num_leds);
 
 // Nodes in test mode do not sleep, but instead constantly try to send
@@ -254,8 +254,8 @@ void setup(void)
 #endif
 
   // Prepare the startup sequence
-  startup.begin();
   send_timer.begin();
+  startup_leds.begin();
   calibration_leds.begin();
 
   //
@@ -365,7 +365,7 @@ void loop(void)
   {
     // Pressing the button during startup sequences engages test mode.
     // Pressing it after turns off test mode.
-    if ( startup )
+    if ( startup_leds )
       test_mode = true;
     else if ( test_mode )
     {
