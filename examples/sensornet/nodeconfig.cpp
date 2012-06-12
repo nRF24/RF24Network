@@ -17,6 +17,16 @@ uint8_t* address_at_eeprom_location = (uint8_t*)10;
 // What flag value is stored there so we know the value is valid?
 const uint8_t valid_eeprom_flag = 0xde;
 
+// Additional info
+struct eeprom_info_t
+{
+  uint8_t flag;
+  uint16_t address;
+  bool relay:1;
+};
+
+eeprom_info_t eeprom_info;
+
 uint16_t nodeconfig_read(void)
 {
   uint16_t result = 0;
@@ -25,8 +35,8 @@ uint16_t nodeconfig_read(void)
   // a validly set node address 
   if ( eeprom_read_byte(address_at_eeprom_location) == valid_eeprom_flag )
   {
-    // Read the address from EEPROM
-    result = eeprom_read_byte(address_at_eeprom_location+1) | ((uint16_t)eeprom_read_byte(address_at_eeprom_location+2) << 8 );
+    eeprom_read_block(&eeprom_info,address_at_eeprom_location,sizeof(eeprom_info));
+    result = eeprom_info.address;
     printf_P(PSTR("ADDRESS: %o\n\r"),result);
   }
   else
@@ -64,6 +74,10 @@ void nodeconfig_listen(void)
 	nextserialat = serialdata;
       }
     }
+    else if ( tolower(c) == 'r' )
+    {
+      // Set relay mode
+    }
     else if ( c == 13 )
     {
       // Convert to octal
@@ -76,9 +90,9 @@ void nodeconfig_listen(void)
       }
 
       // It is our address
-      eeprom_write_byte(address_at_eeprom_location,valid_eeprom_flag);
-      eeprom_write_byte(address_at_eeprom_location+1,address & 0xff);
-      eeprom_write_byte(address_at_eeprom_location+2,address >> 8);
+      eeprom_info.flag = valid_eeprom_flag;
+      eeprom_info.address = address;
+      eeprom_update_block(&eeprom_info,address_at_eeprom_location,sizeof(eeprom_info));
 
       // And we are done right now (no easy way to soft reset)
       printf_P(PSTR("\n\rManually set to address 0%o\n\rPress RESET to continue!"),address);
