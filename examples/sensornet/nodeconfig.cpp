@@ -17,27 +17,19 @@ uint8_t* address_at_eeprom_location = (uint8_t*)10;
 // What flag value is stored there so we know the value is valid?
 const uint8_t valid_eeprom_flag = 0xde;
 
-// Additional info
-struct eeprom_info_t
-{
-  uint8_t flag;
-  uint16_t address;
-  bool relay:1;
-};
-
 eeprom_info_t eeprom_info;
 
-uint16_t nodeconfig_read(void)
+const eeprom_info_t& nodeconfig_read(void)
 {
-  uint16_t result = 0;
+  memset(&eeprom_info,0,sizeof(eeprom_info));
 
   // Look for the token in EEPROM to indicate the following value is
   // a validly set node address 
   if ( eeprom_read_byte(address_at_eeprom_location) == valid_eeprom_flag )
   {
     eeprom_read_block(&eeprom_info,address_at_eeprom_location,sizeof(eeprom_info));
-    result = eeprom_info.address;
-    printf_P(PSTR("ADDRESS: %o\n\r"),result);
+    printf_P(PSTR("ADDRESS: %o\n\r"),eeprom_info.address);
+    printf_P(PSTR("ROLE: %S\n\r"),eeprom_info.relay ? PSTR("Relay") : PSTR("Leaf") );
   }
   else
   {
@@ -48,7 +40,7 @@ uint16_t nodeconfig_read(void)
     }
   }
   
-  return result;
+  return eeprom_info;
 }
 
 char serialdata[10];
@@ -76,7 +68,21 @@ void nodeconfig_listen(void)
     }
     else if ( tolower(c) == 'r' )
     {
-      // Set relay mode
+      eeprom_info.relay = true;
+      printf_P(PSTR("ROLE: %S\n\r"),eeprom_info.relay ? PSTR("Relay") : PSTR("Leaf") );
+      if ( eeprom_info.flag == valid_eeprom_flag )
+	eeprom_update_block(&eeprom_info,address_at_eeprom_location,sizeof(eeprom_info));
+      else
+	printf_P(PSTR("Please assign an address to commit this role to EEPROM\r\n"));
+    }
+    else if ( tolower(c) == 'l' )
+    {
+      eeprom_info.relay = false;
+      printf_P(PSTR("ROLE: %S\n\r"),eeprom_info.relay ? PSTR("Relay") : PSTR("Leaf") );
+      if ( eeprom_info.flag == valid_eeprom_flag )
+	eeprom_update_block(&eeprom_info,address_at_eeprom_location,sizeof(eeprom_info));
+      else
+	printf_P(PSTR("Please assign an address to commit this role to EEPROM\r\n"));
     }
     else if ( c == 13 )
     {

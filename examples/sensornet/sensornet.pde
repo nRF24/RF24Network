@@ -70,8 +70,8 @@ const unsigned voltage_reference = 5 * 256; // 5.0V
 RF24 radio(rf_ce,rf_csn);
 RF24Network network(radio);
 
-// Our node address
-uint16_t this_node;
+// Our node configuration 
+eeprom_info_t this_node;
 
 // How many measurements to take.  64*1024 = 65536, so 64 is the max we can fit in a uint16_t.
 const int num_measurements = 64;
@@ -237,7 +237,7 @@ void setup(void)
   //
 
   // Only the leaves sleep.  Nodes 01-05 are presumed to be relay nodes. 
-  if ( this_node > 05 ) 
+  if ( ! this_node.relay )
     Sleep.begin(wdt_prescalar,sleep_cycles_per_transmission);
 
   //
@@ -264,7 +264,7 @@ void setup(void)
 
   SPI.begin();
   radio.begin();
-  network.begin(/*channel*/ 92, /*node address*/ this_node);
+  network.begin(/*channel*/ 92, /*node address*/ this_node.address);
 }
 
 void loop(void)
@@ -287,7 +287,7 @@ void loop(void)
 
   // If we are the kind of node that sends readings, AND it's time to send
   // a reading AND we're in the mode where we send readings...
-  if ( this_node > 0 && ( Sleep || send_timer.wasFired() ) && ! calibration_mode )
+  if ( this_node.address > 0 && ( ( Sleep && ! test_mode ) || send_timer.wasFired() ) && ! calibration_mode && ! startup_leds )
   {
     // Transmission beginning, TX LED ON
     Yellow = true;
@@ -343,7 +343,7 @@ void loop(void)
     // Transmission complete, TX LED OFF
     Yellow = false;
    
-    if ( Sleep && ! test_mode )
+    if ( Sleep && ! test_mode ) 
     {
       // Power down the radio.  Note that the radio will get powered back up
       // on the next write() call.
