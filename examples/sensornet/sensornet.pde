@@ -80,11 +80,11 @@ const int num_measurements = 64;
 // every 4s, and every single wakeup we power up the radio and send
 // a reading.  In real use, these numbers which be much higher.
 // Try wdt_8s and 7 cycles for one reading per minute.> 1
-const wdt_prescalar_e wdt_prescalar = wdt_4s;
+const wdt_prescalar_e wdt_prescalar = wdt_8s;
 const int sleep_cycles_per_transmission = 1;
 
 // Non-sleeping nodes need a timer to regulate their sending interval
-Timer send_timer(2000);
+Timer send_timer(8000);
 
 // Button controls functionality of the unit
 Button ButtonA(button_a);
