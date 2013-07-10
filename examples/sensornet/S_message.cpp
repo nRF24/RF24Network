@@ -13,7 +13,7 @@
 #include "RF24Network_config.h"
 // Project headers
 // This component's header
-#include <S_message.h>
+#include "S_message.h"
 
 char S_message::buffer[32];
 
