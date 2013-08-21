@@ -8,3 +8,4 @@ Session.vim
 version.h
 *.orig
 *.bak
+PINS_*/
