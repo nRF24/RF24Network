@@ -40,7 +40,7 @@
 #ifdef VERSION_H
 #include "version.h"
 #else
-const char program_version[] = "Unknown";
+#define __TAG__ "Unknown"
 #endif
 
 // Pin definitions
@@ -222,8 +222,8 @@ void setup(void)
   Serial.begin(57600);
   printf_begin();
   printf_P(PSTR("\n\rRF24Network/examples/sensornet/\n\r"));
-  printf_P(PSTR("PLATFORM: " __PLATFORM__ "\n\r"),program_version);
-  printf_P(PSTR("VERSION: %s\n\r"),program_version);
+  printf_P(PSTR("PLATFORM: " __PLATFORM__ "\n\r"));
+  printf_P(PSTR("VERSION: " __TAG__ "\n\r"));
   
   //
   // Pull node address out of eeprom 

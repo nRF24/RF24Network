@@ -3,8 +3,10 @@
 out/
 docs/
 .*.swp
+.*.swo
 Session.vim
 *.swp
+*.swo
 version.h
 *.orig
 *.bak
