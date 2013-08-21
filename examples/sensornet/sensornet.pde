@@ -73,9 +73,6 @@ RF24Network network(radio);
 // Our node configuration 
 eeprom_info_t this_node;
 
-// How many measurements to take.  64*1024 = 65536, so 64 is the max we can fit in a uint16_t.
-const int num_measurements = 64;
-
 // Sleep constants.  In this example, the watchdog timer wakes up
 // every 4s, and every single wakeup we power up the radio and send
 // a reading.  In real use, these numbers which be much higher.
@@ -213,6 +210,39 @@ bool test_mode = false;
 // Nodes in calibration mode are looking for temperature calibration
 bool calibration_mode = false;
 
+// Helper functions to take readings
+
+// How many measurements to take.  64*1024 = 65536, so 64 is the max we can fit in a uint16_t.
+const int num_measurements = 64;
+
+uint32_t measure_temp()
+{
+    int i = num_measurements;
+    uint32_t reading = 0;
+    while(i--)
+      reading += analogRead(temp_pin);
+    
+    // Convert the reading to celcius*256
+    // This is the formula for MCP9700.
+    // C = reading * 1.1
+    // C = ( V - 1/2 ) * 100
+    //
+    // Then adjust for the calibation value on this sensor
+    return ( ( ( ( reading * 0x120 ) - 0x800000 ) * 0x64 ) >> 16 ) + this_node.temp_calibration;
+}
+
+uint32_t measure_voltage()
+{
+    // Take the voltage reading 
+    int i = num_measurements;
+    uint32_t reading = 0;
+    while(i--)
+      reading += analogRead(voltage_pin);
+
+    // Convert the voltage reading to volts*256
+    return ( reading * voltage_reference ) >> 16; 
+}
+
 void setup(void)
 {
   //
@@ -275,7 +305,7 @@ void loop(void)
   // Pump the network regularly
   network.update();
 
-  // If we are the base, is there anything ready for us?
+  // Is there anything ready for us?
   while ( network.available() )
   {
     // If so, grab it and print it out
@@ -283,11 +313,22 @@ void loop(void)
     S_message message;
     network.read(header,&message,sizeof(message));
     printf_P(PSTR("%lu: APP Received #%u %s from 0%o\n\r"),millis(),header.id,message.toString(),header.from_node);
+
+    // If we have a temp sensor AND we are not sleeping
+    if ( temp_pin > -1 && ( ! Sleep || test_mode ) )
+    {
+      // Take a reading and prepare it as the ack payload for that child
+      S_message message;
+      message.temp_reading = measure_temp(); 
+      message.voltage_reading = measure_voltage(); 
+    }
   }
 
-  // If we are the kind of node that sends readings, AND it's time to send
-  // a reading AND we're in the mode where we send readings...
-  if ( this_node.address > 0 && ( ( Sleep && ! test_mode ) || send_timer.wasFired() ) && ! calibration_mode && ! startup_leds )
+  // If we are the kind of node that sends readings, 
+  // AND we have a temp sensor
+  // AND it's time to send a reading 
+  // AND we're in the mode where we send readings...
+  if ( this_node.address > 0 && temp_pin > -1 && ( ( Sleep && ! test_mode ) || send_timer.wasFired() ) && ! calibration_mode && ! startup_leds )
   {
     // Transmission beginning, TX LED ON
     Yellow = true;
@@ -297,37 +338,15 @@ void loop(void)
       Red = false;
     }
 
-    int i;
     S_message message;
-    
-    // Take the temp reading 
-    i = num_measurements;
-    uint32_t reading = 0;
-    while(i--)
-      reading += analogRead(temp_pin);
-
-    // Convert the reading to celcius*256
-    // This is the formula for MCP9700.
-    // C = reading * 1.1
-    // C = ( V - 1/2 ) * 100
-    //
-    // Then adjust for the calibation value on this sensor
-    message.temp_reading = ( ( ( ( reading * 0x120 ) - 0x800000 ) * 0x64 ) >> 16 ) + this_node.temp_calibration;
-
-    // Take the voltage reading 
-    i = num_measurements;
-    reading = 0;
-    while(i--)
-      reading += analogRead(voltage_pin);
-
-    // Convert the voltage reading to volts*256
-    message.voltage_reading = ( reading * voltage_reference ) >> 16; 
+    message.temp_reading = measure_temp(); 
+    message.voltage_reading = measure_voltage(); 
 
     printf_P(PSTR("---------------------------------\n\r"));
     printf_P(PSTR("%lu: APP Sending %s to 0%o...\n\r"),millis(),message.toString(),0);
     
-    // Send it to the base
-    RF24NetworkHeader header(/*to node*/ 0, /*type*/ test_mode ? 's' : 'S');
+    // Send it to the base (regular readings) or just to our parent (test mode)
+    RF24NetworkHeader header(/*to node*/ test_mode ? -1 : 0, /*type*/ test_mode ? 's' : 'S');
     bool ok = network.write(header,&message,sizeof(message));
     if (ok)
     {
