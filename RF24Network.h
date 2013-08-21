@@ -52,7 +52,7 @@ struct RF24NetworkHeader
    *  network.write(header,&message,sizeof(message));
    * @endcode
    *
-   * @param _to The logical node address where the message is going
+   * @param _to The logical node address where the message is going, or -1 for direct parent
    * @param _type The type of message which follows.  Only 0-127 are allowed for
    * user messages.
    */

@@ -173,6 +173,11 @@ size_t RF24Network::read(RF24NetworkHeader& header,void* message, size_t maxlen)
 
 bool RF24Network::write(RF24NetworkHeader& header,const void* message, size_t len)
 {
+  // If the user is trying to send to his direct parent
+  if ( header.to_node == 0xffff )
+    // Fill in the correct value
+    header.to_node = parent_node;
+  
   // Fill out the header
   header.from_node = node_address;
 
@@ -186,6 +191,7 @@ bool RF24Network::write(RF24NetworkHeader& header,const void* message, size_t le
   {
     IF_SERIAL_DEBUG(const uint16_t* i = reinterpret_cast<const uint16_t*>(message);printf_P(PSTR("%lu: NET message %04x\n\r"),millis(),*i));
   }
+
 
   // If the user is trying to send it to himself
   if ( header.to_node == node_address )
