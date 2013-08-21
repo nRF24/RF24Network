@@ -310,7 +310,9 @@ void loop(void)
     // This is the formula for MCP9700.
     // C = reading * 1.1
     // C = ( V - 1/2 ) * 100
-    message.temp_reading = ( ( ( reading * 0x120 ) - 0x800000 ) * 0x64 ) >> 16;
+    //
+    // Then adjust for the calibation value on this sensor
+    message.temp_reading = ( ( ( ( reading * 0x120 ) - 0x800000 ) * 0x64 ) >> 16 ) + this_node.temp_calibration;
 
     // Take the voltage reading 
     i = num_measurements;

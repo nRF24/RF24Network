@@ -26,6 +26,7 @@ const eeprom_info_t& nodeconfig_read(void)
   {
     printf_P(PSTR("ADDRESS: %o\n\r"),eeprom_info.address);
     printf_P(PSTR("ROLE: %S\n\r"),eeprom_info.relay ? PSTR("Relay") : PSTR("Leaf") );
+    printf_P(PSTR("TEMP: %04x\n\r"),eeprom_info.temp_calibration); 
   }
   else
   {
@@ -53,8 +54,8 @@ void nodeconfig_listen(void)
   if (Serial.available())
   {
     // If the character on serial input is in a valid range...
-    char c = Serial.read();
-    if ( c >= '0' && c <= '5' )
+    char c = tolower(Serial.read());
+    if ( (c >= '0' && c <= '9' ) || (c >= 'a' && c <= 'f' ) ) 
     {
       *nextserialat++ = c;
       if ( nextserialat == maxserial )
@@ -77,6 +78,24 @@ void nodeconfig_listen(void)
     {
       eeprom_info.relay = false;
       printf_P(PSTR("ROLE: %S\n\r"),eeprom_info.relay ? PSTR("Relay") : PSTR("Leaf") );
+      eeprom_update_block(&eeprom_info,address_at_eeprom_location,sizeof(eeprom_info));
+      printf_P(PSTR("RESET NODE before changes take effect\r\n"));
+      if ( ! eeprom_info.isValid() )
+	printf_P(PSTR("Please assign an address\r\n"));
+    }
+    else if ( tolower(c) == 't' )
+    {
+      // Send temperature calibration as 2-digit 4.4-fixed decimal signed degrees
+      // celcius--followed by a 't'.  So, for -1.5 degrees, send "e8t".  Or for +2 degrees
+      // send "20t"
+
+      *nextserialat = 0;
+      int8_t val = strtol(serialdata,NULL,16);
+      nextserialat = serialdata;
+      
+      eeprom_info.temp_calibration = val * 0x10;
+      printf_P(PSTR("TEMP: %02x\n\r"),eeprom_info.temp_calibration);
+
       eeprom_update_block(&eeprom_info,address_at_eeprom_location,sizeof(eeprom_info));
       printf_P(PSTR("RESET NODE before changes take effect\r\n"));
       if ( ! eeprom_info.isValid() )

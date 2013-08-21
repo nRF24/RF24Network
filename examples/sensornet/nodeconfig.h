@@ -14,9 +14,10 @@ struct eeprom_info_t
 {
   uint8_t flag;
   uint16_t address;
+  int16_t temp_calibration;  // sensor adjustment in signed fixed-8.8 degrees, e.g. 0xFE80 is -1.5
   bool relay:1;
 
-  static const uint8_t valid_flag = 0xde;
+  static const uint8_t valid_flag = 0xdd;
 
   eeprom_info_t()
   {
@@ -33,6 +34,7 @@ struct eeprom_info_t
     flag = valid_flag;
     address = 0xffff;
     relay = false;
+    temp_calibration = 0;
   }
 
 };
