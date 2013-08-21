@@ -366,12 +366,18 @@ void loop(void)
     // Pressing the button during startup sequences engages test mode.
     // Pressing it after turns off test mode.
     if ( startup_leds )
+    {
       test_mode = true;
+      send_timer.setInterval(1000);
+      printf_P(PSTR("%lu: APP Start test mode\n\r"),millis());
+    }
     else if ( test_mode )
     {
       test_mode = false;
       Green = false;
       Red = false;
+      send_timer.setInterval(8000);
+      printf_P(PSTR("%lu: APP Stop test mode\n\r"),millis());
     }
     else if ( calibration_mode )
     {
