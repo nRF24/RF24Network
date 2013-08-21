@@ -325,7 +325,7 @@ void loop(void)
     if ( temp_pin > -1 && ( ! Sleep || test_mode ) )
     {
       // if the received message is a test message, we can respond with a 'C' message in return
-      if ( header.type == 's' )
+      if ( header.type == 'c' )
       {
 	// Take a reading
 	S_message response;
@@ -350,11 +350,11 @@ void loop(void)
   // AND we have a temp sensor
   // AND it's time to send a reading 
   // AND we're in the mode where we send readings...
-  if ( this_node.address > 0 && temp_pin > -1 && ( ( Sleep && ! test_mode ) || send_timer.wasFired() ) && ! calibration_mode && ! startup_leds )
+  if ( this_node.address > 0 && temp_pin > -1 && ( ( Sleep && ! test_mode ) || send_timer.wasFired() ) && ! startup_leds )
   {
     // Transmission beginning, TX LED ON
     Yellow = true;
-    if ( test_mode )
+    if ( test_mode && ! calibration_mode )
     {
       Green = false;
       Red = false;
@@ -366,19 +366,25 @@ void loop(void)
 
     printf_P(PSTR("---------------------------------\n\r"));
     printf_P(PSTR("%lu: APP Sending %s to 0%o...\n\r"),millis(),message.toString(),0);
-    
+   
+    char message_type = 'S';
+    if ( calibration_mode )
+      message_type = 'c';
+    else if (test_mode )
+      message_type = 't';
+
     // Send it to the base (regular readings) or just to our parent (test mode)
-    RF24NetworkHeader header(/*to node*/ test_mode ? -1 : 0, /*type*/ test_mode ? 's' : 'S');
+    RF24NetworkHeader header(/*to node*/ test_mode ? -1 : 0, /*type*/ message_type);
     bool ok = network.write(header,&message,sizeof(message));
     if (ok)
     {
-      if ( test_mode )
+      if ( test_mode && ! calibration_mode )
 	Green = true;
       printf_P(PSTR("%lu: APP Send ok\n\r"),millis());
     }
     else
     {
-      if ( test_mode )
+      if ( test_mode && ! calibration_mode )
 	Red = true;
       printf_P(PSTR("%lu: APP Send failed\n\r"),millis());
     }
@@ -414,6 +420,13 @@ void loop(void)
       send_timer.setInterval(1000);
       printf_P(PSTR("%lu: APP Start test mode\n\r"),millis());
     }
+    else if ( calibration_mode )
+    {
+      calibration_mode = false;
+      test_mode = true;
+      calibration_leds.disable();
+      printf_P(PSTR("%lu: APP Stop calibration mode\n\r"),millis());
+    }
     else if ( test_mode )
     {
       test_mode = false;
@@ -422,20 +435,14 @@ void loop(void)
       send_timer.setInterval(8000);
       printf_P(PSTR("%lu: APP Stop test mode\n\r"),millis());
     }
-    else if ( calibration_mode )
-    {
-      calibration_mode = false;
-      test_mode = true;
-      calibration_leds.disable();
-    }
   }
 
   // Long press
   if ( ButtonLong.wasPressed() && test_mode )
   {
-    test_mode = false;
     calibration_mode = true;
     calibration_leds.reset();
+    printf_P(PSTR("%lu: APP Start calibration mode\n\r"),millis());
   }
 
   // Listen for a new node address
