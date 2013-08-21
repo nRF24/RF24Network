@@ -336,6 +336,13 @@ void loop(void)
 	RF24NetworkHeader response_header(/*to node*/ header.from_node, /*type*/ 'C');
 	network.write(response_header,&response,sizeof(response));
       }
+      else if ( header.type == 'C' )
+      {
+	// This is a calibration message.  Calculate the diff
+	uint16_t diff = message.temp_reading - measure_temp();
+	printf_P(PSTR("%lu: APP Calibration received %04x diff %04x\n\r"),millis(),message.temp_reading,diff);
+
+      }
     }
   }
 
