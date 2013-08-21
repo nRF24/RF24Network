@@ -15,9 +15,32 @@ struct eeprom_info_t
   uint8_t flag;
   uint16_t address;
   bool relay:1;
+
+  static const uint8_t valid_flag = 0xde;
+
+  eeprom_info_t()
+  {
+    clear();
+  }
+
+  bool isValid() const
+  {
+    return (flag == valid_flag) && (address != 0xffff);
+  }
+
+  void clear()
+  {
+    flag = valid_flag;
+    address = 0xffff;
+    relay = false;
+  }
+
 };
 
 const eeprom_info_t& nodeconfig_read(void);
 void nodeconfig_listen(void);
 
 #endif // __NODECONFIG_H__
+
+// vim:ai:cin:sts=2 sw=2 ft=cpp
+

@@ -14,25 +14,23 @@
 // Where in EEPROM is the address stored?
 uint8_t* address_at_eeprom_location = (uint8_t*)10;
 
-// What flag value is stored there so we know the value is valid?
-const uint8_t valid_eeprom_flag = 0xde;
-
 eeprom_info_t eeprom_info;
 
 const eeprom_info_t& nodeconfig_read(void)
 {
-  memset(&eeprom_info,0,sizeof(eeprom_info));
+  eeprom_read_block(&eeprom_info,address_at_eeprom_location,sizeof(eeprom_info));
 
   // Look for the token in EEPROM to indicate the following value is
   // a validly set node address 
-  if ( eeprom_read_byte(address_at_eeprom_location) == valid_eeprom_flag )
+  if ( eeprom_info.isValid() ) 
   {
-    eeprom_read_block(&eeprom_info,address_at_eeprom_location,sizeof(eeprom_info));
     printf_P(PSTR("ADDRESS: %o\n\r"),eeprom_info.address);
     printf_P(PSTR("ROLE: %S\n\r"),eeprom_info.relay ? PSTR("Relay") : PSTR("Leaf") );
   }
   else
   {
+    eeprom_info.clear();
+
     printf_P(PSTR("*** No valid address found.  Send node address via serial of the form 011<cr>\n\r"));
     while(1)
     {
@@ -70,19 +68,17 @@ void nodeconfig_listen(void)
     {
       eeprom_info.relay = true;
       printf_P(PSTR("ROLE: %S\n\r"),eeprom_info.relay ? PSTR("Relay") : PSTR("Leaf") );
-      if ( eeprom_info.flag == valid_eeprom_flag )
-	eeprom_update_block(&eeprom_info,address_at_eeprom_location,sizeof(eeprom_info));
-      else
-	printf_P(PSTR("Please assign an address to commit this role to EEPROM\r\n"));
+      eeprom_update_block(&eeprom_info,address_at_eeprom_location,sizeof(eeprom_info));
+      if ( ! eeprom_info.isValid() )
+	printf_P(PSTR("Please assign an address\r\n"));
     }
     else if ( tolower(c) == 'l' )
     {
       eeprom_info.relay = false;
       printf_P(PSTR("ROLE: %S\n\r"),eeprom_info.relay ? PSTR("Relay") : PSTR("Leaf") );
-      if ( eeprom_info.flag == valid_eeprom_flag )
-	eeprom_update_block(&eeprom_info,address_at_eeprom_location,sizeof(eeprom_info));
-      else
-	printf_P(PSTR("Please assign an address to commit this role to EEPROM\r\n"));
+      eeprom_update_block(&eeprom_info,address_at_eeprom_location,sizeof(eeprom_info));
+      if ( ! eeprom_info.isValid() )
+	printf_P(PSTR("Please assign an address\r\n"));
     }
     else if ( c == 13 )
     {
@@ -96,7 +92,6 @@ void nodeconfig_listen(void)
       }
 
       // It is our address
-      eeprom_info.flag = valid_eeprom_flag;
       eeprom_info.address = address;
       eeprom_update_block(&eeprom_info,address_at_eeprom_location,sizeof(eeprom_info));
 
