@@ -312,15 +312,30 @@ void loop(void)
     RF24NetworkHeader header;
     S_message message;
     network.read(header,&message,sizeof(message));
-    printf_P(PSTR("%lu: APP Received #%u %s from 0%o\n\r"),millis(),header.id,message.toString(),header.from_node);
+    printf_P(PSTR("%lu: APP Received #%u type %c %s from 0%o\n\r"),millis(),header.id,header.type,message.toString(),header.from_node);
+
+    // If we get a message, that's a little odd, because this sketch doesn't run on the
+    // base node.  Possibly it's a test message from a child node.  Possibly it's a sensor
+    // calibration message from a parent node.
+    //
+    // Either way, it only matters if we're NOT sleeping, and also only useful it we have
+    // a temp sensor
 
     // If we have a temp sensor AND we are not sleeping
     if ( temp_pin > -1 && ( ! Sleep || test_mode ) )
     {
-      // Take a reading and prepare it as the ack payload for that child
-      S_message message;
-      message.temp_reading = measure_temp(); 
-      message.voltage_reading = measure_voltage(); 
+      // if the received message is a test message, we can respond with a 'C' message in return
+      if ( header.type == 's' )
+      {
+	// Take a reading
+	S_message response;
+	response.temp_reading = measure_temp(); 
+	response.voltage_reading = measure_voltage();
+
+	// Send it back as a calibration message
+	RF24NetworkHeader response_header(/*to node*/ header.from_node, /*type*/ 'C');
+	network.write(response_header,&response,sizeof(response));
+      }
     }
   }
 
