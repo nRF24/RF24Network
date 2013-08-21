@@ -69,6 +69,7 @@ void nodeconfig_listen(void)
       eeprom_info.relay = true;
       printf_P(PSTR("ROLE: %S\n\r"),eeprom_info.relay ? PSTR("Relay") : PSTR("Leaf") );
       eeprom_update_block(&eeprom_info,address_at_eeprom_location,sizeof(eeprom_info));
+      printf_P(PSTR("RESET NODE before changes take effect\r\n"));
       if ( ! eeprom_info.isValid() )
 	printf_P(PSTR("Please assign an address\r\n"));
     }
@@ -77,6 +78,7 @@ void nodeconfig_listen(void)
       eeprom_info.relay = false;
       printf_P(PSTR("ROLE: %S\n\r"),eeprom_info.relay ? PSTR("Relay") : PSTR("Leaf") );
       eeprom_update_block(&eeprom_info,address_at_eeprom_location,sizeof(eeprom_info));
+      printf_P(PSTR("RESET NODE before changes take effect\r\n"));
       if ( ! eeprom_info.isValid() )
 	printf_P(PSTR("Please assign an address\r\n"));
     }
