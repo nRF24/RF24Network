@@ -377,6 +377,10 @@ void loop(void)
 	  calibration_mode = false;
 	  calibration_leds.disable();
 	  printf_P(PSTR("%lu: APP Stop calibration mode. Calibrate by %04x\n\r"),millis(),calibration_data.result());
+
+	  // Now apply the calibration
+	  this_node.temp_calibration += calibration_data.result();
+	  // And save it to eeprom...
 	}
 
       }
