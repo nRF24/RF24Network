@@ -381,6 +381,7 @@ void loop(void)
 	  // Now apply the calibration
 	  this_node.temp_calibration += calibration_data.result();
 	  // And save it to eeprom...
+	  set_temp_calibration( this_node.temp_calibration );
 	}
 
       }

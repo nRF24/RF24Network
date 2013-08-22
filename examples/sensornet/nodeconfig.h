@@ -41,6 +41,7 @@ struct eeprom_info_t
 
 const eeprom_info_t& nodeconfig_read(void);
 void nodeconfig_listen(void);
+void set_temp_calibration(int16_t val);
 
 #endif // __NODECONFIG_H__
 

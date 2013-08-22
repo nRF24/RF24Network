@@ -93,10 +93,8 @@ void nodeconfig_listen(void)
       int8_t val = strtol(serialdata,NULL,16);
       nextserialat = serialdata;
       
-      eeprom_info.temp_calibration = val * 0x10;
-      printf_P(PSTR("TEMP: %02x\n\r"),eeprom_info.temp_calibration);
-
-      eeprom_update_block(&eeprom_info,address_at_eeprom_location,sizeof(eeprom_info));
+      set_temp_calibration( val * 0x10 );
+      
       printf_P(PSTR("RESET NODE before changes take effect\r\n"));
       if ( ! eeprom_info.isValid() )
 	printf_P(PSTR("Please assign an address\r\n"));
@@ -122,4 +120,12 @@ void nodeconfig_listen(void)
     }
   }
 }
+
+void set_temp_calibration(int16_t val)
+{
+  eeprom_info.temp_calibration = val;
+  printf_P(PSTR("TEMP: %02x\n\r"),eeprom_info.temp_calibration);
+  eeprom_update_block(&eeprom_info,address_at_eeprom_location,sizeof(eeprom_info));
+}
+
 // vim:ai:cin:sts=2 sw=2 ft=cpp
