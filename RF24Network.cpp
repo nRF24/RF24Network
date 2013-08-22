@@ -135,6 +135,16 @@ bool RF24Network::available(void)
 
 /******************************************************************/
 
+uint16_t RF24Network::parent() const
+{
+  if ( node_address == 0 )
+    return -1;
+  else
+    return parent_node;
+}
+
+/******************************************************************/
+
 void RF24Network::peek(RF24NetworkHeader& header)
 {
   if ( available() )
@@ -173,11 +183,6 @@ size_t RF24Network::read(RF24NetworkHeader& header,void* message, size_t maxlen)
 
 bool RF24Network::write(RF24NetworkHeader& header,const void* message, size_t len)
 {
-  // If the user is trying to send to his direct parent
-  if ( header.to_node == 0xffff )
-    // Fill in the correct value
-    header.to_node = parent_node;
-  
   // Fill out the header
   header.from_node = node_address;
 

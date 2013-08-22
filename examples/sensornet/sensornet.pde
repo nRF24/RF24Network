@@ -406,17 +406,22 @@ void loop(void)
     message.temp_reading = measure_temp(); 
     message.voltage_reading = measure_voltage(); 
 
-    printf_P(PSTR("---------------------------------\n\r"));
-    printf_P(PSTR("%lu: APP Sending %s to 0%o...\n\r"),millis(),message.toString(),0);
-   
     char message_type = 'S';
     if ( calibration_mode )
       message_type = 'c';
     else if (test_mode )
       message_type = 't';
 
-    // Send it to the base (regular readings) or just to our parent (test mode)
-    RF24NetworkHeader header(/*to node*/ test_mode ? -1 : 0, /*type*/ message_type);
+    // By default send to the base
+    uint16_t to_node = 0;
+    if ( test_mode )
+      // In test mode, sent to our parent.
+      to_node = network.parent();
+
+    printf_P(PSTR("---------------------------------\n\r"));
+    printf_P(PSTR("%lu: APP Sending type-%c %s to 0%o...\n\r"),millis(),message_type,message.toString(),to_node);
+   
+    RF24NetworkHeader header(to_node,message_type);
     bool ok = network.write(header,&message,sizeof(message));
     if (ok)
     {

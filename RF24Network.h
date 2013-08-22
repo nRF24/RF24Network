@@ -52,7 +52,7 @@ struct RF24NetworkHeader
    *  network.write(header,&message,sizeof(message));
    * @endcode
    *
-   * @param _to The logical node address where the message is going, or -1 for direct parent
+   * @param _to The logical node address where the message is going
    * @param _type The type of message which follows.  Only 0-127 are allowed for
    * user messages.
    */
@@ -147,6 +147,13 @@ public:
    */
   bool write(RF24NetworkHeader& header,const void* message, size_t len);
 
+  /**
+   * This node's parent address
+   * 
+   * @return This node's parent address, or -1 if this is the base 
+   */
+  uint16_t parent() const;
+ 
 protected:
   void open_pipes(void);
   uint16_t find_node( uint16_t current_node, uint16_t target_node );
