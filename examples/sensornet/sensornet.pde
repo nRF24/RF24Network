@@ -78,10 +78,10 @@ eeprom_info_t this_node;
 // a reading.  In real use, these numbers which be much higher.
 // Try wdt_8s and 7 cycles for one reading per minute.> 1
 const wdt_prescalar_e wdt_prescalar = wdt_8s;
-const int sleep_cycles_per_transmission = 1;
+const int sleep_cycles_per_transmission = 4;
 
 // Non-sleeping nodes need a timer to regulate their sending interval
-Timer send_timer(8000);
+Timer send_timer(32000);
 
 // Button controls functionality of the unit
 Button ButtonA(button_a);
@@ -295,7 +295,7 @@ void setup(void)
   // Prepare sleep parameters
   //
 
-  // Only the leaves sleep.  Nodes 01-05 are presumed to be relay nodes. 
+  // Only the leaves sleep. 
   if ( ! this_node.relay )
     Sleep.begin(wdt_prescalar,sleep_cycles_per_transmission);
 
@@ -343,17 +343,11 @@ void loop(void)
     network.read(header,&message,sizeof(message));
     printf_P(PSTR("%lu: APP Received #%u type %c %s from 0%o\n\r"),millis(),header.id,header.type,message.toString(),header.from_node);
 
-    // If we get a message, that's a little odd, because this sketch doesn't run on the
-    // base node.  Possibly it's a test message from a child node.  Possibly it's a sensor
-    // calibration message from a parent node.
-    //
-    // Either way, it only matters if we're NOT sleeping, and also only useful it we have
-    // a temp sensor
-
     // If we have a temp sensor AND we are not sleeping
     if ( temp_pin > -1 && ( ! Sleep || test_mode ) )
     {
-      // if the received message is a test message, we can respond with a 'C' message in return
+      // if the received message is a calibration request 'c' message, we can respond
+      // with a callibration response 'C' message in return
       if ( header.type == 'c' )
       {
 	// Take a reading
@@ -367,7 +361,7 @@ void loop(void)
       }
       else if ( header.type == 'C' )
       {
-	// This is a calibration message.  Calculate the diff
+	// This is a calibration response message.  Calculate the diff
 	uint16_t diff = message.temp_reading - measure_temp();
 	printf_P(PSTR("%lu: APP Calibration received %04x diff %04x\n\r"),millis(),message.temp_reading,diff);
 	calibration_data.add(diff);
