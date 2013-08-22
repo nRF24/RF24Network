@@ -243,6 +243,35 @@ uint32_t measure_voltage()
     return ( reading * voltage_reference ) >> 16; 
 }
 
+struct CalibrationData
+{
+  uint8_t measurements_remaining;
+  static const uint8_t measurements_needed = 16;
+  int16_t accumulator;
+
+  CalibrationData()
+  {
+    measurements_remaining = measurements_needed;
+    accumulator = 0;
+  }
+  void add(int16_t reading)
+  {
+    accumulator += reading / measurements_needed;
+    if ( measurements_remaining )
+      --measurements_remaining;
+  }
+  bool done() const
+  {
+    return measurements_remaining == 0;
+  }
+  int16_t result() const
+  {
+    return accumulator;
+  }
+};
+
+CalibrationData calibration_data;
+
 void setup(void)
 {
   //
@@ -341,6 +370,14 @@ void loop(void)
 	// This is a calibration message.  Calculate the diff
 	uint16_t diff = message.temp_reading - measure_temp();
 	printf_P(PSTR("%lu: APP Calibration received %04x diff %04x\n\r"),millis(),message.temp_reading,diff);
+	calibration_data.add(diff);
+
+	if ( calibration_data.done() )
+	{
+	  calibration_mode = false;
+	  calibration_leds.disable();
+	  printf_P(PSTR("%lu: APP Stop calibration mode. Calibrate by %04x\n\r"),millis(),calibration_data.result());
+	}
 
       }
     }
@@ -423,7 +460,6 @@ void loop(void)
     else if ( calibration_mode )
     {
       calibration_mode = false;
-      test_mode = true;
       calibration_leds.disable();
       printf_P(PSTR("%lu: APP Stop calibration mode\n\r"),millis());
     }
@@ -442,6 +478,7 @@ void loop(void)
   {
     calibration_mode = true;
     calibration_leds.reset();
+    calibration_data = CalibrationData();
     printf_P(PSTR("%lu: APP Start calibration mode\n\r"),millis());
   }
 
