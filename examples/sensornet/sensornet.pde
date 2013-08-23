@@ -82,6 +82,8 @@ struct K_message_t
 
 K_message_t system_config = { 0, 0 };
 
+uint8_t has_recent_system_config = false;
+
 // Number of packets we've failed to send since we last sent one
 // successfully
 uint16_t lost_packets = 0;
@@ -222,6 +224,8 @@ CalibrationLEDs calibration_leds(leds,num_leds);
 
 // Nodes in test mode do not sleep, but instead constantly try to send
 bool test_mode = false;
+bool user_test_mode = false;  // test mode initiated by user
+bool system_test_mode = false; // test mode initiated by system
 
 // Nodes in calibration mode are looking for temperature calibration
 bool calibration_mode = false;
@@ -377,6 +381,7 @@ void loop(void)
     }
     else if ( header.type == 'K' )
     {
+      has_recent_system_config = true;
       // parent has sent a configuration to us
       K_message_t message;
       network.read(header,&message,sizeof(message));
@@ -431,6 +436,36 @@ void loop(void)
     }
   }
 
+  // Handle the quest for a system config response message ('K').  If we haven't gotten one by the
+  // time the startup LED's finish, we'll go into test mode for a while looking for one.
+  if ( !has_recent_system_config && millis() < 10000 )
+  {
+    if ( ! system_test_mode )
+      printf_P(PSTR("%lu: APP Start system config mode\n\r"),millis());
+
+    system_test_mode = true;
+  }
+  else
+  {
+    if ( system_test_mode )
+      printf_P(PSTR("%lu: APP Stop system config mode\n\r"),millis());
+    
+    system_test_mode = false;
+  }
+
+  bool old_test_mode = test_mode;
+  test_mode = system_test_mode || user_test_mode;
+
+  if ( test_mode && ! old_test_mode )
+    send_timer.setInterval(1000);
+  else if ( !test_mode && old_test_mode )
+  {
+    send_timer.setInterval(8000 * sleep_cycles_per_transmission);
+    Green = false;
+    Red = false;
+    lost_packets = 0;
+  }
+
   // If we are the kind of node that sends readings, 
   // AND we have a temp sensor
   // AND it's time to send a reading 
@@ -453,8 +488,14 @@ void loop(void)
     char message_type = 'S';
     if ( calibration_mode )
       message_type = 'c';
-    else if (test_mode )
-      message_type = 't';
+    else if (test_mode)
+    {
+      // If we still don't have a config, we'll use our test mode to keep asking for them
+      if ( ! has_recent_system_config )
+	message_type = 'k';
+      else
+	message_type = 't';
+    }
 
     // By default send to the base
     uint16_t to_node = 0;
@@ -509,8 +550,7 @@ void loop(void)
     // Pressing it after turns off test mode.
     if ( startup_leds )
     {
-      test_mode = true;
-      send_timer.setInterval(1000);
+      user_test_mode = true;
       printf_P(PSTR("%lu: APP Start test mode\n\r"),millis());
     }
     else if ( calibration_mode )
@@ -519,19 +559,15 @@ void loop(void)
       calibration_leds.disable();
       printf_P(PSTR("%lu: APP Stop calibration mode\n\r"),millis());
     }
-    else if ( test_mode )
+    else if ( user_test_mode )
     {
-      test_mode = false;
-      Green = false;
-      Red = false;
-      send_timer.setInterval(8000 * sleep_cycles_per_transmission);
-      lost_packets = 0;
+      user_test_mode = false;
       printf_P(PSTR("%lu: APP Stop test mode\n\r"),millis());
     }
   }
 
   // Long press
-  if ( ButtonLong.wasPressed() && test_mode )
+  if ( ButtonLong.wasPressed() && user_test_mode )
   {
     calibration_mode = true;
     calibration_leds.reset();
