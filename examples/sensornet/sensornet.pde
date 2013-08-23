@@ -73,6 +73,15 @@ RF24Network network(radio);
 // Our node configuration 
 eeprom_info_t this_node;
 
+// System configuration
+struct K_message_t
+{
+  uint8_t revision; /* Which rev of the current system config? */
+  uint8_t sleep_cycles; /* How many 8s sleep cycles to wait between transmissions */
+};
+
+K_message_t system_config = { 0, 0 };
+
 // Number of packets we've failed to send since we last sent one
 // successfully
 uint16_t lost_packets = 0;
@@ -85,7 +94,7 @@ const wdt_prescalar_e wdt_prescalar = wdt_8s;
 const int sleep_cycles_per_transmission = 4;
 
 // Non-sleeping nodes need a timer to regulate their sending interval
-Timer send_timer(32000);
+Timer send_timer(8000 * sleep_cycles_per_transmission);
 
 // Button controls functionality of the unit
 Button ButtonA(button_a);
@@ -127,6 +136,9 @@ public:
 /**
  * Startup LED sequence.  Lights up the LEDs in sequence first, then dims 
  * them in the same sequence.
+ *
+ * Note that startup sequence should last long enough to get a 'K' response back
+ * from the parent!
  */
 
 class StartupLEDs: public Timer
@@ -153,7 +165,7 @@ protected:
     }
   }
 public:
-  StartupLEDs(const LED** _leds, int _num): Timer(250), leds(_leds), current(_leds), end(_leds+_num), state(true)
+  StartupLEDs(const LED** _leds, int _num): Timer(333), leds(_leds), current(_leds), end(_leds+_num), state(true)
   {
   }
 };
@@ -328,6 +340,15 @@ void setup(void)
   SPI.begin();
   radio.begin();
   network.begin(/*channel*/ 92, /*node address*/ this_node.address);
+
+  //
+  // Request configuration from parent
+  //
+
+  RF24NetworkHeader header(network.parent(),'k');
+  printf_P(PSTR("%lu: APP Sending type-%c to 0%o...\n\r"),millis(),header.type,header.to_node);
+  if ( ! network.write(header,NULL,0) )
+    printf_P(PSTR("Failed.\r\n"));
 }
 
 void loop(void)
@@ -343,9 +364,30 @@ void loop(void)
   {
     // If so, grab it and print it out
     RF24NetworkHeader header;
-    S_message message;
-    network.read(header,&message,sizeof(message));
-    printf_P(PSTR("%lu: APP Received #%u type %c %s from 0%o\n\r"),millis(),header.id,header.type,message.toString(),header.from_node);
+    network.peek(header);
+    printf_P(PSTR("%lu: APP Received #%u type %c from 0%o\n\r"),millis(),header.id,header.type,header.from_node);
+
+    // Handle config messages
+    if ( header.type == 'k' )
+    {
+      // child is requesting a configuration from us
+      network.read(header,NULL,0);
+      RF24NetworkHeader response_header(/*to node*/ header.from_node, /*type*/ 'K');
+      network.write(response_header,&system_config,sizeof(system_config));
+    }
+    else if ( header.type == 'K' )
+    {
+      // parent has sent a configuration to us
+      K_message_t message;
+      network.read(header,&message,sizeof(message));
+      if ( message.revision > system_config.revision )
+      {
+	memcpy(&system_config,&message,sizeof(system_config));
+	printf_P(PSTR("%lu: APP Accepted new config #%i: %i\n\r"),millis(),system_config.revision,system_config.sleep_cycles);
+
+      // TODO: Act on the new configuration!!
+      }
+    }
 
     // If we have a temp sensor AND we are not sleeping
     if ( temp_pin > -1 && ( ! Sleep || test_mode ) )
@@ -365,6 +407,9 @@ void loop(void)
       }
       else if ( header.type == 'C' )
       {
+	S_message message;
+	network.read(header,&message,sizeof(message));
+	
 	// This is a calibration response message.  Calculate the diff
 	uint16_t diff = message.temp_reading - measure_temp();
 	printf_P(PSTR("%lu: APP Calibration received %04x diff %04x\n\r"),millis(),message.temp_reading,diff);
@@ -413,7 +458,7 @@ void loop(void)
 
     // By default send to the base
     uint16_t to_node = 0;
-    if ( test_mode )
+    if ( test_mode ) 
       // In test mode, sent to our parent.
       to_node = network.parent();
 
@@ -479,7 +524,7 @@ void loop(void)
       test_mode = false;
       Green = false;
       Red = false;
-      send_timer.setInterval(8000);
+      send_timer.setInterval(8000 * sleep_cycles_per_transmission);
       lost_packets = 0;
       printf_P(PSTR("%lu: APP Stop test mode\n\r"),millis());
     }
