@@ -253,7 +253,12 @@ bool RF24Network::write(uint16_t to_node)
   radio.stopListening();
 
   // Put the frame on the pipe
-  ok = write_to_pipe( send_node, send_pipe );
+  int retries = 3;
+  do
+  {
+    ok = write_to_pipe( send_node, send_pipe );
+  }
+  while (!ok && retries--);
 
       // NOT NEEDED anymore.  Now all reading pipes are open to start.
 #if 0
