@@ -32,7 +32,7 @@ const eeprom_info_t& nodeconfig_read(void)
   {
     eeprom_info.clear();
 
-    printf_P(PSTR("*** No valid address found.  Send node address via serial of the form 011<cr>\n\r"));
+    printf_P(PSTR("*** No valid address found.  Send node address via serial of the form 011N\n\r"));
     while(1)
     {
       nodeconfig_listen();
@@ -99,7 +99,7 @@ void nodeconfig_listen(void)
       if ( ! eeprom_info.isValid() )
 	printf_P(PSTR("Please assign an address\r\n"));
     }
-    else if ( c == 13 )
+    else if ( c == 'n' )
     {
       // Convert to octal
       char *pc = serialdata;
@@ -110,13 +110,20 @@ void nodeconfig_listen(void)
 	address |= (*pc++ - '0');
       }
 
-      // It is our address
-      eeprom_info.address = address;
-      eeprom_update_block(&eeprom_info,address_at_eeprom_location,sizeof(eeprom_info));
+      if ( address > 0 )
+      {
+	// It is our address
+	eeprom_info.address = address;
+	eeprom_update_block(&eeprom_info,address_at_eeprom_location,sizeof(eeprom_info));
 
-      // And we are done right now (no easy way to soft reset)
-      printf_P(PSTR("\n\rManually set to address 0%o\n\rPress RESET to continue!"),address);
-      while(1);
+	// And we are done right now (no easy way to soft reset)
+	printf_P(PSTR("\n\rManually set to address 0%o\n\rPress RESET to continue!"),address);
+	while(1);
+      }
+      else
+      {
+	printf_P(PSTR("\n\rERROR: This sketch cannot run on node 00\r\n"));
+      }
     }
   }
 }
