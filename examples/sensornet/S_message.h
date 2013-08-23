@@ -23,6 +23,8 @@ struct S_message
 {
   uint16_t temp_reading;
   uint16_t voltage_reading;
+  uint8_t lost_packets;
+  uint8_t reserved;
   static char buffer[];
   S_message(void): temp_reading(0), voltage_reading(0) {}
   char* toString(void);

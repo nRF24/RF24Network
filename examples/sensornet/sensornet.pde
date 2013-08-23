@@ -73,6 +73,10 @@ RF24Network network(radio);
 // Our node configuration 
 eeprom_info_t this_node;
 
+// Number of packets we've failed to send since we last sent one
+// successfully
+uint16_t lost_packets = 0;
+
 // Sleep constants.  In this example, the watchdog timer wakes up
 // every 4s, and every single wakeup we power up the radio and send
 // a reading.  In real use, these numbers which be much higher.
@@ -399,6 +403,7 @@ void loop(void)
     S_message message;
     message.temp_reading = measure_temp(); 
     message.voltage_reading = measure_voltage(); 
+    message.lost_packets = min(lost_packets,0xff);
 
     char message_type = 'S';
     if ( calibration_mode )
@@ -421,12 +426,14 @@ void loop(void)
     {
       if ( test_mode && ! calibration_mode )
 	Green = true;
+      lost_packets = 0;
       printf_P(PSTR("%lu: APP Send ok\n\r"),millis());
     }
     else
     {
       if ( test_mode && ! calibration_mode )
 	Red = true;
+      ++lost_packets;
       printf_P(PSTR("%lu: APP Send failed\n\r"),millis());
     }
 
@@ -473,6 +480,7 @@ void loop(void)
       Green = false;
       Red = false;
       send_timer.setInterval(8000);
+      lost_packets = 0;
       printf_P(PSTR("%lu: APP Stop test mode\n\r"),millis());
     }
   }
