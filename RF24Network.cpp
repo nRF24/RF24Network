@@ -165,14 +165,18 @@ size_t RF24Network::read(RF24NetworkHeader& header,void* message, size_t maxlen)
     // Move the pointer back one in the queue 
     next_frame -= frame_size;
     uint8_t* frame = next_frame;
-      
-    // How much buffer size should we actually copy?
-    bufsize = min(maxlen,frame_size-sizeof(RF24NetworkHeader));
-
-    // Copy the next available frame from the queue into the provided buffer
+     
     memcpy(&header,frame,sizeof(RF24NetworkHeader));
-    memcpy(message,frame+sizeof(RF24NetworkHeader),bufsize);
-    
+   
+    if (maxlen > 0)
+    {
+      // How much buffer size should we actually copy?
+      bufsize = min(maxlen,frame_size-sizeof(RF24NetworkHeader));
+
+      // Copy the next available frame from the queue into the provided buffer
+      memcpy(message,frame+sizeof(RF24NetworkHeader),bufsize);
+    }
+
     IF_SERIAL_DEBUG(printf_P(PSTR("%lu: NET Received %s\n\r"),millis(),header.toString()));
   }
 
