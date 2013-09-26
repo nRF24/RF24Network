@@ -38,6 +38,7 @@ struct RF24NetworkHeader
   /**
    * Default constructor
    *
+   
    * Simply constructs a blank header
    */
   RF24NetworkHeader() {}

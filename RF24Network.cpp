@@ -30,6 +30,9 @@ void RF24Network::begin(uint8_t _channel, uint16_t _node_address )
 
   node_address = _node_address;
 
+  if ( ! radio.isValid() )
+    return;
+
   // Set up the radio the way we want it to look
   radio.setChannel(_channel);
   radio.setDataRate(RF24_1MBPS);
@@ -54,7 +57,7 @@ void RF24Network::update(void)
 {
   // if there is data ready
   uint8_t pipe_num;
-  while ( radio.available(&pipe_num) )
+  while ( radio.isValid() && radio.available(&pipe_num) )
   {
     // Dump the payloads until we've gotten everything
     boolean done = false;
