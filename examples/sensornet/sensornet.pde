@@ -93,10 +93,10 @@ uint16_t lost_packets = 0;
 // a reading.  In real use, these numbers which be much higher.
 // Try wdt_8s and 7 cycles for one reading per minute.> 1
 const wdt_prescalar_e wdt_prescalar = wdt_8s;
-const int sleep_cycles_per_transmission = 4;
+uint8_t sleep_cycles_per_transmission = 4;
 
 // Non-sleeping nodes need a timer to regulate their sending interval
-Timer send_timer(8000 * sleep_cycles_per_transmission);
+Timer send_timer(8000UL * (uint32_t)sleep_cycles_per_transmission);
 
 // Button controls functionality of the unit
 Button ButtonA(button_a);
@@ -371,13 +371,20 @@ void loop(void)
     network.peek(header);
     printf_P(PSTR("%lu: APP Received #%u type %c from 0%o\n\r"),millis(),header.id,header.type,header.from_node);
 
+    // Child node is just testing
+    if ( header.type == 't' )
+    {
+      // clear message from queue
+      network.read(header,NULL,0);
+    }
     // Handle config messages
-    if ( header.type == 'k' )
+    else if ( header.type == 'k' )
     {
       // child is requesting a configuration from us
       network.read(header,NULL,0);
       RF24NetworkHeader response_header(/*to node*/ header.from_node, /*type*/ 'K');
       network.write(response_header,&system_config,sizeof(system_config));
+      printf_P(PSTR("%lu: APP Sending new config #%i: %i to 0%o\n\r"),millis(),system_config.revision,system_config.sleep_cycles,header.from_node);
     }
     else if ( header.type == 'K' )
     {
@@ -390,7 +397,9 @@ void loop(void)
 	memcpy(&system_config,&message,sizeof(system_config));
 	printf_P(PSTR("%lu: APP Accepted new config #%i: %i\n\r"),millis(),system_config.revision,system_config.sleep_cycles);
 
-      // TODO: Act on the new configuration!!
+      // Act on the new configuration!!
+      sleep_cycles_per_transmission = system_config.sleep_cycles; 
+      send_timer.setInterval(8000UL * (uint32_t)sleep_cycles_per_transmission);
       }
     }
 
@@ -401,6 +410,9 @@ void loop(void)
       // with a callibration response 'C' message in return
       if ( header.type == 'c' )
       {
+	// clear message from queue
+	network.read(header,NULL,0);
+	
 	// Take a reading
 	S_message response;
 	response.temp_reading = measure_temp(); 
@@ -409,27 +421,32 @@ void loop(void)
 	// Send it back as a calibration message
 	RF24NetworkHeader response_header(/*to node*/ header.from_node, /*type*/ 'C');
 	network.write(response_header,&response,sizeof(response));
+	printf_P(PSTR("%lu: APP Sending calibration to 0%o\n\r"),millis(),header.from_node);
       }
       else if ( header.type == 'C' )
       {
 	S_message message;
 	network.read(header,&message,sizeof(message));
 	
-	// This is a calibration response message.  Calculate the diff
-	uint16_t diff = message.temp_reading - measure_temp();
-	printf_P(PSTR("%lu: APP Calibration received %04x diff %04x\n\r"),millis(),message.temp_reading,diff);
-	calibration_data.add(diff);
-
-	if ( calibration_data.done() )
+	// This is a calibration response message
+	if ( calibration_mode )
 	{
-	  calibration_mode = false;
-	  calibration_leds.disable();
-	  printf_P(PSTR("%lu: APP Stop calibration mode. Calibrate by %04x\n\r"),millis(),calibration_data.result());
+	  // Calculate the diff
+	  uint16_t diff = message.temp_reading - measure_temp();
+	  printf_P(PSTR("%lu: APP Calibration received %04x diff %04x\n\r"),millis(),message.temp_reading,diff);
+	  calibration_data.add(diff);
 
-	  // Now apply the calibration
-	  this_node.temp_calibration += calibration_data.result();
-	  // And save it to eeprom...
-	  set_temp_calibration( this_node.temp_calibration );
+	  if ( calibration_data.done() )
+	  {
+	    calibration_mode = false;
+	    calibration_leds.disable();
+	    printf_P(PSTR("%lu: APP Stop calibration mode. Calibrate by %04x\n\r"),millis(),calibration_data.result());
+
+	    // Now apply the calibration
+	    this_node.temp_calibration += calibration_data.result();
+	    // And save it to eeprom...
+	    set_temp_calibration( this_node.temp_calibration );
+	  }
 	}
 
       }
@@ -457,10 +474,10 @@ void loop(void)
   test_mode = system_test_mode || user_test_mode;
 
   if ( test_mode && ! old_test_mode )
-    send_timer.setInterval(1000);
+    send_timer.setInterval(2000);
   else if ( !test_mode && old_test_mode )
   {
-    send_timer.setInterval(8000 * sleep_cycles_per_transmission);
+    send_timer.setInterval(8000UL * (uint32_t)sleep_cycles_per_transmission);
     Green = false;
     Red = false;
     lost_packets = 0;
