@@ -397,9 +397,10 @@ void loop(void)
 	memcpy(&system_config,&message,sizeof(system_config));
 	printf_P(PSTR("%lu: APP Accepted new config #%i: %i\n\r"),millis(),system_config.revision,system_config.sleep_cycles);
 
-      // Act on the new configuration!!
-      sleep_cycles_per_transmission = system_config.sleep_cycles; 
-      send_timer.setInterval(8000UL * (uint32_t)sleep_cycles_per_transmission);
+	// Act on the new configuration!!
+	sleep_cycles_per_transmission = system_config.sleep_cycles; 
+	send_timer.setInterval(8000UL * (uint32_t)sleep_cycles_per_transmission);
+	Sleep.setSleepCycles(sleep_cycles_per_transmission);
       }
     }
 

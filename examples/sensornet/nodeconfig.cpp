@@ -9,6 +9,7 @@
 #include "RF24Network_config.h"
 #include <avr/eeprom.h>
 #include <avr/pgmspace.h>
+#include "eeprom_update_block.h"
 #include "nodeconfig.h"
 
 // Where in EEPROM is the address stored?

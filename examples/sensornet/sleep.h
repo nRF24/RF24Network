@@ -66,6 +66,14 @@ public:
     return sleep_cycles_per_transmission;
   }
 
+  /**
+   * Set the sleep cycles
+   */
+  void setSleepCycles(short cycles)
+  {
+    sleep_cycles_per_transmission = cycles;
+  }
+
 private:
   volatile short sleep_cycles_remaining;
   short sleep_cycles_per_transmission; 
