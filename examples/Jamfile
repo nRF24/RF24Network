@@ -1,6 +1,0 @@
-SubDir TOP libraries RF24Network examples ;
-
-SubInclude TOP libraries RF24Network examples sensornet ;
-SubInclude TOP libraries RF24Network examples helloworld_rx ;
-SubInclude TOP libraries RF24Network examples helloworld_tx ;
-SubInclude TOP libraries RF24Network examples meshping ;

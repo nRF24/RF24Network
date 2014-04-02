@@ -4,6 +4,8 @@
  This program is free software; you can redistribute it and/or
  modify it under the terms of the GNU General Public License
  version 2 as published by the Free Software Foundation.
+ 
+ Update 2014 - TMRh20
  */
 
 /**
@@ -17,30 +19,20 @@
 #include <RF24.h>
 #include <SPI.h>
 
-// nRF24L01(+) radio attached using Getting Started board 
-RF24 radio(9,10);
+RF24 radio(9,10);                    // nRF24L01(+) radio attached using Getting Started board 
 
-// Network uses that radio
-RF24Network network(radio);
+RF24Network network(radio);          // Network uses that radio
 
-// Address of our node
-const uint16_t this_node = 1;
+const uint16_t this_node = 1;        // Address of our node
+const uint16_t other_node = 0;       // Address of the other node
 
-// Address of the other node
-const uint16_t other_node = 0;
+const unsigned long interval = 2000; //ms  // How often to send 'hello world to the other unit
 
-// How often to send 'hello world to the other unit
-const unsigned long interval = 2000; //ms
+unsigned long last_sent;             // When did we last send?
+unsigned long packets_sent;          // How many have we sent already
 
-// When did we last send?
-unsigned long last_sent;
 
-// How many have we sent already
-unsigned long packets_sent;
-
-// Structure of our payload
-struct payload_t
-{
+struct payload_t {                  // Structure of our payload
   unsigned long ms;
   unsigned long counter;
 };
@@ -55,13 +47,12 @@ void setup(void)
   network.begin(/*channel*/ 90, /*node address*/ this_node);
 }
 
-void loop(void)
-{
-  // Pump the network regularly
-  network.update();
+void loop() {
+  
+  network.update();                          // Check the network regularly
 
-  // If it's time to send a message, send it!
-  unsigned long now = millis();
+  
+  unsigned long now = millis();              // If it's time to send a message, send it!
   if ( now - last_sent >= interval  )
   {
     last_sent = now;
@@ -76,4 +67,5 @@ void loop(void)
       Serial.println("failed.");
   }
 }
-// vim:ai:cin:sts=2 sw=2 ft=cpp
+
+

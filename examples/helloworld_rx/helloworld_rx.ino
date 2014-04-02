@@ -4,6 +4,8 @@
  This program is free software; you can redistribute it and/or
  modify it under the terms of the GNU General Public License
  version 2 as published by the Free Software Foundation.
+ 
+ Update 2014 - TMRh20
  */
 
 /**
@@ -17,24 +19,18 @@
 #include <RF24.h>
 #include <SPI.h>
 
-// nRF24L01(+) radio attached using Getting Started board 
-RF24 radio(9,10);
 
-// Network uses that radio
-RF24Network network(radio);
+RF24 radio(9,10);                // nRF24L01(+) radio attached using Getting Started board 
 
-// Address of our node
-const uint16_t this_node = 0;
+RF24Network network(radio);      // Network uses that radio
+const uint16_t this_node = 0;    // Address of our node
+const uint16_t other_node = 1;   // Address of the other node
 
-// Address of the other node
-const uint16_t other_node = 1;
-
-// Structure of our payload
-struct payload_t
-{
+struct payload_t {                 // Structure of our payload
   unsigned long ms;
   unsigned long counter;
 };
+
 
 void setup(void)
 {
@@ -46,16 +42,14 @@ void setup(void)
   network.begin(/*channel*/ 90, /*node address*/ this_node);
 }
 
-void loop(void)
-{
-  // Pump the network regularly
-  network.update();
+void loop(void){
+  
+  network.update();                  // Check the network regularly
 
-  // Is there anything ready for us?
-  while ( network.available() )
-  {
-    // If so, grab it and print it out
-    RF24NetworkHeader header;
+  
+  while ( network.available() ) {     // Is there anything ready for us?
+    
+    RF24NetworkHeader header;        // If so, grab it and print it out
     payload_t payload;
     network.read(header,&payload,sizeof(payload));
     Serial.print("Received packet #");
@@ -64,4 +58,4 @@ void loop(void)
     Serial.println(payload.ms);
   }
 }
-// vim:ai:cin:sts=2 sw=2 ft=cpp
+

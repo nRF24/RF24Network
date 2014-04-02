@@ -9,11 +9,15 @@
 #include "RF24Network_config.h"
 #include "RF24.h"
 #include "RF24Network.h"
+#include <avr/sleep.h>
+#include <avr/power.h>
 
 uint16_t RF24NetworkHeader::next_id = 1;
 
 uint64_t pipe_address( uint16_t node, uint8_t pipe );
 bool is_valid_address( uint16_t node );
+
+volatile short sleepCounter = 0;
 
 /******************************************************************/
 
@@ -40,7 +44,7 @@ void RF24Network::begin(uint8_t _channel, uint16_t _node_address )
 
   // Setup our address helper cache
   setup_address();
-  
+
   // Open up all listening pipes
   int i = 6;
   while (i--)
@@ -61,10 +65,10 @@ void RF24Network::update(void)
   {
     // Dump the payloads until we've gotten everything
     boolean done = false;
-    while (!done)
+    while (radio.available())
     {
       // Fetch the payload, and see if this was the last one.
-      done = radio.read( frame_buffer, sizeof(frame_buffer) );
+      radio.read( frame_buffer, sizeof(frame_buffer) );
 
       // Read the beginning of the frame as the header
       const RF24NetworkHeader& header = * reinterpret_cast<RF24NetworkHeader*>(frame_buffer);
@@ -108,14 +112,14 @@ void RF24Network::update(void)
 bool RF24Network::enqueue(void)
 {
   bool result = false;
-  
+
   IF_SERIAL_DEBUG(printf_P(PSTR("%lu: NET Enqueue @%x "),millis(),next_frame-frame_queue));
 
   // Copy the current frame into the frame queue
   if ( next_frame < frame_queue + sizeof(frame_queue) )
   {
     memcpy(next_frame,frame_buffer, frame_size );
-    next_frame += frame_size; 
+    next_frame += frame_size;
 
     result = true;
     IF_SERIAL_DEBUG(printf_P(PSTR("ok\n\r")));
@@ -165,12 +169,12 @@ size_t RF24Network::read(RF24NetworkHeader& header,void* message, size_t maxlen)
 
   if ( available() )
   {
-    // Move the pointer back one in the queue 
+    // Move the pointer back one in the queue
     next_frame -= frame_size;
     uint8_t* frame = next_frame;
-     
+
     memcpy(&header,frame,sizeof(RF24NetworkHeader));
-   
+
     if (maxlen > 0)
     {
       // How much buffer size should we actually copy?
@@ -219,7 +223,7 @@ bool RF24Network::write(RF24NetworkHeader& header,const void* message, size_t le
 bool RF24Network::write(uint16_t to_node)
 {
   bool ok = false;
-  
+
   // Throw it away if it's not a valid address
   if ( !is_valid_address(to_node) )
     return false;
@@ -231,7 +235,7 @@ bool RF24Network::write(uint16_t to_node)
   uint16_t send_node = parent_node;
   // On which pipe
   uint8_t send_pipe = parent_pipe;
-  
+
   // If the node is a direct child,
   if ( is_direct_child(to_node) )
   {
@@ -249,19 +253,14 @@ bool RF24Network::write(uint16_t to_node)
     send_node = direct_child_route_to(to_node);
     send_pipe = 0;
   }
-  
+
   IF_SERIAL_DEBUG(printf_P(PSTR("%lu: MAC Sending to 0%o via 0%o on pipe %x\n\r"),millis(),to_node,send_node,send_pipe));
 
   // First, stop listening so we can talk
   radio.stopListening();
 
-  // Put the frame on the pipe
-  int retries = 3;
-  do
-  {
-    ok = write_to_pipe( send_node, send_pipe );
-  }
-  while (!ok && retries--);
+  ok = write_to_pipe( send_node, send_pipe );
+
 
       // NOT NEEDED anymore.  Now all reading pipes are open to start.
 #if 0
@@ -284,19 +283,14 @@ bool RF24Network::write(uint16_t to_node)
 bool RF24Network::write_to_pipe( uint16_t node, uint8_t pipe )
 {
   bool ok = false;
-  
+
   uint64_t out_pipe = pipe_address( node, pipe );
- 
-  // Open the correct pipe for writing.  
+
+  // Open the correct pipe for writing.
   radio.openWritingPipe(out_pipe);
 
-  // Retry a few times
-  short attempts = 5;
-  do
-  {
-    ok = radio.write( frame_buffer, frame_size );
-  }
-  while ( !ok && --attempts );
+  radio.writeFast(frame_buffer, frame_size);
+  ok = radio.txStandBy(txTimeout);
 
   IF_SERIAL_DEBUG(printf_P(PSTR("%lu: MAC Sent on %lx %S\n\r"),millis(),(uint32_t)out_pipe,ok?PSTR("ok"):PSTR("failed")));
 
@@ -350,7 +344,7 @@ void RF24Network::setup_address(void)
   uint16_t node_mask_check = 0xFFFF;
   while ( node_address & node_mask_check )
     node_mask_check <<= 3;
-  
+
   node_mask = ~ node_mask_check;
 
   // parent mask is the next level down
@@ -390,7 +384,7 @@ uint8_t RF24Network::pipe_to_descendant( uint16_t node )
 {
   uint16_t i = node;
   uint16_t m = node_mask;
-  
+
   while (m)
   {
     i >>= 3;
@@ -432,12 +426,12 @@ uint64_t pipe_address( uint16_t node, uint8_t pipe )
 
   out[0] = pipe_segment[pipe];
 
-  uint8_t w; 
+  uint8_t w;
   short i = 4;
   short shift = 12;
   while(i--)
   {
-    w = ( node >> shift ) & 0xF ; 
+    w = ( node >> shift ) & 0xF ;
     w |= ~w << 4;
     out[i+1] = w;
 
@@ -449,4 +443,48 @@ uint64_t pipe_address( uint16_t node, uint8_t pipe )
   return result;
 }
 
-// vim:ai:cin:sts=2 sw=2 ft=cpp
+
+/************************ Sleep Mode ******************************************/
+
+
+void wakeUp(){									// Interrupt for waking up
+  sleep_disable();
+}
+
+ISR(WDT_vect){
+	--sleepCounter;								// Decrement the sleep cycle counter
+}
+
+void goToSleep(int pin){
+  	set_sleep_mode(SLEEP_MODE_PWR_DOWN); 		// sleep mode is set here
+  	sleep_enable();
+  	WDTCSR |= _BV(WDIE);
+	if(pin != 255){
+		attachInterrupt(pin,wakeUp,FALLING);
+	}
+	sleep_mode();
+}
+
+void RF24Network::sleepNode( unsigned int cycles, int interruptPin ){
+
+  pinMode(interruptPin,INPUT_PULLUP);
+  digitalWrite(interruptPin,HIGH);
+  if(cycles > 0){
+	sleepCounter = cycles;
+	MCUSR &= ~_BV(WDRF);                      	// Clear the WDT System Reset Flag
+	WDTCSR = _BV(WDCE) | _BV(WDE);            	// Write the WDT Change enable bit to enable changing the prescaler and enable system reset
+    WDTCSR = _BV(WDCE) | B00000110;				// Write the prescalar bits (1second sleep cycles
+
+  	while(sleepCounter > 0){						// If using WDT, sleep for
+		goToSleep(interruptPin);
+	}
+  }else{
+		goToSleep(interruptPin);
+  }                                    			// The WDT_vect interrupt wakes the MCU from here
+  sleep_disable();                     			// System continues execution here when watchdog timed out
+  detachInterrupt(interruptPin);  				// Detach the pin interrupt
+  WDTCSR &= ~_BV(WDIE);
+
+
+}
+
