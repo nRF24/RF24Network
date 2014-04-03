@@ -26,13 +26,10 @@
  * Below that are children 5 (022) and 6 (025), and so on as shown below 
  * The tree below represents the possible network topology with the addresses defined lower down
  *
- *     Addresses/Topology                   Node Numbers  (To simplify address assignment in this demonstration)
- *             00        - Master Node         ( 0 )
- *           02  05      - 1st Level children ( 1,2 )
- *          12    15     - 2nd Level children ( 3,4 )
- *         22      25    - 3rd Level children ( 5,6 )
- *        32        35   - 4th Level          ( 7,8 )
- *                   45
+ *     Addresses/Topology                            Node Numbers  (To simplify address assignment in this demonstration)
+ *             00                  - Master Node         ( 0 )
+ *           02  05                - 1st Level children ( 1,2 )
+ *    32 22 12    15 25 35 45    - 2nd Level children (7,5,3-4,6,8)
  *
  * eg:
  * For node 4 (Address 015) to contact node 1 (address 02), it will send through node 2 (address 05) which relays the payload

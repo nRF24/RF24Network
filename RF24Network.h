@@ -248,11 +248,11 @@ private:
 /**
  * @example Network_Sleep_Timeouts.ino
  *
- * Example: This is almost exactly the same as the Network_Ping example, but with use  
- * of the integrated sleep mode and extended timeout periods.  
- *   
+ * Example: This is almost exactly the same as the Network_Ping example, but with use
+ * of the integrated sleep mode and extended timeout periods.
+ *
  * <br><br>
- * <b> &nbsp;&nbsp;&nbsp; SLEEP_MODE: </b>  
+ * <b> &nbsp;&nbsp;&nbsp; SLEEP_MODE: </b>
  * - Sleep mode is set with the command radio.sleepNode(<seconds>, <interrupt pin>);  <br>
  * - The node itself will sleep, with the radio in Standby-I mode, drawing 22uA compared to .9uA in powerdown mode.  <br>
  * - Sleep mode uses the WatchDog Timer (WDT) to sleep in 1-second intervals, or is awoken by the radio interrupt pin going  <br>
@@ -308,7 +308,7 @@ private:
  * 				   StandBy-I mode uses 22uA compared to 0.9uA in full power down mode. The Arduino is allowed to sleep,
  *				   and is awoken via interrupt when payloads are received, or via a user defined time period. See the docs.
  * @li <b>New</b> (2014): Extended timeouts. The maximum timeout period is approximately 60ms per payload with max delay between retries, and
- * 				   max retries set. Ths new txTimeout variable allows fully automated extended timeout periods via auto-retry/auto-reUse of payloads. 
+ * 				   max retries set. Ths new txTimeout variable allows fully automated extended timeout periods via auto-retry/auto-reUse of payloads.
  * @li <b>New</b> (2014): Optimization to the core library provides improvements to reliability, speed and efficiency. See https://github.com/TMRh20/RF24 for more info.
  * @li Host Addressing.  Each node has a logical address on the local network.
  * @li Message Forwarding.  Messages can be sent from one node to any other, and
@@ -352,14 +352,14 @@ private:
  * @li The largest node address is 05555, so 3,125 nodes are allowed on a single channel.
  * An example topology is shown below, with 5 nodes in direct communication with the master node,
  * and multiple leaf nodes spread out at a distance, using intermediate nodes to reach other nodes.
- * 
+ *
  *|   |    | 00 |    |    | 00 |    |    |    | Master Node (00)                                    |
  *|---|----|----|----|----|----|----|----|----|-----------------------------------------------------|
  *|   |    | 01 |    |    | 04 |    |    |    | 1st level children of master (00)                   |
  *|   | 011|    |021 |    |    |014 |    |    | 2nd level children of master. Children of 1st level.|
  *|111|    |    |    |121 |    |    | 114|    | 3rd level children of master. Children of 2nd level.|
  *|   |    |    |    |1114|    |1114|2114|3114| 4th level children of master. Children of 3rd level.|
- * 
+ *
  * @section Routing How routing is handled
  *
  * When sending a message using RF24Network::write(), you fill in the header with the logical
@@ -383,16 +383,12 @@ private:
  * By default all nodes are always listening, so messages will quickly reach
  * their destination.
  *
- * You may choose to sleep any nodes which do not have any active children on the network
- * (i.e. leaf nodes).  This is useful in a case where
- * the leaf nodes are operating on batteries and need to sleep.
- * This is useful for a sensor network.  The leaf nodes can sleep most of the time, and wake
- * every few minutes to send in a reading.  However, messages cannot be sent to these
- * sleeping nodes.
+ * You may choose to sleep any nodes on the network. This is useful in a case where the
+ * leaf nodes are operating on batteries and need to sleep. This is useful for a sensor
+ * network.  The leaf nodes can sleep most of the time, and wake every few minutes to
+ * send in a reading, or awake if data is received. See sleepNode() in the class
+ * documentation.
  *
- * In the future, I plan to write a system where messages can still be passed upward from
- * the base, and get delivered when a sleeping node is ready to receive them.  The radio
- * and underlying driver support 'ack payloads', which will be a handy mechanism for this.
  *
  * @page Zigbee Comparison to ZigBee
  *
