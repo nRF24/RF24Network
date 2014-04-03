@@ -383,11 +383,11 @@ private:
  * By default all nodes are always listening, so messages will quickly reach
  * their destination.
  *
- * You may choose to sleep any nodes on the network. This is useful in a case where the
- * leaf nodes are operating on batteries and need to sleep. This is useful for a sensor
- * network.  The leaf nodes can sleep most of the time, and wake every few minutes to
- * send in a reading, or awake if data is received. See sleepNode() in the class
- * documentation.
+ * You may choose to sleep any nodes on the network if using interrupts. This is useful in a
+ * case where the nodes are operating on batteries and need to sleep. This greatly decreases
+ * the power requirements for a sensor network. The leaf nodes can sleep most of the time,
+ * and wake every few minutes to send in a reading. Routing nodes can be triggered to wake up
+ * whenever a payload is received See sleepNode() in the class documentation.
  *
  *
  * @page Zigbee Comparison to ZigBee
