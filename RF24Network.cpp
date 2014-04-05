@@ -9,15 +9,18 @@
 #include "RF24Network_config.h"
 #include "RF24.h"
 #include "RF24Network.h"
-#include <avr/sleep.h>
-#include <avr/power.h>
+
+#ifndef __arm__
+	#include <avr/sleep.h>
+	#include <avr/power.h>
+#endif
 
 uint16_t RF24NetworkHeader::next_id = 1;
 
 uint64_t pipe_address( uint16_t node, uint8_t pipe );
 bool is_valid_address( uint16_t node );
 
-volatile short sleepCounter = 0;
+volatile byte sleep_cycles_remaining;
 
 /******************************************************************/
 
@@ -42,6 +45,13 @@ void RF24Network::begin(uint8_t _channel, uint16_t _node_address )
   radio.setDataRate(RF24_1MBPS);
   radio.setCRCLength(RF24_CRC_16);
 
+  radio.maskIRQ(1,1,0); //TX,FAIL,RX
+  radio.enableAckPayload();
+  radio.enableDynamicPayloads();
+  radio.setPayloadSize(frame_size);
+  radio.setAutoAck(1);
+
+
   // Setup our address helper cache
   setup_address();
 
@@ -50,9 +60,7 @@ void RF24Network::begin(uint8_t _channel, uint16_t _node_address )
   while (i--)
     radio.openReadingPipe(i,pipe_address(_node_address,i));
   radio.startListening();
-
-  // Spew debugging state about the radio
-  radio.printDetails();
+  radio.powerUp();
 }
 
 /******************************************************************/
@@ -79,6 +87,14 @@ void RF24Network::update(void)
       // Throw it away if it's not a valid address
       if ( !is_valid_address(header.to_node) )
 	continue;
+
+
+      //TMRh20
+      // Throw it away if its a sleep packet
+      if (header.type == 'S'){
+		     continue; //Discard the payload
+
+	  }
 
       // Is this for us?
       if ( header.to_node == node_address )
@@ -447,44 +463,59 @@ uint64_t pipe_address( uint16_t node, uint8_t pipe )
 /************************ Sleep Mode ******************************************/
 
 
-void wakeUp(){									// Interrupt for waking up
+
+
+#if !defined( __AVR_ATtiny85__ ) || defined( __AVR_ATtiny84__) || defined(__arm__)
+
+RF24NetworkHeader sleepHeader(/*to node*/ 00, /*type*/ 'S' /*Sleep*/);
+
+bool awoke = 0;
+
+void wakeUp(){
+  //detachInterrupt(0);
   sleep_disable();
+  sleep_cycles_remaining = 0;
+  awoke = 1;
 }
 
 ISR(WDT_vect){
-	--sleepCounter;								// Decrement the sleep cycle counter
+  --sleep_cycles_remaining;
+
 }
 
-void goToSleep(int pin){
-  	set_sleep_mode(SLEEP_MODE_PWR_DOWN); 		// sleep mode is set here
-  	sleep_enable();
-  	WDTCSR |= _BV(WDIE);
-	if(pin != 255){
-		attachInterrupt(pin,wakeUp,FALLING);
-	}
-	sleep_mode();
-}
 
 void RF24Network::sleepNode( unsigned int cycles, int interruptPin ){
 
-  pinMode(interruptPin,INPUT_PULLUP);
-  digitalWrite(interruptPin,HIGH);
-  if(cycles > 0){
-	sleepCounter = cycles;
-	MCUSR &= ~_BV(WDRF);                      	// Clear the WDT System Reset Flag
-	WDTCSR = _BV(WDCE) | _BV(WDE);            	// Write the WDT Change enable bit to enable changing the prescaler and enable system reset
-    WDTCSR = _BV(WDCE) | B00000110;				// Write the prescalar bits (1second sleep cycles
 
-  	while(sleepCounter > 0){						// If using WDT, sleep for
-		goToSleep(interruptPin);
-	}
-  }else{
-		goToSleep(interruptPin);
-  }                                    			// The WDT_vect interrupt wakes the MCU from here
-  sleep_disable();                     			// System continues execution here when watchdog timed out
-  detachInterrupt(interruptPin);  				// Detach the pin interrupt
+  sleep_cycles_remaining = cycles;
+  set_sleep_mode(SLEEP_MODE_PWR_DOWN); // sleep mode is set here
+  sleep_enable();
+  if(interruptPin != 255){
+  	attachInterrupt(interruptPin,wakeUp,LOW);
+  }
+  WDTCSR |= _BV(WDIE);
+  while(sleep_cycles_remaining){
+	uint8_t junk = 23;
+    write(sleepHeader,&junk,1);
+    sleep_mode();                        // System sleeps here
+  }                                     // The WDT_vect interrupt wakes the MCU from here
+  sleep_disable();                     // System continues execution here when watchdog timed out
+  if(awoke){ update(); awoke = 0; }
+  detachInterrupt(interruptPin);
   WDTCSR &= ~_BV(WDIE);
-
+  radio.startListening();
 
 }
 
+void RF24Network::setup_watchdog(uint8_t prescalar){
+
+  uint8_t wdtcsr = prescalar & 7;
+  if ( prescalar & 8 )
+    wdtcsr |= _BV(WDP3);
+  MCUSR &= ~_BV(WDRF);                      // Clear the WD System Reset Flag
+  WDTCSR = _BV(WDCE) | _BV(WDE);            // Write the WD Change enable bit to enable changing the prescaler and enable system reset
+  WDTCSR = _BV(WDCE) | wdtcsr | _BV(WDIE);  // Write the prescalar bits (how long to sleep, enable the interrupt to wake the MCU
+}
+
+
+#endif

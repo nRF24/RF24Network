@@ -163,11 +163,10 @@ public:
 /**
    * Sleep this node
    * @note NEW - Nodes can now be slept while the radio is not actively transmitting.
-   * @note Setting cycles to 0 will disable the timed wakeup.
    * @note Setting the interruptPin to 255 will disable interrupt wake-ups
    *
-   * This function will sleep the node only, while leaving the radio active in StandBy-I mode, which consumes
-   * 22uA compared to 0.9uA in full powerDown() mode.
+   * This function will sleep the node, with the radio mostly powered down in StandBy-I mode, which consumes
+   * .000022mA compared to 13.5mA in receive mode.
    *
    * The node can be awoken in two ways, both of which can be enabled simultaneously:
    * 1. An interrupt - usually triggered by the radio receiving a payload. Must use pin 2 (interrupt 0) or 3 (interrupt 1) on Uno, Nano, etc.
@@ -176,14 +175,26 @@ public:
    * if(!network.available()){ network.sleepNode(1,0); }  //Sleeps the node for 1 second or a payload is received
    *
    * Other options:
-   * network.sleepNode(0,0);         // Sleep this node forever or until a payload is received.
-   * network.sleepNode(1,255);       // Sleep this node for 1 second. Do not wake up until then, even if a payload is received ( no interrupt )
+   * network.sleepNode(0,0);         // Sleep this node for the designated time period, or a payload is received.
+   * network.sleepNode(1,255);       // Sleep this node for 1 cycle. Do not wake up until then, even if a payload is received ( no interrupt )
    * @endcode
-   * @param Cycles: The node will sleep in cycles of 1s. Using 2 will sleep 2 seconds, 3 sleeps 3s...
+   * @see setup_watchdog()
+   * @param cycles: The node will sleep in cycles of 1s. Using 2 will sleep 2 WDT cycles, 3 sleeps 3WDT cycles...
    * @param interruptPin: The interrupt number to use (0,1) for pins two and three on Uno,Nano. More available on Mega etc.
    *
    */
  void sleepNode( unsigned int cycles, int interruptPin );
+
+ /**
+   * Set up the watchdog timer for sleep mode using the number 0 through 10 to represent the following time periods:<br>
+   * wdt_16ms = 0, wdt_32ms, wdt_64ms, wdt_128ms, wdt_250ms, wdt_500ms, wdt_1s, wdt_2s, wdt_4s, wdt_8s
+   * @code
+   * 	setup_watchdog(7);   // Sets the WDT to trigger every second
+   * @endcode
+   * @param prescalar The WDT prescaler to define how often the node will wake up. When defining sleep mode cycles, this time period is 1 cycle.
+   */
+ void setup_watchdog(uint8_t prescalar);
+
 
   /**
    * This node's parent address
@@ -246,26 +257,20 @@ private:
  */
 
 /**
- * @example Network_Sleep_Timeouts.ino
+ * @example Network_Ping_Sleep.ino
  *
  * Example: This is almost exactly the same as the Network_Ping example, but with use
- * of the integrated sleep mode and extended timeout periods.
+ * of the integrated sleep mode.
  *
- * <br><br>
- * <b> &nbsp;&nbsp;&nbsp; SLEEP_MODE: </b>
- * - Sleep mode is set with the command radio.sleepNode(<seconds>, <interrupt pin>);  <br>
- * - The node itself will sleep, with the radio in Standby-I mode, drawing 22uA compared to .9uA in powerdown mode.  <br>
- * - Sleep mode uses the WatchDog Timer (WDT) to sleep in 1-second intervals, or is awoken by the radio interrupt pin going  <br>
- * high, which indicates that a payload has been received. This allows much more efficient power use among the entire network.  <br>
- * - Max value is 65535 which sleeps for about 18 hours.  <br>
- * - The node power use can be reduced further by disabling unnessessary systems via the Power Reduction Register(s) (PRR) and by putting<br>
- * the radio into full sleep mode ( radio.powerDown() ), but it will not receive or send until powered up again.<br>
- * <br>
- * <b> EXTENDED TIMEOUTS: </b><br>
- * - This sketch utilizes newly introduced extended timeout periods to ensure reliability in transmission of payloads.<br>
- * - Users should be careful not to set too high a value on nodes that will receive data regularly, since payloads may be missed while<br>
- * retrying failed payloads. The maximum retry period at (15,15) = 16 time periods * 250us retry delay * 15 retries = 60ms per payload.<br>
- * - Setting this value lower than the calculated retry period will have no effect.<br>
+ * This example demonstrates how nodes on the network utilize sleep mode to conserve power. For example,
+ * the radio itself will draw about 13.5mA in receive mode. In sleep mode, it will use as little as 22ua (.000022mA)
+ * of power when not actively transmitting or receiving data. In addition, the Arduino is powered down as well,
+ * dropping network power consumption dramatically compared to previous capabilities. <br>
+ * Note: Sleeping nodes generate traffic that will wake other nodes up. This may be mitigated with further modifications. Sleep
+ * payloads are currently always routed to the master node, which will wake up intermediary nodes. Routing nodes can be configured
+ * to go back to sleep immediately.
+ * The displayed millis() count will give an indication of how much a node has been sleeping compared to the others, as millis() will
+ * not increment while a node sleeps.
  *<br>
  * - Using this sketch, each node will send a ping to every other node in the network every few seconds.<br>
  * - The RF24Network library will route the message across the mesh to the correct node.<br>
@@ -304,7 +309,7 @@ private:
  * @section Features Features
  *
  * The layer provides:
- * @li <b>New</b> (2014): Power efficient listening. Nodes can now sleep for extended periods of time with minimal power usage:
+ * @li <b>New</b> (2014): Power efficient sleep mode. Nodes can now sleep for extended periods of time with minimal power usage:
  * 				   StandBy-I mode uses 22uA compared to 0.9uA in full power down mode. The Arduino is allowed to sleep,
  *				   and is awoken via interrupt when payloads are received, or via a user defined time period. See the docs.
  * @li <b>New</b> (2014): Extended timeouts. The maximum timeout period is approximately 60ms per payload with max delay between retries, and
@@ -323,8 +328,8 @@ private:
  *
  * @section More How to learn more
  *
- * @li <a href="http://tmrh20.github.com/RF24/">RF24: Underlying radio driver</a>
  * @li <a href="classRF24Network.html">RF24Network Class Documentation</a>
+ * @li <a href="http://tmrh20.github.com/RF24/">RF24: Underlying radio driver</a>
  * @li <a href="http://tmrh20.blogspot.com/2014/03/high-speed-data-transfers-and-wireless.html">My Blog: RF24 Optimization Overview</a>
  * @li <a href="http://tmrh20.blogspot.com/2014/03/arduino-radiointercomwireless-audio.html">My Blog: RF24 Wireless Audio</a>
  * @li <a href="https://github.com/TMRh20/RF24Network/archive/master.zip">Download Current Package</a>
@@ -356,9 +361,9 @@ private:
  *|   |    | 00 |    |    | 00 |    |    |    | Master Node (00)                                    |
  *|---|----|----|----|----|----|----|----|----|-----------------------------------------------------|
  *|   |    | 01 |    |    | 04 |    |    |    | 1st level children of master (00)                   |
- *|   | 011|    |021 |    |    |014 |    |    | 2nd level children of master. Children of 1st level.|
- *|111|    |    |    |121 |    |    | 114|    | 3rd level children of master. Children of 2nd level.|
- *|   |    |    |    |1114|    |1114|2114|3114| 4th level children of master. Children of 3rd level.|
+ *|   | 011|    | 021|    |    |014 |    |    | 2nd level children of master. Children of 1st level.|
+ *|111|    |    | 121| 221|    |    | 114|    | 3rd level children of master. Children of 2nd level.|
+ *|   |    |    |    |1221|    |1114|2114|3114| 4th level children of master. Children of 3rd level.|
  *
  * @section Routing How routing is handled
  *
