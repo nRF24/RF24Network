@@ -309,7 +309,7 @@ private:
  * @section Features Features
  *
  * The layer provides:
- * @li <b>New</b> (2014): Power efficient sleep mode. Nodes can now sleep for extended periods of time with minimal power usage:
+ * @li <b>New</b> (2014): NOT WORKING Power efficient sleep mode. Nodes can now sleep for extended periods of time with minimal power usage:
  * 				   StandBy-I mode uses 22uA compared to 0.9uA in full power down mode. The Arduino is allowed to sleep,
  *				   and is awoken via interrupt when payloads are received, or via a user defined time period. See the docs.
  * @li <b>New</b> (2014): Extended timeouts. The maximum timeout period is approximately 60ms per payload with max delay between retries, and
