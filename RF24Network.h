@@ -87,6 +87,7 @@ public:
    * @param _radio The underlying radio driver instance
    *
    */
+
   RF24Network( RF24& _radio );
 
   /**
@@ -113,17 +114,6 @@ public:
    * @return Whether there is a message available for this node
    */
   bool available(void);
-
-  /**
-   * @note: Optimization: Users can optionally define an extended timeout
-   * period for use in noisy or low-signal scenarios.
-   *
-   * Set the timeout period for individual payloads in milliseconds
-   * Payloads will be retried automatically until success or timeout
-   * Set to 0 to use the normal auto retry period defined by radio.setRetries()
-   */
-
-  unsigned long txTimeout;
 
   /**
    * Read the next available header
@@ -161,16 +151,16 @@ public:
   bool write(RF24NetworkHeader& header,const void* message, size_t len);
 
 /**
-   * Sleep this node
-   * @note NEW - Nodes can now be slept while the radio is not actively transmitting.
+   * Sleep this node - Still Under Development
+   * @note NEW - Nodes can now be slept while the radio is not actively transmitting. This must be manually enabled by uncommenting
+   * the #define ENABLE_SLEEP_MODE in RF24Network_config.h
    * @note Setting the interruptPin to 255 will disable interrupt wake-ups
-   *
-   * This function will sleep the node, with the radio mostly powered down in StandBy-I mode, which consumes
-   * .000022mA compared to 13.5mA in receive mode.
+   * @note The watchdog timer should be configured in setup() if using sleep mode.
+   * This function will sleep the node, with the radio still active in receive mode.
    *
    * The node can be awoken in two ways, both of which can be enabled simultaneously:
    * 1. An interrupt - usually triggered by the radio receiving a payload. Must use pin 2 (interrupt 0) or 3 (interrupt 1) on Uno, Nano, etc.
-   * 2. The watchdog timer waking the MCU after a designated period of time.
+   * 2. The watchdog timer waking the MCU after a designated period of time, can also be used instead of delays to control transmission intervals.
    * @code
    * if(!network.available()){ network.sleepNode(1,0); }  //Sleeps the node for 1 second or a payload is received
    *
@@ -203,7 +193,41 @@ public:
    */
   uint16_t parent() const;
 
-protected:
+  /**@}*/
+  /**
+   * @name Advanced Operation
+   *
+   *  For advanced configuration of the network
+   */
+  /**@{*/
+
+  /**
+   * Construct the network in dual head mode using two radio modules.
+   * @note Radios will share MISO, MOSI and SCK pins, but require separate CE,CS pins.
+   * @code
+   * 	RF24 radio(7,8);
+   * 	RF24 radio1(4,5);
+   * 	RF24Network(radio.radio1);
+   * @endcode
+   * @param _radio The underlying radio driver instance
+   * @param _radio1 The second underlying radio driver instance
+   */
+
+  RF24Network( RF24& _radio, RF24& _radio1);
+
+  /**
+   * @note: Optimization:This value is automatically assigned based on the node address
+   * to reduce errors and increase throughput of the network.
+   *
+   * Sets the timeout period for individual payloads in milliseconds at staggered intervals.
+   * Payloads will be retried automatically until success or timeout
+   * Set to 0 to use the normal auto retry period defined by radio.setRetries()
+   *
+   */
+
+  unsigned long txTimeout;
+
+private:
   void open_pipes(void);
   uint16_t find_node( uint16_t current_node, uint16_t target_node );
   bool write(uint16_t);
@@ -218,6 +242,10 @@ protected:
 
 private:
   RF24& radio; /**< Underlying radio driver, provides link/physical layers */
+
+#if defined (DUAL_HEAD_RADIO)
+  RF24& radio1;
+#endif
   uint16_t node_address; /**< Logical node address of this unit, 1 .. UINT_MAX */
   const static int frame_size = 32; /**< How large is each frame over the air */
   uint8_t frame_buffer[frame_size]; /**< Space to put the frame that will be sent/received over the air */
@@ -309,12 +337,10 @@ private:
  * @section Features Features
  *
  * The layer provides:
- * @li <b>New</b> (2014): NOT WORKING Power efficient sleep mode. Nodes can now sleep for extended periods of time with minimal power usage:
- * 				   StandBy-I mode uses 22uA compared to 0.9uA in full power down mode. The Arduino is allowed to sleep,
- *				   and is awoken via interrupt when payloads are received, or via a user defined time period. See the docs.
- * @li <b>New</b> (2014): Extended timeouts. The maximum timeout period is approximately 60ms per payload with max delay between retries, and
- * 				   max retries set. Ths new txTimeout variable allows fully automated extended timeout periods via auto-retry/auto-reUse of payloads.
- * @li <b>New</b> (2014): Optimization to the core library provides improvements to reliability, speed and efficiency. See https://github.com/TMRh20/RF24 for more info.
+ * @li <b>New</b> (2014): Dual headed operation: The use of dual radios for busy routing nodes or the master node enhances throughput and decreases errors. See the <a href="Tuning.html">Tuning</a> section.
+ * @li <b>New</b> (2014): Extended timeouts and staggered timeout intervals. The new txTimeout variable allows fully automated extended timeout periods via auto-retry/auto-reUse of payloads.
+ * @li <b>New</b> (2014): Optimization to the core library provides improvements to reliability, speed and efficiency. See https://tmrh20.github.io/RF24 for more info.
+ * @li <b>New</b> (2014): Built in sleep mode using interrupts. (Still under development. (Enable via RF24Network_config.h))
  * @li Host Addressing.  Each node has a logical address on the local network.
  * @li Message Forwarding.  Messages can be sent from one node to any other, and
  * this layer will get them there no matter how many hops it takes.
@@ -329,9 +355,10 @@ private:
  * @section More How to learn more
  *
  * @li <a href="classRF24Network.html">RF24Network Class Documentation</a>
- * @li <a href="http://tmrh20.github.com/RF24/">RF24: Underlying radio driver</a>
+ * @li <a href="Tuning.html"> Performance and Data Loss: Tuning the Network</a>
  * @li <a href="http://tmrh20.blogspot.com/2014/03/high-speed-data-transfers-and-wireless.html">My Blog: RF24 Optimization Overview</a>
  * @li <a href="http://tmrh20.blogspot.com/2014/03/arduino-radiointercomwireless-audio.html">My Blog: RF24 Wireless Audio</a>
+ * @li <a href="http://tmrh20.github.com/RF24/">RF24: Underlying radio driver</a>
  * @li <a href="https://github.com/TMRh20/RF24Network/archive/master.zip">Download Current Package</a>
  * @li <a href="examples.html">Examples Page</a>.  Start with <a href="helloworld_rx_8ino-example.html">helloworld_rx</a> and <a href="helloworld_tx_8ino-example.html">helloworld_tx</a>.
  * @li <a href="http://maniacbug.github.com/RF24/">RF24: Original Author</a>
@@ -392,7 +419,8 @@ private:
  * case where the nodes are operating on batteries and need to sleep. This greatly decreases
  * the power requirements for a sensor network. The leaf nodes can sleep most of the time,
  * and wake every few minutes to send in a reading. Routing nodes can be triggered to wake up
- * whenever a payload is received See sleepNode() in the class documentation.
+ * whenever a payload is received See sleepNode() in the class documentation, and RFNetwork_config.h
+ * to enable sleep mode.
  *
  *
  * @page Zigbee Comparison to ZigBee
@@ -406,7 +434,7 @@ private:
  * providing compatible chips.
  *
  * RF24Network is cheap.  While ZigBee radios are well over $20, nRF24L01 modules can be found
- * for under $6.  My personal favorite is
+ * for under $2.  My personal favorite is
  * <a href="http://www.mdfly.com/index.php?main_page=product_info&products_id=82">MDFly RF-IS2401</a>.
  *
  * @section Contrast Similiarities & Differences
@@ -414,7 +442,7 @@ private:
  * Here are some comparisons between RF24Network and ZigBee.
  *
  * @li Both networks support Star and Tree topologies.  Only Zigbee supports a true mesh.
- * @li In both networks, only leaf nodes can sleep (see @ref NodeNames).
+ * @li In ZigBee networks, only leaf nodes can sleep
  * @li ZigBee nodes are configured using AT commands, or a separate Windows application.
  * RF24 nodes are configured by recompiliing the firmware or writing to EEPROM.
  *
@@ -426,6 +454,103 @@ private:
  * to the other.  ZigBee calls it a Router.
  * @li Base node.  The top of the tree node with no parents, only children.  Typically this node
  * will bridge to another kind of network like Ethernet.  ZigBee calls it a Co-ordinator node.
+ *
+ * @page Tuning Performance and Data Loss: Tuning the Network
+ * Tips and examples for tuning the network and Dual-head operation.
+ *
+ * @section TuningOverview Tuning Overview
+ * The RF24 radio modules are generally only capable of either sending or receiving data at any given
+ * time, but have built-in auto-retry mechanisms to prevent the loss of data. These values are adjusted
+ * automatically by the library on startup, but can be further adjusted to reduce data loss, and
+ * thus increase throughput of the network. This page is intended to provide a general overview of its
+ * operation within the context of the network library, and provide guidance for adjusting these values.
+ *
+ * @section RetryTiming Auto-Retry Timing
+ *
+ * The core radio library provides the functionality of adjusting the internal auto-retry interval of the
+ * radio modules. In the network configuration, the radios can be set to automatically retry failed
+ * transmissions at intervals ranging anywhere from 500us (.5ms) up to 4000us (4ms). When operating any
+ * number of radios larger than two, it is important to stagger the assigned intervals, to prevent the
+ * radios from interfering with each other at the radio frequency (RF) layer.
+ *
+ * The library should provide fairly good working values, as it simply staggers the assigned values within
+ * groups of radios in direct communication. This value can be set manually by calling radio.setRetries(X,15);
+ * and adjusting the value of X from 1 to 15 (steps of 250us).
+ *
+ * @section AutoRetry Auto-Retry Count and Extended Timeouts
+ *
+ * The core radio library also provides the ability to adjust the internal auto-retry count of the radio
+ * modules. The default setting is 15 automatic retries per payload, and can be extended by configuring
+ * the network.txTimeout variable. This default retry count should generally be left at 15, as per the
+ * example in the above section. The txTimeout variable is used to extend the retry count to a defined
+ * duration in milliseconds. An interval/retry setting of (15,15) will provide 15 retrys at intervals of
+ * 4ms, taking up to 60ms per payload.
+ *
+ * The library now provides staggered timout periods by default, but they can also be adjusted on a per-node
+ * basis. See the network.txTimeout variable.
+ * Timeout periods of extended duration (500+) will generally not help when payloads are failing due to data
+ * collisions, it will only extend the duration of the errors. Extended duration timeouts should generally only
+ * be configured on leaf nodes that do not receive data, or on a dual-headed node.
+ *
+ * @section Examples
+ *
+ * <b>Example 1:</b> Network with master node and three leaf nodes that send data to the master node. None of the leaf
+ * nodes need to receive data.
+ *
+ * a: Master node uses default configuration<br>
+ * b: Leaf nodes can be configured with extended timeout periods to ensure reception by the master.<br>
+ * c:
+ * @code
+ * Leaf 01: network.txTimeout = 500;   Leaf 02: network.txTimeout = 573;  Leaf 03: network.txTimeout = 653;
+ * @endcode
+ * This configuration will provide a reduction in errors, as the timeouts have been extended, and are staggered
+ * between devices.
+ *
+ *
+ * <b>Example 2:</b> Network with master node and three leaf nodes that send data to the master node. The second leaf
+ * node needs to receive configuration data from the master at set intervals of 1 second, and send data back to the
+ * master node. The other leaf nodes will send basic sensor information every few seconds, and a few dropped payloads
+ * will not affect the operation greatly.
+ *
+ * a: Master node configured with extended timeouts of .5 seconds, and increased retry delay:
+ *   @code
+ * 		radio.setRetries(11,15);
+ * 		network.txTimeout(500);
+ * 	 @endcode
+ * b: Second leaf node configured with a similar timeout period and retry delay:
+ * @code
+ * 		radio.setRetries(8,15);
+ * 		network.txTimeout(553);
+ * @endcode
+ * c: First and third leaf nodes configured with default timeout periods or slightly increased timout periods.
+ *
+ * @section DualHead Dual Headed Operation
+ *
+ * The library now supports a dual radio configuration to further enhance network performance, while reducing errors on
+ * busy networks. Master nodes or relay nodes with a large number of child nodes can benefit greatly from a dual headed
+ * configuration, since one radio is used for receiving, and the other entirely for transmission.
+ *
+ * To configure a dual headed node:
+ * 1. Edit the RF24Network_config.h file, and uncomment #define DUAL_HEAD_RADIO
+ * 2. Connect another radio, using the same MOSI, MISO, and SCK lines.
+ * 3. Choose another two pins to use for CE and CS on the second radio. Connect them.
+ * 4. Setup the radio and network like so:
+ *
+ * @code
+ * 	RF24 radio(7,8);  			// Using CE (7) and CS (8) for first radio
+ * 	RF24 radio1(4,5); 			// Using CE (4) and CS (5) for second radio
+ * 	RF24Network network(radio,radio1);	// Set up the network using both radios
+ *
+ *  Then in setup(), call radio.begin(); and radio1.begin(); before network.begin();
+ * @endcode
+ *
+ * 5. Upload to MCU. The node will now use the first radio to receive data, and radio1 to transmit, preventing data loss on a busy network.
+ * 6. Re-comment the #define in the config file as required if configuring other single-headed radios.
+ *
+ *
+ * Any node can be configured in dual-head mode.
+ *
+ *
  */
 
 #endif // __RF24NETWORK_H__

@@ -22,11 +22,15 @@ uint64_t pipe_address( uint16_t node, uint8_t pipe );
 bool is_valid_address( uint16_t node );
 
 /******************************************************************/
-
+#if !defined (DUAL_HEAD_RADIO)
 RF24Network::RF24Network( RF24& _radio ): radio(_radio), next_frame(frame_queue)
 {
 }
-
+#else
+RF24Network::RF24Network( RF24& _radio, RF24& _radio1 ): radio(_radio), radio1(_radio1), next_frame(frame_queue)
+{
+}
+#endif
 /******************************************************************/
 
 void RF24Network::begin(uint8_t _channel, uint16_t _node_address )
@@ -43,6 +47,18 @@ void RF24Network::begin(uint8_t _channel, uint16_t _node_address )
   radio.setChannel(_channel);
   radio.setDataRate(RF24_1MBPS);
   radio.setCRCLength(RF24_CRC_16);
+  // Use different retry periods to reduce data collisions
+
+  uint8_t retryVar = (node_address % 7) + 5;
+  radio.setRetries(retryVar, 15);
+  txTimeout = retryVar * 17;
+
+#if defined (DUAL_HEAD_RADIO)
+  radio1.setChannel(_channel);
+  radio1.setDataRate(RF24_1MBPS);
+  radio1.setCRCLength(RF24_CRC_16);
+
+#endif
 
   // Setup our address helper cache
   setup_address();
@@ -257,8 +273,10 @@ bool RF24Network::write(uint16_t to_node)
 
   IF_SERIAL_DEBUG(printf_P(PSTR("%lu: MAC Sending to 0%o via 0%o on pipe %x\n\r"),millis(),to_node,send_node,send_pipe));
 
+#if !defined (DUAL_HEAD_RADIO)
   // First, stop listening so we can talk
   radio.stopListening();
+#endif
 
   ok = write_to_pipe( send_node, send_pipe );
 
@@ -272,8 +290,10 @@ bool RF24Network::write(uint16_t to_node)
     ok = write_to_pipe( parent_node, 0 );
 #endif
 
+#if !defined (DUAL_HEAD_RADIO)
   // Now, continue listening
   radio.startListening();
+#endif
 
   return ok;
 }
@@ -286,11 +306,18 @@ bool RF24Network::write_to_pipe( uint16_t node, uint8_t pipe )
 
   uint64_t out_pipe = pipe_address( node, pipe );
 
-  // Open the correct pipe for writing.
+#if !defined (DUAL_HEAD_RADIO)
+ // Open the correct pipe for writing.
   radio.openWritingPipe(out_pipe);
 
   radio.writeFast(frame_buffer, frame_size);
   ok = radio.txStandBy(txTimeout);
+#else
+  radio1.openWritingPipe(out_pipe);
+  radio1.writeFast(frame_buffer, frame_size);
+  ok = radio1.txStandBy(txTimeout);
+
+#endif
 
   IF_SERIAL_DEBUG(printf_P(PSTR("%lu: MAC Sent on %lx %S\n\r"),millis(),(uint32_t)out_pipe,ok?PSTR("ok"):PSTR("failed")));
 
