@@ -17,6 +17,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <AESLib.h>
 
 class RF24;
 
@@ -96,9 +97,11 @@ public:
    *
    * @param _channel The RF channel to operate on
    * @param _node_address The logical address of this node
+   * @param _key AES key    (16 uint8_t)
+   * @param _iv  AES cbc iv (16 uint8_t)
    */
-  void begin(uint8_t _channel, uint16_t _node_address );
-
+  void begin(uint8_t _channel, uint16_t _node_address ,uint8_t* _key, uint8_t* _iv);
+  
   /**
    * Main layer loop
    *
@@ -137,6 +140,17 @@ public:
    */
   void peek(RF24NetworkHeader& header);
 
+
+  /**
+   * Read a message from multiple packets
+   *
+   * @param[out] header The header (envelope) of this message
+   * @param[out] message Pointer to memory where the message should be placed
+   * @param maxlen The largest message size which can be held in @p message
+   * @return The total number of bytes copied into @p message
+   */
+  size_t readmulti(RF24NetworkHeader& header, void* message, size_t maxlen);
+
   /**
    * Read a message
    *
@@ -155,10 +169,22 @@ public:
    * thing to fill in is the @p to_node field so we know where to send the
    * message.  It is then updated with the details of the actual header sent.
    * @param message Pointer to memory where the message is located
-   * @param len The size of the message
+   * @param len The size of the message (max 24 bytes)
    * @return Whether the message was successfully received
    */
   bool write(RF24NetworkHeader& header,const void* message, size_t len);
+
+  /**
+   * Send a message using multipacket
+   *
+   * @param[in,out] header The header (envelope) of this message.  The critical
+   * thing to fill in is the @p to_node field so we know where to send the
+   * message.  It is then updated with the details of the actual header sent.
+   * @param message Pointer to memory where the message is located 
+   * @param len The size of the message 
+   * @return Whether the message was successfully received 
+   */
+  bool writemulti(RF24NetworkHeader& header,const void* message, size_t len);
 
 /**
    * Sleep this node
@@ -219,6 +245,11 @@ protected:
 private:
   RF24& radio; /**< Underlying radio driver, provides link/physical layers */
   uint16_t node_address; /**< Logical node address of this unit, 1 .. UINT_MAX */
+  uint8_t* key ; /** < AES key like {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15}*/
+  uint8_t* iv  ; /** < AES cbc iv like = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15}*/
+
+  // frame_size-sizeof(RF24NetworkHeader)
+#define PAYLOAD_SIZE 24
   const static int frame_size = 32; /**< How large is each frame over the air */
   uint8_t frame_buffer[frame_size]; /**< Space to put the frame that will be sent/received over the air */
   uint8_t frame_queue[5*frame_size]; /**< Space for a small set of frames that need to be delivered to the app layer */

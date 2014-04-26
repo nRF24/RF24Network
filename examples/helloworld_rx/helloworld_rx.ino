@@ -27,19 +27,20 @@ const uint16_t this_node = 0;    // Address of our node
 const uint16_t other_node = 1;   // Address of the other node
 
 struct payload_t {                 // Structure of our payload
-  unsigned long ms;
-  unsigned long counter;
+  char message[24];
+  //  unsigned long ms;
+  //unsigned long counter;
 };
 
 
 void setup(void)
 {
-  Serial.begin(57600);
+  Serial.begin(9600);
   Serial.println("RF24Network/examples/helloworld_rx/");
  
   SPI.begin();
   radio.begin();
-  network.begin(/*channel*/ 90, /*node address*/ this_node);
+  network.begin(/*channel*/ 90, /*node address*/ this_node,NULL,NULL);
 }
 
 void loop(void){
@@ -52,10 +53,11 @@ void loop(void){
     RF24NetworkHeader header;        // If so, grab it and print it out
     payload_t payload;
     network.read(header,&payload,sizeof(payload));
-    Serial.print("Received packet #");
-    Serial.print(payload.counter);
-    Serial.print(" at ");
-    Serial.println(payload.ms);
+    Serial.println(payload.message);
+    //    Serial.print("Received packet #");
+    //Serial.print(payload.counter);
+    //Serial.print(" at ");
+    //Serial.println(payload.ms);
   }
 }
 
