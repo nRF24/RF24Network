@@ -33,7 +33,7 @@ const uint16_t this_node = 1;
 const uint16_t other_node = 0;
 
 // How often to send 'hello world to the other unit
-const unsigned long interval = 2000; //ms
+const unsigned long interval = 1000; //ms
 
 // When did we last send?
 unsigned long last_sent;
@@ -59,7 +59,7 @@ void setup(void)
   network.begin(/*channel*/ 93, /*node address*/ this_node, key, iv);
   //network.begin(/*channel*/ 93, /*node address*/ this_node, NULL,NULL);
 
-  radio.setRetries(11,15);
+  radio.setRetries(1,15);
   network.txTimeout=500;
 
 }

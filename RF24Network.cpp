@@ -98,6 +98,7 @@ void RF24Network::update(void)
 	}
       // Read the beginning of the frame as the header
       const RF24NetworkHeader& header = * reinterpret_cast<RF24NetworkHeader*>(frame_buffer);
+      //Serial.println(header.toString());
 
       IF_SERIAL_DEBUG(printf_P(PSTR("%lu: MAC Received on %u %s\n\r"),millis(),pipe_num,header.toString()));
       IF_SERIAL_DEBUG(const uint16_t* i = reinterpret_cast<const uint16_t*>(frame_buffer + sizeof(RF24NetworkHeader));printf_P(PSTR("%lu: NET message %04x\n\r"),millis(),*i));
@@ -109,8 +110,8 @@ void RF24Network::update(void)
 
       // Is this for us?
       if ( header.to_node == node_address ){
-	// Add it to the buffer of frames for us
-		enqueue();
+	        // Add it to the buffer of frames for us
+	        enqueue();
 	  }else{
 		// Relay it
  		write(header.to_node);
@@ -161,6 +162,12 @@ bool RF24Network::enqueue(void)
 
 /******************************************************************/
 
+bool RF24Network::availablefifo(void)
+{
+  // Are there frames on the queue for us?
+  return (next_framefifo < next_frame);
+}
+
 bool RF24Network::available(void)
 {
   // Are there frames on the queue for us?
@@ -179,6 +186,15 @@ uint16_t RF24Network::parent() const
 
 /******************************************************************/
 
+void RF24Network::peekfifo(RF24NetworkHeader& header)
+{
+  if ( available() )
+  {
+    // Copy the next available frame from the queue into the provided buffer
+    memcpy(&header,next_framefifo,sizeof(RF24NetworkHeader));
+  }
+}
+
 void RF24Network::peek(RF24NetworkHeader& header)
 {
   if ( available() )
@@ -194,7 +210,7 @@ void RF24Network::peek(RF24NetworkHeader& header)
 size_t RF24Network::readmulti(RF24NetworkHeader& header,void* message, size_t maxlen)
 {
   size_t lentot=0;
-  const unsigned long timeout = 1000; //ms to wait for timeout
+  const unsigned long timeout = 500; //ms to wait for timeout
   uint16_t myid=0;
   int npacket;
   int nextpacket;
@@ -203,12 +219,14 @@ size_t RF24Network::readmulti(RF24NetworkHeader& header,void* message, size_t ma
   
   // Is there anything ready for us?
   while ( ( millis() - start_at) < timeout ){
-    while ( available() ){
+    next_framefifo = frame_queue;
+    while ( availablefifo() ){
       start_at = millis();
-      //Serial.println(start_at);
-      peek(header);
 
-      //Serial.println(header.toString());
+      //Serial.println(start_at);
+      peekfifo(header);
+
+      //Serial.print(">"); Serial.println(header.toString());
       if (header.type == 100) {
       	myid=header.id;
       	npacket=header.reserved;
@@ -220,24 +238,52 @@ size_t RF24Network::readmulti(RF24NetworkHeader& header,void* message, size_t ma
       	char*  from = (char*)message+(      (npacket-header.reserved  )*PAYLOAD_SIZE);
       	// How much buffer size should we actually copy?
       	int bufsize = max(min(maxlen-(npacket-header.reserved  )*PAYLOAD_SIZE,PAYLOAD_SIZE),0);
-      	lentot += read(header,from,bufsize);
-       	if (header.reserved == 0) return lentot;
+      	lentot += readfifo(header,from,bufsize);
+
+	if (!availablefifo()) next_frame = frame_queue;
+
+       	if (nextpacket == 0) return lentot;
 	nextpacket -= 1;
 
       }
       else{
-	 // skip packet
-       	read(header,NULL ,0);
+	// skip packet
+       	readfifo(header,NULL ,0);
       }
     }
-
     update();
+  }
+  return 0;
+}
 
+
+size_t RF24Network::readfifo(RF24NetworkHeader& header,void* message, size_t maxlen)
+{
+  size_t bufsize = 0;
+
+  if ( available() )
+  {
+    uint8_t* frame = next_framefifo;
+
+    memcpy(&header,frame,sizeof(RF24NetworkHeader));
+
+    if (maxlen > 0)
+    {
+      // How much buffer size should we actually copy?
+      bufsize = min(maxlen,frame_size-sizeof(RF24NetworkHeader));
+
+      // Copy the next available frame from the queue into the provided buffer
+      memcpy(message,frame+sizeof(RF24NetworkHeader),bufsize);
+    }
+
+    // Move the pointer forward one in the queue
+    next_framefifo += frame_size;
+    IF_SERIAL_DEBUG(printf_P(PSTR("%lu: NET Received %s\n\r"),millis(),header.toString()));
   }
 
-  return 0;
-
+  return bufsize;
 }
+
   
 size_t RF24Network::read(RF24NetworkHeader& header,void* message, size_t maxlen)
 {
@@ -374,13 +420,7 @@ bool RF24Network::write(uint16_t to_node)
   radio.stopListening();
 #endif
 
-  // Put the frame on the pipe
-  int retries = 3;
-  do
-  {
-    ok = write_to_pipe( send_node, send_pipe );
-  }
-  while (!ok && retries--);
+  ok = write_to_pipe( send_node, send_pipe );
 
       // NOT NEEDED anymore.  Now all reading pipes are open to start.
 #if 0
@@ -413,14 +453,14 @@ bool RF24Network::write_to_pipe( uint16_t node, uint8_t pipe )
       IF_SERIAL_DEBUG(printf_P(PSTR("encode\n\r")));
       aes128_cbc_enc(key, iv, frame_buffer, sizeof(frame_buffer));
     }
- #if !defined (DUAL_HEAD_RADIO)
 
+#if !defined (DUAL_HEAD_RADIO)
   // Open the correct pipe for writing.
   radio.openWritingPipe(out_pipe);
 
   radio.writeFast(frame_buffer, frame_size);
   ok = radio.txStandBy(txTimeout);
- #else
+#else
   radio1.openWritingPipe(out_pipe);
   radio1.writeFast(frame_buffer, frame_size);
   ok = radio1.txStandBy(txTimeout);

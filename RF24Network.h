@@ -117,6 +117,7 @@ public:
    * @return Whether there is a message available for this node
    */
   bool available(void);
+  bool availablefifo(void);
 
   /**
    * Read the next available header
@@ -129,6 +130,7 @@ public:
    * @param[out] header The header (envelope) of the next message
    */
   void peek(RF24NetworkHeader& header);
+  void peekfifo(RF24NetworkHeader& header);
 
 
   /**
@@ -150,6 +152,7 @@ public:
    * @return The total number of bytes copied into @p message
    */
   size_t read(RF24NetworkHeader& header, void* message, size_t maxlen);
+  size_t readfifo(RF24NetworkHeader& header, void* message, size_t maxlen);
 
   /**
    * Send a message
@@ -282,6 +285,7 @@ private:
   uint8_t frame_buffer[frame_size]; /**< Space to put the frame that will be sent/received over the air */
   uint8_t frame_queue[5*frame_size]; /**< Space for a small set of frames that need to be delivered to the app layer */
   uint8_t* next_frame; /**< Pointer into the @p frame_queue where we should place the next received frame */
+  uint8_t* next_framefifo; /**< Pointer into the @p frame_queue where we should place the next received frame in fifo mode*/
 
   uint16_t parent_node; /**< Our parent's node address */
   uint8_t parent_pipe; /**< The pipe our parent uses to listen to us */
