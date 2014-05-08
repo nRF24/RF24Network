@@ -56,8 +56,12 @@ void setup(void)
  
   SPI.begin();
   radio.begin();
-  network.begin(/*channel*/ 90, /*node address*/ this_node, key, iv);
-  //network.begin(/*channel*/ 90, /*node address*/ this_node, NULL,NULL);
+  network.begin(/*channel*/ 93, /*node address*/ this_node, key, iv);
+  //network.begin(/*channel*/ 93, /*node address*/ this_node, NULL,NULL);
+
+  radio.setRetries(11,15);
+  network.txTimeout=500;
+
 }
 
 

@@ -22,11 +22,15 @@ uint64_t pipe_address( uint16_t node, uint8_t pipe );
 bool is_valid_address( uint16_t node );
 
 /******************************************************************/
-
+#if !defined (DUAL_HEAD_RADIO)
 RF24Network::RF24Network( RF24& _radio ): radio(_radio), next_frame(frame_queue)
 {
 }
-
+#else
+RF24Network::RF24Network( RF24& _radio, RF24& _radio1 ): radio(_radio), radio1(_radio1), next_frame(frame_queue)
+{
+}
+#endif
 /******************************************************************/
 
 void RF24Network::begin(uint8_t _channel, uint16_t _node_address ,uint8_t* _key, uint8_t* _iv)
@@ -38,13 +42,26 @@ void RF24Network::begin(uint8_t _channel, uint16_t _node_address ,uint8_t* _key,
   key = _key;
   iv  = _iv;
 
-  if ( ! radio.isValid() )
+  if ( ! radio.isValid() ){
     return;
+  }
 
   // Set up the radio the way we want it to look
   radio.setChannel(_channel);
   radio.setDataRate(RF24_1MBPS);
   radio.setCRCLength(RF24_CRC_16);
+  // Use different retry periods to reduce data collisions
+
+  uint8_t retryVar = (node_address % 7) + 5;
+  radio.setRetries(retryVar, 15);
+  txTimeout = retryVar * 17;
+
+#if defined (DUAL_HEAD_RADIO)
+  radio1.setChannel(_channel);
+  radio1.setDataRate(RF24_1MBPS);
+  radio1.setCRCLength(RF24_CRC_16);
+
+#endif
 
   // Setup our address helper cache
   setup_address();
@@ -69,6 +86,7 @@ void RF24Network::update(void)
   {
     // Dump the payloads until we've gotten everything
     //boolean done = false;
+
     while (radio.available())
     {
       // Fetch the payload, and see if this was the last one.
@@ -176,27 +194,28 @@ void RF24Network::peek(RF24NetworkHeader& header)
 size_t RF24Network::readmulti(RF24NetworkHeader& header,void* message, size_t maxlen)
 {
   size_t lentot=0;
-  uint32_t start_at;
-  const uint32_t timeout = 5000; //ms to wait for timeout
-  uint8_t myid=0;
+  const unsigned long timeout = 1000; //ms to wait for timeout
+  uint16_t myid=0;
   int npacket;
   int nextpacket;
 
-  start_at = millis();
+  unsigned long start_at = millis();
   
   // Is there anything ready for us?
-  while ( ( millis() - start_at < timeout ) ){
-    if ( available() ){
+  while ( ( millis() - start_at) < timeout ){
+    while ( available() ){
       start_at = millis();
+      //Serial.println(start_at);
       peek(header);
 
+      //Serial.println(header.toString());
       if (header.type == 100) {
       	myid=header.id;
       	npacket=header.reserved;
 	nextpacket=npacket;
       }
 
-      if (myid >0 && header.id == myid && nextpacket == header.reserved && (header.type == 100 || header.type == 101)){
+      if ((myid >0) && (header.id == myid) && (nextpacket == header.reserved) && (header.type == 100 || header.type == 101)){
 
       	char*  from = (char*)message+(      (npacket-header.reserved  )*PAYLOAD_SIZE);
       	// How much buffer size should we actually copy?
@@ -204,15 +223,20 @@ size_t RF24Network::readmulti(RF24NetworkHeader& header,void* message, size_t ma
       	lentot += read(header,from,bufsize);
        	if (header.reserved == 0) return lentot;
 	nextpacket -= 1;
-       }
-       else{
+
+      }
+      else{
 	 // skip packet
        	read(header,NULL ,0);
-       }
+      }
     }
+
     update();
+
   }
+
   return 0;
+
 }
   
 size_t RF24Network::read(RF24NetworkHeader& header,void* message, size_t maxlen)
@@ -270,6 +294,10 @@ bool RF24Network::writemulti(RF24NetworkHeader& header, const void* message, siz
       	}
 		       
       header.reserved=numpack-npack-1;
+
+      //Serial.println(header.toString());
+      //Serial.println((char*)message+(npack*PAYLOAD_SIZE));
+      //Serial.println(lenlen);
       bool status = write(header,(char*)message+(npack*PAYLOAD_SIZE),lenlen);
       if (!status) return status;
       npack++;
@@ -341,8 +369,10 @@ bool RF24Network::write(uint16_t to_node)
 
   IF_SERIAL_DEBUG(printf_P(PSTR("%lu: MAC Sending to 0%o via 0%o on pipe %x\n\r"),millis(),to_node,send_node,send_pipe));
 
+#if !defined (DUAL_HEAD_RADIO)
   // First, stop listening so we can talk
   radio.stopListening();
+#endif
 
   // Put the frame on the pipe
   int retries = 3;
@@ -362,8 +392,10 @@ bool RF24Network::write(uint16_t to_node)
     ok = write_to_pipe( parent_node, 0 );
 #endif
 
+#if !defined (DUAL_HEAD_RADIO)
   // Now, continue listening
   radio.startListening();
+#endif
 
   return ok;
 }
@@ -381,19 +413,27 @@ bool RF24Network::write_to_pipe( uint16_t node, uint8_t pipe )
       IF_SERIAL_DEBUG(printf_P(PSTR("encode\n\r")));
       aes128_cbc_enc(key, iv, frame_buffer, sizeof(frame_buffer));
     }
+ #if !defined (DUAL_HEAD_RADIO)
+
   // Open the correct pipe for writing.
   radio.openWritingPipe(out_pipe);
 
   radio.writeFast(frame_buffer, frame_size);
   ok = radio.txStandBy(txTimeout);
+ #else
+  radio1.openWritingPipe(out_pipe);
+  radio1.writeFast(frame_buffer, frame_size);
+  ok = radio1.txStandBy(txTimeout);
 
- // Retry a few times
-//  short attempts = 5;
-//  do
-//  {
-//    ok = radio.write( frame_buffer, frame_size );
-//  }
-//  while (  !ok && --attempts );
+ // // Retry a few times
+ // short attempts = 5;
+ // do
+ // {
+ //   ok = radio.write( frame_buffer, frame_size );
+ // }
+ // while (  !ok && --attempts );
+
+ #endif
 
 
   IF_SERIAL_DEBUG(printf_P(PSTR("%lu: MAC Sent on %lx %S\n\r"),millis(),(uint32_t)out_pipe,ok?PSTR("ok"):PSTR("failed")));

@@ -16,8 +16,16 @@
 #include <RF24Network.h>
 #include <RF24.h>
 #include <SPI.h>
-#include <Sleep_n0m1.h>
+//#include <Sleep_n0m1.h>
+#include <avr/sleep.h>
 
+/*
+Board	          int.0	    int.1	int.2	int.3	int.4	int.5
+Uno, Ethernet	      2 	3	 	 	 	 
+Mega2560	      	        	   21	   20	   19	   18
+*/
+const int interu = 5;
+const int interupin = 18;
 
 uint8_t key[] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
 uint8_t  iv[] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
@@ -48,65 +56,87 @@ const uint16_t other_node = 1;
 RF24NetworkHeader header;
 // payload_t payload;
 
-Sleep sleep;
+//Sleep sleep;
 
 char buffer[144];
 
 
-void setup(void)
+void wait_receive()
+{
+  sleep_disable();
+  detachInterrupt(interu);
+}
+
+
+void setup()
 {
   Serial.begin(9600);
   Serial.println("RF24Network/examples/helloworld_rx/");
 
+  //pinMode (interupin, INPUT);
+
   SPI.begin();
   radio.begin();
   //radio.printDetails();
-  network.begin(/*channel*/ 90, /*node address*/ this_node,key,iv);
-  //network.begin(/*channel*/ 90, /*node address*/ this_node,NULL,NULL);
+  network.begin(/*channel*/ 93, /*node address*/ this_node,key,iv);
+  //network.begin(/*channel*/ 93, /*node address*/ this_node,NULL,NULL);
+
+  radio.maskIRQ(1,1,0);
+  radio.powerUp();
+
   delay(300);
 }
 
-void loop(void)
+void loop()
 {
 
-  //radio.maskIRQ(0,0,0);
-  //radio.startListening();
+  Serial.println("sleep");
+  delay(10);
+  set_sleep_mode(SLEEP_MODE_PWR_DOWN);
+  sleep_enable();
 
-  sleep.pwrDownMode(); //sets the Arduino into power Down Mode sleep, the most power saving, all systems are powered down except the watch dog timer and external reset
-  //sleep.standbyMode(); //sets the Arduino into standby Mode sleep, this mode is identical to Power-down with the exception that the Oscillator is kept running for fast wake up
+  // Do not interrupt before we go to sleep, or the
+  // ISR will detach interrupts and we won't wake.
+  noInterrupts ();   // same as cli();
+  attachInterrupt(interu, wait_receive, LOW);
+  //sleep_bod_disable(); // do not use for mega2560
 
-  //sleep.sleepDelay(sleepTime); //sleep for: sleepTime
-  //sleep.sleepInterrupt(5,FALLING);
+  // We are guaranteed that the sleep_cpu call will be done
+  // as the processor executes the next instruction after
+  // interrupts are turned on.
+  interrupts ();  // one cycle // same as sei();
+  sleep_cpu ();   // one cycle
+  sleep_disable();
+
+  //sleep.pwrDownMode(); //sets the Arduino into power Down Mode sleep, the most power saving, all systems are powered down except the watch dog timer and external reset
   //sleep.sleepInterrupt(5,LOW);
-
-  //Serial.println("network update");
-  //delay(300);
 
   // Pump the network regularly
   network.update();
   // Is there anything ready for us?
   while ( network.available() ){
       
-    // If so, grab it and print it out
-    //network.read(header,&payload,sizeof(payload));
+  //   // If so, grab it and print it out
+  //   //network.read(header,&payload,sizeof(payload));
+    //size_t size = network.readmulti(header,buffer,sizeof(buffer));
     size_t size = network.readmulti(header,buffer,sizeof(buffer));
 
     if (size >0){
 
-      Serial.print("received bytes:");
-      Serial.println(size);
-
+      //Serial.print("received bytes:");
+      //Serial.println(size);
+      //Serial.println(header.toString());
       buffer[size-1]='\0';
       Serial.print(" message: ");
       Serial.println(buffer);
-      delay(100);
+      delay(200);
       
-      //Serial.print(" Received packet #");
-      //Serial.print(payload.counter);
-      //Serial.print(" at ");
-      //Serial.print(payload.ms);
-      //Serial.print(" message: ");
-      //Serial.println(payload.message);
+  //     //Serial.print(" Received packet #");
+  //     //Serial.print(payload.counter);
+  //     //Serial.print(" at ");
+  //     //Serial.print(payload.ms);
+  //     //Serial.print(" message: ");
+  //     //Serial.println(payload.message);
     }
     network.update();
   }

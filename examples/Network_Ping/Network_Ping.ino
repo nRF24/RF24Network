@@ -51,9 +51,10 @@
 ************* Set the Node Address *************************************
 /***********************************************************************/
 const uint16_t node_address_set[10] = { 00, 02, 05, 012, 015, 022, 025, 032, 035, 045 };
-// 0 = Master, 1-2 = Top layer, 2-3 = Children of 1,2 respectively, 3-4 = Children of 2,3 respectively, etc...
 
-uint8_t NODE_ADDRESS = 0;
+
+// 0 = Master, 1-2 = Top layer, 3-4 = Children of 1,2 respectively, 4-5 = Children of 1,2 respectively, etc...
+uint8_t NODE_ADDRESS = 0;  // Use numbers 0 through 9
 
 /***********************************************************************/
 /***********************************************************************/
@@ -64,7 +65,7 @@ RF24Network network(radio);
 
 uint16_t this_node;                           // Our node address
 
-const unsigned long interval = 99; // ms       // Delay manager to send pings regularly. Because of sleepNode(), this is largely irrelevant.
+const unsigned long interval = 1000; // ms       // Delay manager to send pings regularly.
 unsigned long last_time_sent;
 
 

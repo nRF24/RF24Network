@@ -18,7 +18,12 @@
 
 #include <stddef.h>
 
+/********** USER CONFIG **************/
+
+//#define DUAL_HEAD_RADIO
 //#define ENABLE_SLEEP_MODE
+
+/*************************************/
 
 // Stuff that is normally provided by Arduino
 #ifndef ARDUINO
