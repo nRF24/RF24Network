@@ -91,6 +91,7 @@ public:
 
   RF24Network( RF24& _radio );
 
+
   /**
    * Bring up the network
    *
@@ -98,8 +99,18 @@ public:
    *
    * @param _channel The RF channel to operate on
    * @param _node_address The logical address of this node
-   * @param _key AES key    (16 uint8_t)
-   * @param _iv  AES cbc iv (16 uint8_t)
+   */
+  void begin(uint8_t _channel, uint16_t _node_address );
+
+  /**
+   * Bring up the network with AES crypto
+   *
+   * @warning Be sure to 'begin' the radio first.
+   *
+   * @param _channel The RF channel to operate on
+   * @param _node_address The logical address of this node
+   * @param _key AES key    (16 uint8_t) (NULL disable AES crypto)
+   * @param _iv  AES cbc iv (16 uint8_t) (NULL disable AES crypto)
    */
   void begin(uint8_t _channel, uint16_t _node_address ,uint8_t* _key, uint8_t* _iv);
   
@@ -178,6 +189,26 @@ public:
    * @return Whether the message was successfully received 
    */
   bool writemulti(RF24NetworkHeader& header,const void* message, size_t len);
+
+
+/**
+   * Sleep this node
+   * @note NEW - Nodes can now be slept while the radio is not actively transmitting/receiving.
+   * This function will sleep the node, with the radio still active in receive mode.
+   *
+   * The node can be awoken in two ways, both of which can be enabled simultaneously:
+   * 1. An interrupt - usually triggered by the radio receiving a payload. Must use pin 2 (interrupt 0) or 3 (interrupt 1) on Uno, Nano, etc. and 18 (interrupt 5), 19, 20, 21 for mega
+   * @code
+   * if(!network.available()){ network.sleep(5,LOW,SLEEP_MODE_PWR_DOWN); }  //Sleeps the node until a payload is received
+   * @endcode
+   * @param interrupt: The interrupt numbr
+   * @param interruptPin: The interrupt number to use (0,1) for pins two and three on Uno,Nano. More available on Mega etc.
+   * @param sleepmode: There are 5 sleep modes available on standard 8-bit AVRs:SLEEP_MODE_IDLE SLEEP_MODE_ADC SLEEP_MODE_PWR_SAVE SLEEP_MODE_STANDBY SLEEP_MODE_PWR_DOWN .
+   *
+   */
+  void sleep( int interrupt, int interruptPin, int sleepMode );
+
+
 
 /**
    * Sleep this node - Still Under Development

@@ -45,14 +45,6 @@ const uint16_t this_node = 0;
 // Address of the other node
 const uint16_t other_node = 1;
 
-// // Structure of our payload
-// struct payload_t
-// {
-//   unsigned long ms;
-//   unsigned long counter;
-//   char message[8];
-// };
-
 RF24NetworkHeader header;
 // payload_t payload;
 
@@ -60,20 +52,18 @@ RF24NetworkHeader header;
 
 char buffer[144];
 
-
+/*
 void wait_receive()
 {
   sleep_disable();
   detachInterrupt(interu);
 }
-
+*/
 
 void setup()
 {
   Serial.begin(9600);
   Serial.println("RF24Network/examples/helloworld_rx/");
-
-  //pinMode (interupin, INPUT);
 
   SPI.begin();
   radio.begin();
@@ -83,8 +73,9 @@ void setup()
 
   radio.maskIRQ(1,1,0);
   radio.powerUp();
+  //sleep.pwrDownMode(); //sets the Arduino into power Down Mode sleep, the most power saving, all systems are powered down except the watch dog timer and external reset
+  pinMode (interupin, INPUT);
 
-  delay(300);
 }
 
 void loop()
@@ -92,6 +83,9 @@ void loop()
 
   Serial.println("sleep");
   delay(10);
+
+  /*
+
   set_sleep_mode(SLEEP_MODE_PWR_DOWN);
   sleep_enable();
 
@@ -108,8 +102,9 @@ void loop()
   sleep_cpu ();   // one cycle
   sleep_disable();
 
-  //sleep.pwrDownMode(); //sets the Arduino into power Down Mode sleep, the most power saving, all systems are powered down except the watch dog timer and external reset
-  //sleep.sleepInterrupt(5,LOW);
+  */
+
+  network.sleep(interu,LOW,SLEEP_MODE_PWR_DOWN);
 
   // Pump the network regularly
   network.update();
@@ -122,7 +117,6 @@ void loop()
     size_t size = network.readmulti(header,buffer,sizeof(buffer));
 
     if (size >0){
-
       //Serial.print("received bytes:");
       //Serial.println(size);
       //Serial.println(header.toString());
@@ -130,13 +124,6 @@ void loop()
       Serial.print(" message: ");
       Serial.println(buffer);
       delay(200);
-      
-  //     //Serial.print(" Received packet #");
-  //     //Serial.print(payload.counter);
-  //     //Serial.print(" at ");
-  //     //Serial.print(payload.ms);
-  //     //Serial.print(" message: ");
-  //     //Serial.println(payload.message);
     }
     network.update();
   }

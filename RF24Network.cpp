@@ -9,6 +9,7 @@
 #include "RF24Network_config.h"
 #include "RF24.h"
 #include "RF24Network.h"
+#include <avr/sleep.h>
 
 #if defined (ENABLE_SLEEP_MODE)
 	#include <avr/sleep.h>
@@ -21,6 +22,21 @@ uint16_t RF24NetworkHeader::next_id = 1;
 uint64_t pipe_address( uint16_t node, uint8_t pipe );
 bool is_valid_address( uint16_t node );
 
+
+
+/********************************************************************
+*
+*	sleepHandler ISR
+*
+********************************************************************/
+void sleepHandler()
+{
+  sleep_disable(); //disable sleep
+  noInterrupts ();   // same as cli();
+  // detachInterrupt(interupt) //  will be better, but we do not have interupt
+}
+
+
 /******************************************************************/
 #if !defined (DUAL_HEAD_RADIO)
 RF24Network::RF24Network( RF24& _radio ): radio(_radio), next_frame(frame_queue)
@@ -32,6 +48,12 @@ RF24Network::RF24Network( RF24& _radio, RF24& _radio1 ): radio(_radio), radio1(_
 }
 #endif
 /******************************************************************/
+
+void RF24Network::begin(uint8_t _channel, uint16_t _node_address )
+{
+  begin(_channel, _node_address ,NULL,NULL);
+  return;
+}
 
 void RF24Network::begin(uint8_t _channel, uint16_t _node_address ,uint8_t* _key, uint8_t* _iv)
 {
@@ -629,6 +651,38 @@ uint64_t pipe_address( uint16_t node, uint8_t pipe )
 
 
 /************************ Sleep Mode ******************************************/
+
+
+void RF24Network::sleep(int interrupt,int mode,int sleepMode) {
+
+
+  // if(mode == FALLING || mode == LOW)
+  //   {
+  //     //int pin = interrupt + 2; //will fail on the mega	
+  //     pinMode (pin, INPUT);
+  //     digitalWrite (pin, HIGH);
+  //   }
+  
+  set_sleep_mode(sleepMode);
+  
+  sleep_enable();
+  
+  // Do not interrupt before we go to sleep, or the
+  // ISR will detach interrupts and we won't wake.
+  noInterrupts ();   // same as cli();
+  attachInterrupt(interrupt,sleepHandler,mode);
+  //sleep_bod_disable(); // do not use for mega2560
+
+  // We are guaranteed that the sleep_cpu call will be done
+  // as the processor executes the next instruction after
+  // interrupts are turned on.
+  interrupts ();  // one cycle // same as sei();
+  sleep_cpu ();   // one cycle
+  //----------------------------- ZZZZZZ sleeping here----------------------
+  sleep_disable();
+  detachInterrupt(interrupt);
+  interrupts ();  // one cycle // same as sei();
+}
 
 
 #if defined ENABLE_SLEEP_MODE
