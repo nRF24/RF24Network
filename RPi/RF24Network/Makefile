@@ -1,6 +1,6 @@
 #############################################################################
 #
-# Makefile for librf24-bcm on Raspberry Pi
+# Makefile for librf24network-bcm on Raspberry Pi
 #
 # License: GPL (General Public License)
 # Author:  Charles-Henri Hallard 
@@ -21,16 +21,14 @@ LIB_RFN=librf24network
 # shared library name
 LIBNAME_RFN=$(LIB_RFN).so.1.0
 
-LIB_RF24=librf24-bcm
-# shared library name
-LIBNAME_RF24=$(LIB_RF24).so.1.0
+HEADER_DIR=${PREFIX}/include/RF24Network
 
 # The recommended compiler flags for the Raspberry Pi
 CCFLAGS=-Ofast -mfpu=vfp -mfloat-abi=hard -march=armv6zk -mtune=arm1176jzf-s
 
 # make all
 # reinstall the library after each recompilation
-all: librf24network install-rf24n
+all: librf24network
 
 # Make the library
 librf24network: RF24Network.o
@@ -42,11 +40,13 @@ RF24Network.o: RF24Network.cpp
 
 # clear build files
 clean:
-	rm -rf *.o ${LIB_RF24}.* ${LIB_RFN}.*
+	rm -rf *.o ${LIB_RFN}.*
+
+install: all install-libs install-headers
 
 # Install the library to LIBPATH
-.PHONY: install-rf24n
-install-rf24n: 
+
+install-libs: 
 	@echo "[Install]"
 	@if ( test ! -d $(PREFIX)/lib ) ; then mkdir -p $(PREFIX)/lib ; fi
 	@install -m 0755 ${LIBNAME_RFN} ${LIBDIR}
@@ -54,5 +54,8 @@ install-rf24n:
 	@ln -sf ${LIBDIR}/${LIBNAME_RFN} ${LIBDIR}/${LIB_RFN}.so
 	@ldconfig
 
-install: install-rf24n
-	@echo "[Install]"
+install-headers:
+	@echo "[Installing Headers]"
+	@if ( test ! -d ${HEADER_DIR} ) ; then mkdir -p ${HEADER_DIR} ; fi
+	@install -m 0644 *.h ${HEADER_DIR}
+
