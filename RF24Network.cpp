@@ -330,7 +330,8 @@ bool RF24Network::write_to_pipe( uint16_t node, uint8_t pipe )
 const char* RF24NetworkHeader::toString(void) const
 {
   static char buffer[45];
-  snprintf_P(buffer,sizeof(buffer),PSTR("id %04x from 0%o to 0%o type %c"),id,from_node,to_node,type);
+  //snprintf_P(buffer,sizeof(buffer),PSTR("id %04x from 0%o to 0%o type %c"),id,from_node,to_node,type);
+  sprintf_P(buffer,PSTR("id %04x from 0%o to 0%o type %c"),id,from_node,to_node,type);
   return buffer;
 }
 
