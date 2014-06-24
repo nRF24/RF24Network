@@ -20,8 +20,9 @@
 #define _BV(x) (1<<(x))
 #endif
 
-#undef SERIAL_DEBUG
-#ifdef SERIAL_DEBUG
+#undef SERIAL_DEBUG  //Change #undef to #define for debug
+#define SERIAL_DEBUG_ROUTING
+#if defined (SERIAL_DEBUG)
 #define IF_SERIAL_DEBUG(x) ({x;})
 #else
 #define IF_SERIAL_DEBUG(x)

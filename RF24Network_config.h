@@ -52,7 +52,8 @@
 
 
   #undef SERIAL_DEBUG
-  #ifdef SERIAL_DEBUG
+  #define SERIAL_DEBUG_ROUTING
+  #if defined (SERIAL_DEBUG)
 	#define IF_SERIAL_DEBUG(x) ({x;})
   #else
 	#define IF_SERIAL_DEBUG(x)

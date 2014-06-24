@@ -31,7 +31,7 @@ struct RF24NetworkHeader
   uint16_t to_node; /**< Logical address where the message is going */
   uint16_t id; /**< Sequential message ID, incremented every message */
   unsigned char type; /**< Type of the packet.  0-127 are user-defined types, 128-255 are reserved for system */
-  unsigned char reserved; /**< Reserved for future use */
+  unsigned char reserved; /**< Reserved for routing messages */
 
   static uint16_t next_id; /**< The message ID of the next message to be sent */
 
@@ -99,14 +99,15 @@ public:
    * @param _node_address The logical address of this node
    */
   void begin(uint8_t _channel, uint16_t _node_address );
-
+  
+  void failures(uint32_t *_fails, uint32_t *_ok);
   /**
    * Main layer loop
    *
    * This function must be called regularly to keep the layer going.  This is where all
    * the action happens!
    */
-  void update(void);
+  uint8_t update(void);
 
   /**
    * Test whether there is a message available for this node
@@ -225,13 +226,24 @@ public:
    *
    */
 
-  unsigned long txTimeout;
+  uint32_t txTimeout;
+  
+  /**
+   * @note: Optimization: This new value defaults to 200 milliseconds.
+   * This only affects payloads that are routed by one or more nodes.
+   * This specifies how long to wait for an ack from across the network.
+   * Radios routing directly to their parent or children nodes do not
+   * utilize this value.
+   */
+  
+   uint16_t routeTimeout;
+  
 
 private:
   void open_pipes(void);
   uint16_t find_node( uint16_t current_node, uint16_t target_node );
-  bool write(uint16_t);
-  bool write_to_pipe( uint16_t node, uint8_t pipe );
+  bool write(uint16_t,bool routed);
+  bool write_to_pipe( uint16_t node, uint8_t pipe, bool multicast );
   bool enqueue(void);
 
   bool is_direct_child( uint16_t node );
@@ -251,11 +263,14 @@ private:
   uint8_t frame_buffer[frame_size]; /**< Space to put the frame that will be sent/received over the air */
   uint8_t frame_queue[5*frame_size]; /**< Space for a small set of frames that need to be delivered to the app layer */
   uint8_t* next_frame; /**< Pointer into the @p frame_queue where we should place the next received frame */
-
+  uint8_t error_frame[frame_size];
+  
   uint16_t parent_node; /**< Our parent's node address */
   uint8_t parent_pipe; /**< The pipe our parent uses to listen to us */
   uint16_t node_mask; /**< The bits which contain signfificant node address information */
-
+  #define NETWORK_ACK_REQUEST 128
+  #define NETWORK_ACK 129
+  
 };
 
 /**
@@ -458,6 +473,8 @@ private:
  * @page Tuning Performance and Data Loss: Tuning the Network
  * Tips and examples for tuning the network and Dual-head operation.
  *
+ *  <img src="tmrh20/topologyImage.jpg" alt="Topology" height="75%" width="75%">
+ *
  * @section TuningOverview Tuning Overview
  * The RF24 radio modules are generally only capable of either sending or receiving data at any given
  * time, but have built-in auto-retry mechanisms to prevent the loss of data. These values are adjusted
@@ -482,15 +499,14 @@ private:
  * The core radio library also provides the ability to adjust the internal auto-retry count of the radio
  * modules. The default setting is 15 automatic retries per payload, and can be extended by configuring
  * the network.txTimeout variable. This default retry count should generally be left at 15, as per the
- * example in the above section. The txTimeout variable is used to extend the retry count to a defined
- * duration in milliseconds. An interval/retry setting of (15,15) will provide 15 retrys at intervals of
- * 4ms, taking up to 60ms per payload.
+ * example in the above section. An interval/retry setting of (15,15) will provide 15 retrys at intervals of
+ * 4ms, taking up to 60ms per payload. The library now provides staggered timeout periods by default, but
+ * they can also be adjusted on a per-node basis.
  *
- * The library now provides staggered timout periods by default, but they can also be adjusted on a per-node
- * basis. See the network.txTimeout variable.
- * Timeout periods of extended duration (500+) will generally not help when payloads are failing due to data
- * collisions, it will only extend the duration of the errors. Extended duration timeouts should generally only
- * be configured on leaf nodes that do not receive data, or on a dual-headed node.
+ * The txTimeout variable is used to extend the retry count to a defined duration in milliseconds. See the
+ * network.txTimeout variable. Timeout periods of extended duration (500+) will generally not help when payloads
+ * are failing due to data collisions, it will only extend the duration of the errors. Extended duration timeouts
+ * should generally only be configured on leaf nodes that do not receive data, or on a dual-headed node.
  *
  * @section Examples
  *

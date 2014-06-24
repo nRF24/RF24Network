@@ -102,13 +102,15 @@ public:
    */
   void begin(uint8_t _channel, uint16_t _node_address );
   
+  void failures(uint32_t *_fails, uint32_t *_ok);
+  
   /**
    * Main layer loop
    *
    * This function must be called regularly to keep the layer going.  This is where all
    * the action happens!
    */
-  void update(void);
+  uint8_t update(void);
 
   /**
    * Test whether there is a message available for this node
@@ -174,8 +176,8 @@ public:
 protected:
   void open_pipes(void);
   uint16_t find_node( uint16_t current_node, uint16_t target_node );
-  bool write(uint16_t);
-  bool write_to_pipe( uint16_t node, uint8_t pipe );
+  bool write(uint16_t, bool routed);
+  bool write_to_pipe( uint16_t node, uint8_t pipe, bool multicast );
   bool enqueue(void);
 
   bool is_direct_child( uint16_t node );
@@ -195,6 +197,8 @@ private:
   uint16_t parent_node; /**< Our parent's node address */
   uint8_t parent_pipe; /**< The pipe our parent uses to listen to us */
   uint16_t node_mask; /**< The bits which contain signfificant node address information */
+  #define NETWORK_ACK_REQUEST 128
+  #define NETWORK_ACK 129
 };
 
 /**
