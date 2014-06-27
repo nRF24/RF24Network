@@ -150,7 +150,8 @@ public:
    * @return Whether the message was successfully received
    */
   bool write(RF24NetworkHeader& header,const void* message, size_t len);
-
+  bool write(RF24NetworkHeader& header,const void* message, size_t len, uint16_t writeDirect);
+  
 /**
    * Sleep this node - Still Under Development
    * @note NEW - Nodes can now be slept while the radio is not actively transmitting. This must be manually enabled by uncommenting
@@ -242,7 +243,7 @@ public:
 private:
   void open_pipes(void);
   uint16_t find_node( uint16_t current_node, uint16_t target_node );
-  bool write(uint16_t,bool routed);
+  bool write(uint16_t, uint8_t directTo);
   bool write_to_pipe( uint16_t node, uint8_t pipe, bool multicast );
   bool enqueue(void);
 
@@ -251,7 +252,8 @@ private:
   uint16_t direct_child_route_to( uint16_t node );
   uint8_t pipe_to_descendant( uint16_t node );
   void setup_address(void);
-
+  bool _write(RF24NetworkHeader& header,const void* message, size_t len, uint16_t writeDirect);
+  
 private:
   RF24& radio; /**< Underlying radio driver, provides link/physical layers */
 
@@ -268,9 +270,8 @@ private:
   uint16_t parent_node; /**< Our parent's node address */
   uint8_t parent_pipe; /**< The pipe our parent uses to listen to us */
   uint16_t node_mask; /**< The bits which contain signfificant node address information */
-  #define NETWORK_ACK_REQUEST 128
   #define NETWORK_ACK 129
-  
+
 };
 
 /**
@@ -337,13 +338,14 @@ private:
  * @section Purpose Purpose/Goal
  *
  * Original: Create an alternative to ZigBee radios for Arduino communication.
+ * 
  * New: Enhance the current functionality for maximum efficiency, reliability, and speed
  *
  * Xbees are excellent little radios, backed up by a mature and robust standard
  * protocol stack.  They are also expensive.
  *
- * For many Arduino uses, they seem like overkill.  So I am working to build
- * an alternative using nRF24L01 radios.  Modules are available for less than
+ * For many Arduino uses, they seem like overkill.  So I am working to improve the current
+ * standard for nRF24L01 radios.  The best RF24 modules are available for less than
  * $6 from many sources.  With the RF24Network layer, I hope to cover many
  * common communication scenarios.
  *
@@ -352,10 +354,12 @@ private:
  * @section Features Features
  *
  * The layer provides:
- * @li <b>New</b> (2014): Dual headed operation: The use of dual radios for busy routing nodes or the master node enhances throughput and decreases errors. See the <a href="Tuning.html">Tuning</a> section.
+ * @li <b>New</b> (2014): Network ACKs: Efficient acknowledgement of network-wide transmissions, via dynamic radio acks and network protocol acks.
+ * @li <b>New</b> (2014): Updated addressing standard for optimal radio transmission.
  * @li <b>New</b> (2014): Extended timeouts and staggered timeout intervals. The new txTimeout variable allows fully automated extended timeout periods via auto-retry/auto-reUse of payloads.
  * @li <b>New</b> (2014): Optimization to the core library provides improvements to reliability, speed and efficiency. See https://tmrh20.github.io/RF24 for more info.
  * @li <b>New</b> (2014): Built in sleep mode using interrupts. (Still under development. (Enable via RF24Network_config.h))
+  * @li <b>New</b> (2014): Dual headed operation: The use of dual radios for busy routing nodes or the master node enhances throughput and decreases errors. See the <a href="Tuning.html">Tuning</a> section.
  * @li Host Addressing.  Each node has a logical address on the local network.
  * @li Message Forwarding.  Messages can be sent from one node to any other, and
  * this layer will get them there no matter how many hops it takes.
@@ -470,11 +474,56 @@ private:
  * @li Base node.  The top of the tree node with no parents, only children.  Typically this node
  * will bridge to another kind of network like Ethernet.  ZigBee calls it a Co-ordinator node.
  *
+ * 
+ *
+ *
  * @page Tuning Performance and Data Loss: Tuning the Network
- * Tips and examples for tuning the network and Dual-head operation.
+ * Tips and examples for tuning the network and general operation.
  *
  *  <img src="tmrh20/topologyImage.jpg" alt="Topology" height="75%" width="75%">
  *
+ * @section General Understanding Radio Communication and Topology
+ * When a transmission takes place from one radio module to another, the receiving radio will communicate
+ * back to the sender with an acknowledgement (ACK) packet, to indicate success. If the sender does not
+ * receive an ACK, the radio automatically engages in a series of timed retries, at set intervals. The 
+ * radios use techniques like addressing and numbering of payloads to manage this, but it is all done 
+ * automatically, out of sight from the user.
+ *
+ * When working over a radio network, some of these automated techniques can actually hinder data transmission.
+ * Retrying failed payloads over and over on a radio network can hinder communication for nearby nodes, or 
+ * reduce throughput and errors on routing nodes.
+ *
+ * Radios in this network are linked by <b>addresses</b> assigned to <b>pipes</b>. Each radio can listen
+ * to 6 addresses on 6 pipes, therefore each radio has a parent pipe and 5 child pipes, which are used
+ * to form a tree structure. Nodes communicate directly with their parent and children nodes. Any other
+ * traffic to or from a node must be routed through the network.
+ *
+ * @section Network Routing
+ *
+ * Routing of traffic is handled invisibly to the user. If the network is constructed appropriately, nodes
+ * will route traffic automatically as required. Data transmission generally has one of two requirements,
+ * either data that fails to transmit can be discarded as new data arrives, or sending can be retried as
+ * required until complete success or failure. 
+ *
+ * The new routing protocol allows this to be managed at the application level as the data requires, with
+ * defaults assigned specifically to allow maximum efficiency and throughput from the RF level to the
+ * network and application level. If routing data between parent and child nodes (marked by direct links on
+ * the topology image above) the network uses built-in acknowledgement and retry functions of the chip to 
+ * prevent data loss. When payloads are sent to other nodes, they need to be routed. Routing is managed using
+ * a combination of built in ACK requests, and software driven network ACKs. This allows all routing nodes to
+ * forward data very quickly, with only the final routing node confirming delivery and sending back an
+ * acknowledgement.
+ *
+ * Example: Node 00 sends to node 01. The nodes will use the built in auto-retry and auto-ack functions.<br>
+ * Exmaple: Node 00 sends to node 011. Node 00 will send to node 01, and request -no radio ACK-. Node 01 will 
+ * forward the message to 011 and request an auto radio ACK. If delivery was successful, node 01 will also
+ * forward a message back to node 00, (noACK) indicating success.
+ *
+ * Old Functionality: Node 00 sends to node 011 using auto-ack. Node 00 first sends to 01, 01 acknowledges.
+ * Node 01 forwards the payload to 011 using auto-ack. If the payload fails between 01 and 011, node 00 has
+ * no way of knowing. The new method uses the same amount of traffic to accomplish more.
+ *
+ * 
  * @section TuningOverview Tuning Overview
  * The RF24 radio modules are generally only capable of either sending or receiving data at any given
  * time, but have built-in auto-retry mechanisms to prevent the loss of data. These values are adjusted

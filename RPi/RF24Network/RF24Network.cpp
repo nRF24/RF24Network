@@ -56,7 +56,8 @@ void RF24Network::begin(uint8_t _channel, uint16_t _node_address )
   uint8_t retryVar = (((node_address % 6)+1) *2) + 3;
   radio.setRetries(retryVar, 15);
   txTimeout = retryVar * 17;
-
+  routeTimeout = txTimeout+25;
+  
   // Setup our address helper cache
   setup_address();
 
@@ -101,7 +102,7 @@ uint8_t RF24Network::update(void)
 	  }
 	  
 	  
-	  uint8_t res = header.reserved;	  
+	  uint8_t res = header.type;	  
       // Is this for us?
       if ( header.to_node == node_address ){
 			if(res == NETWORK_ACK){
@@ -110,7 +111,7 @@ uint8_t RF24Network::update(void)
 	  
 		// Add it to the buffer of frames for us
 		enqueue();		
-
+		
       }else{
 			// Relay it as a routed message
 			write(header.to_node,1);
@@ -219,8 +220,16 @@ size_t RF24Network::read(RF24NetworkHeader& header,void* message, size_t maxlen)
 }
 
 /******************************************************************/
+bool RF24Network::write(RF24NetworkHeader& header,const void* message, size_t len){
+	return _write(header,message,len,070);
+}
+/******************************************************************/
+bool RF24Network::write(RF24NetworkHeader& header,const void* message, size_t len, uint16_t writeDirect){
+	return _write(header,message,len,writeDirect);
+}
+/******************************************************************/
 
-bool RF24Network::write(RF24NetworkHeader& header,const void* message, size_t len)
+bool RF24Network::_write(RF24NetworkHeader& header,const void* message, size_t len, uint16_t writeDirect)
 {
   // Fill out the header
   header.from_node = node_address;
@@ -242,16 +251,25 @@ bool RF24Network::write(RF24NetworkHeader& header,const void* message, size_t le
     // Just queue it in the received queue
     return enqueue();
   else
-    // Otherwise send it out over the air
-    return write(header.to_node,0);
+	if(writeDirect != 070){
+		if(header.to_node == writeDirect){
+			return write(writeDirect,2);
+	    }else{
+			return write(writeDirect,3);
+		}	
+    }else{
+		// Otherwise send it out over the air
+		return write(header.to_node,0);
+	}
 }
 
 /******************************************************************/
 
-bool RF24Network::write(uint16_t to_node, bool routed)
+bool RF24Network::write(uint16_t to_node, uint8_t directTo)
 {
   bool ok = false;
-
+  bool multicast = 0; // Radio ACK requested = 0
+  
   // Throw it away if it's not a valid address
   if ( !is_valid_address(to_node) )
     return false;
@@ -263,9 +281,14 @@ bool RF24Network::write(uint16_t to_node, bool routed)
   uint16_t send_node = parent_node;
   // On which pipe
   uint8_t send_pipe = parent_pipe;
-
+  
+  if(directTo>1){    
+		send_node = to_node;
+		send_pipe = parent_pipe;	
+  }
+  
   // If the node is a direct child,
-  if ( is_direct_child(to_node) )
+  else if ( is_direct_child(to_node) )
   {
     // Send directly
     send_node = to_node;
@@ -281,37 +304,34 @@ bool RF24Network::write(uint16_t to_node, bool routed)
     send_node = direct_child_route_to(to_node);
     send_pipe = 0;
   }
+
   
-  bool multicast = 0;
-  if(!routed && send_node != to_node ){	// If sending original message, and message needs to be routed
-	frame_buffer[7] = NETWORK_ACK_REQUEST;				// Request a manual ACK payload
-	multicast = 1;						// Send via multicast since message is routed, a manual network-ACK will be sent if successful
+  if( ( send_node != to_node) || frame_buffer[6] == NETWORK_ACK || directTo == 3){
+		multicast = 1;
   }
-  if(send_node != to_node){
-	multicast = 1;	  //No ACK requested
-  }
+  
   IF_SERIAL_DEBUG(printf_P(PSTR("%d: MAC Sending to 0%o via 0%o on pipe %x\n\r"),millis(),to_node,send_node,send_pipe));
 
-  // First, stop listening so we can talk
-  radio.stopListening();
+
   
   // Put the frame on the pipe
   ok = write_to_pipe( send_node, send_pipe, multicast );  
-
+//printf("Multi %d\n",multicast);
    
-   	   if(routed && ok && send_node == to_node && frame_buffer[7] != NETWORK_ACK){
-			uint16_t from = frame_buffer[0] | (frame_buffer[1] << 8) ;	
-			frame_buffer[7] = NETWORK_ACK;
-			frame_buffer[2] = frame_buffer[0]; frame_buffer[3] = frame_buffer[1];
-			write(from,1);	
-			#if defined (SERIAL_DEBUG_ROUTING)
-				printf("NET: ACK to %o \n",from);
-			#endif
-	   }
-	   
   #if defined (SERIAL_DEBUG_ROUTING) || defined(SERIAL_DEBUG)
   if(!ok){ printf_P(PSTR("%u: MAC Send fail to 0%o via 0%o on pipe %x\n\r"),millis(),to_node,send_node,send_pipe); }
   #endif
+  
+   	   if( directTo == 1 && ok && !multicast ){
+			frame_buffer[6] = NETWORK_ACK;
+			frame_buffer[2] = frame_buffer[0]; frame_buffer[3] = frame_buffer[1];
+			write(frame_buffer[0] | (frame_buffer[1] << 8),1);	
+			#if defined (SERIAL_DEBUG_ROUTING)
+				printf("MAC: Route OK to 0%o ACK sent to 0%o\n",to_node,frame_buffer[0] | (frame_buffer[1] << 8));
+			#endif
+	   }
+	   
+
   
   // NOT NEEDED anymore.  Now all reading pipes are open to start.
 #if 0
@@ -326,11 +346,10 @@ bool RF24Network::write(uint16_t to_node, bool routed)
   // Now, continue listening
   radio.startListening();
 
-  if(send_node != to_node && !routed && ok){
+  if( (send_node != to_node && directTo==0) || directTo == 3 ){
 		uint32_t reply_time = millis(); 
-		//bool pOK = 1;
 		while( update() != NETWORK_ACK){
-			if(millis() - reply_time > 500){ 
+			if(millis() - reply_time > routeTimeout){ 
 				ok=0; 
 				#ifdef SERIAL_DEBUG_ROUTING
 					printf_P(PSTR("%u: MAC Network ACK fail from 0%o via 0%o on pipe %x\n\r"),millis(),to_node,send_node,send_pipe); 
@@ -354,7 +373,9 @@ bool RF24Network::write_to_pipe( uint16_t node, uint8_t pipe, bool multicast )
   bool ok = false;
 
   uint64_t out_pipe = pipe_address( node, pipe );
-
+  
+  // First, stop listening so we can talk
+  radio.stopListening();
   // Open the correct pipe for writing.
   radio.openWritingPipe(out_pipe);
 

@@ -153,7 +153,7 @@ public:
    * @return Whether the message was successfully received 
    */
   bool write(RF24NetworkHeader& header,const void* message, size_t len);
-
+  bool write(RF24NetworkHeader& header,const void* message, size_t len, uint16_t writeDirect);
   /**
    * This node's parent address
    * 
@@ -173,10 +173,21 @@ public:
 
   unsigned long txTimeout;
  
+   /**
+   * @note: Optimization: This new value defaults to 200 milliseconds.
+   * This only affects payloads that are routed by one or more nodes.
+   * This specifies how long to wait for an ack from across the network.
+   * Radios routing directly to their parent or children nodes do not
+   * utilize this value.
+   */
+  
+   uint16_t routeTimeout;
+   
+ 
 protected:
   void open_pipes(void);
   uint16_t find_node( uint16_t current_node, uint16_t target_node );
-  bool write(uint16_t, bool routed);
+  bool write(uint16_t, uint8_t directTo);
   bool write_to_pipe( uint16_t node, uint8_t pipe, bool multicast );
   bool enqueue(void);
 
@@ -185,7 +196,8 @@ protected:
   uint16_t direct_child_route_to( uint16_t node );
   uint8_t pipe_to_descendant( uint16_t node );
   void setup_address(void);
-
+  bool _write(RF24NetworkHeader& header,const void* message, size_t len, uint16_t writeDirect);
+  
 private:
   RF24& radio; /**< Underlying radio driver, provides link/physical layers */ 
   uint16_t node_address; /**< Logical node address of this unit, 1 .. UINT_MAX */
