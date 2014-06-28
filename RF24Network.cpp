@@ -478,27 +478,18 @@ uint64_t pipe_address( uint16_t node, uint8_t pipe )
 
 #if defined ENABLE_SLEEP_MODE
 
-#if !defined( __AVR_ATtiny85__ ) && !defined( __AVR_ATtiny84__) && !defined(__arm__)
-
-RF24NetworkHeader sleepHeader(/*to node*/ 00, /*type*/ 'S' /*Sleep*/);
-
-//bool awoke = 0;
+#if !defined(__arm__)
 
 void wakeUp(){
-  //detachInterrupt(0);
   sleep_disable();
   sleep_cycles_remaining = 0;
-  //awoke = 1;
 }
 
 ISR(WDT_vect){
   --sleep_cycles_remaining;
-
 }
 
-
 void RF24Network::sleepNode( unsigned int cycles, int interruptPin ){
-
 
   sleep_cycles_remaining = cycles;
   set_sleep_mode(SLEEP_MODE_PWR_DOWN); // sleep mode is set here
@@ -506,18 +497,23 @@ void RF24Network::sleepNode( unsigned int cycles, int interruptPin ){
   if(interruptPin != 255){
   	attachInterrupt(interruptPin,wakeUp, LOW);
   }
+  #if defined(__AVR_ATtiny25__) || defined(__AVR_ATtiny45__) || defined(__AVR_ATtiny85__)
+  WDTCR |= _BV(WDIE);
+  #else
   WDTCSR |= _BV(WDIE);
+  #endif
+  
   while(sleep_cycles_remaining){
-	//uint8_t junk = 23;
-    //write(&junk,1);
     sleep_mode();                        // System sleeps here
   }                                     // The WDT_vect interrupt wakes the MCU from here
   sleep_disable();                     // System continues execution here when watchdog timed out
-  //if(awoke){ update(); awoke = 0; }
   detachInterrupt(interruptPin);
-  WDTCSR &= ~_BV(WDIE);
-  //radio.startListening();
-
+  
+  #if defined(__AVR_ATtiny25__) || defined(__AVR_ATtiny45__) || defined(__AVR_ATtiny85__)
+	WDTCR &= ~_BV(WDIE);
+  #else
+	WDTCSR &= ~_BV(WDIE);
+  #endif
 }
 
 void RF24Network::setup_watchdog(uint8_t prescalar){
@@ -526,8 +522,13 @@ void RF24Network::setup_watchdog(uint8_t prescalar){
   if ( prescalar & 8 )
     wdtcsr |= _BV(WDP3);
   MCUSR &= ~_BV(WDRF);                      // Clear the WD System Reset Flag
+  #if defined(__AVR_ATtiny25__) || defined(__AVR_ATtiny45__) || defined(__AVR_ATtiny85__)
+  WDTCR = _BV(WDCE) | _BV(WDE);            // Write the WD Change enable bit to enable changing the prescaler and enable system reset
+  WDTCR = _BV(WDCE) | wdtcsr | _BV(WDIE);  // Write the prescalar bits (how long to sleep, enable the interrupt to wake the MCU
+  #else
   WDTCSR = _BV(WDCE) | _BV(WDE);            // Write the WD Change enable bit to enable changing the prescaler and enable system reset
   WDTCSR = _BV(WDCE) | wdtcsr | _BV(WDIE);  // Write the prescalar bits (how long to sleep, enable the interrupt to wake the MCU
+  #endif
 }
 
 
