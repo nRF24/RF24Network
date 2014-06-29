@@ -19,6 +19,9 @@
 uint16_t RF24NetworkHeader::next_id = 1;
 
 uint64_t pipe_address( uint16_t node, uint8_t pipe );
+#if defined (RF24NetworkMulticast)
+uint16_t levelToAddress( uint8_t level );
+#endif
 bool is_valid_address( uint16_t node );
 uint32_t nFails = 0, nOK=0;
 
@@ -53,11 +56,11 @@ void RF24Network::begin(uint8_t _channel, uint16_t _node_address )
   // Use different retry periods to reduce data collisions
 
   uint8_t retryVar = ((node_address % 6) *2) + 3;
-  radio.setRetries(retryVar, 15);
-  txTimeout = 100;
-  routeTimeout = txTimeout+25; // About 2.5ms max delay per node at optimal routing speeds, 10 nodes maximum hop + max retry time for auto-ack
+  radio.setRetries(retryVar, 5);
+  txTimeout = 20;
+  routeTimeout = txTimeout+35; // About 2.5ms max delay per node at optimal routing speeds, 10 nodes maximum hop + max retry time for auto-ack + some delay to relieve congestion
 
-  printf_P(PSTR("Retries: %d, txTimeout: %d"),retryVar,txTimeout);
+  //printf_P(PSTR("Retries: %d, txTimeout: %d"),retryVar,txTimeout);
 #if defined (DUAL_HEAD_RADIO)
   radio1.setChannel(_channel);
   radio1.setDataRate(RF24_1MBPS);
@@ -73,6 +76,14 @@ void RF24Network::begin(uint8_t _channel, uint16_t _node_address )
   while (i--){
     radio.openReadingPipe(i,pipe_address(_node_address,i));	
   }
+  #if defined (RF24NetworkMulticast)
+    uint8_t count = 0;
+	while(_node_address){
+		_node_address/=8;
+		count++;
+	}
+	multicast_level = count;	
+  #endif
   radio.startListening();
 
 }
@@ -89,6 +100,7 @@ uint8_t RF24Network::update(void)
   uint8_t pipe_num;
   while ( radio.isValid() && radio.available())//&pipe_num) )
   {
+
     // Dump the payloads until we've gotten everything
 
     //while (radio.available())
@@ -109,21 +121,44 @@ uint8_t RF24Network::update(void)
 	  
 	  uint8_t res = header.type;
       // Is this for us?
-      if ( header.to_node == node_address ){
+      if ( header.to_node == node_address   ){
 			if(res == NETWORK_ACK){	// If received a routing payload, (Network ACK) discard it, and indicate what it was.
 				#ifdef SERIAL_DEBUG_ROUTING
 					printf_P(PSTR("MAC: Network ACK Rcvd\n"));
 				#endif
 				return NETWORK_ACK;
-			}
-	  //printf("enQ\n");
-								     // Add it to the buffer of frames for us
-		enqueue();
+			}								     // Add it to the buffer of frames for us
+		
+			enqueue();
+		
 		nOK++;
 	  
 	  }else{	  
-	    //printf("route");
-	    write(header.to_node,1);	//Send it on, indicate it is a routed payload	   
+	  
+	  #if defined	(RF24NetworkMulticast)		
+			if( header.to_node == 0100){
+				if(header.id != lastMultiMessageID){
+					if(multicastRelay){					
+						#ifdef SERIAL_DEBUG_ROUTING
+							printf_P(PSTR("MAC: FWD multicast frame from 0%o to level %d\n"),header.from_node,multicast_level+1);
+						#endif
+						write(levelToAddress(multicast_level)<<3,4);
+					}
+				enqueue();				
+				lastMultiMessageID = header.id;
+				}
+				#ifdef SERIAL_DEBUG_ROUTING
+				else{				
+					printf_P(PSTR("MAC: Drop duplicate multicast frame %d from 0%o\n"),header.id,header.from_node);
+				}
+				#endif
+			}else{
+				write(header.to_node,1);	//Send it on, indicate it is a routed payload
+			}
+		#else
+		//if(radio.available()){printf("------FLUSHED DATA --------------");}
+		write(header.to_node,1);	//Send it on, indicate it is a routed payload	
+		#endif
 	  }
 	  
 	  
@@ -231,6 +266,29 @@ size_t RF24Network::read(RF24NetworkHeader& header,void* message, size_t maxlen)
   return bufsize;
 }
 
+#if defined RF24NetworkMulticast
+/******************************************************************/
+bool RF24Network::multicast(RF24NetworkHeader& header,const void* message, size_t len, uint8_t level){
+	// Fill out the header
+  header.to_node = 0100;
+  header.from_node = node_address;
+  
+  // Build the full frame to send
+  memcpy(frame_buffer,&header,sizeof(RF24NetworkHeader));
+  if (len)
+    memcpy(frame_buffer + sizeof(RF24NetworkHeader),message,min(frame_size-sizeof(RF24NetworkHeader),len));
+
+  IF_SERIAL_DEBUG(printf_P(PSTR("%lu: NET Sending %s\n\r"),millis(),header.toString()));
+  if (len)
+  {
+    IF_SERIAL_DEBUG(const uint16_t* i = reinterpret_cast<const uint16_t*>(message);printf_P(PSTR("%lu: NET message %04x\n\r"),millis(),*i));
+  }  
+    
+	return write(levelToAddress(level),4);
+  
+}
+#endif
+
 /******************************************************************/
 bool RF24Network::write(RF24NetworkHeader& header,const void* message, size_t len){
 	return _write(header,message,len,070);
@@ -292,9 +350,14 @@ bool RF24Network::write(uint16_t to_node, uint8_t directTo)  // Direct To: 0 = F
   uint16_t send_node = parent_node; 
 
   // On which pipe
-  uint8_t send_pipe = parent_pipe;
+  uint8_t send_pipe = parent_pipe %5;
   
-  if(directTo>1){    
+  if(directTo == 4){
+		send_node = to_node;
+		send_pipe = 0;
+  }
+  
+  else if(directTo>1){    
 		send_node = to_node;			
   }
      
@@ -305,7 +368,7 @@ bool RF24Network::write(uint16_t to_node, uint8_t directTo)  // Direct To: 0 = F
     send_node = to_node;
 
     // To its listening pipe
-    send_pipe = 0;
+    send_pipe = 5;
   }
   // If the node is a child of a child
   // talk on our child's listening pipe,
@@ -313,17 +376,18 @@ bool RF24Network::write(uint16_t to_node, uint8_t directTo)  // Direct To: 0 = F
   else if ( is_descendant(to_node) )
   {
     send_node = direct_child_route_to(to_node);
-    send_pipe = 0;
+    send_pipe = 5;
   }
   
 
-  if( ( send_node != to_node) || frame_buffer[6] == NETWORK_ACK || directTo == 3){
+  if( ( send_node != to_node) || frame_buffer[6] == NETWORK_ACK || directTo == 3 || directTo == 4){
 		multicast = 1;
   }
   
 
   IF_SERIAL_DEBUG(printf_P(PSTR("%lu: MAC Sending to 0%o via 0%o on pipe %x\n\r"),millis(),to_node,send_node,send_pipe));
  
+  radio.stopListening();
   ok=write_to_pipe(send_node, send_pipe, multicast);
   
   #ifdef SERIAL_DEBUG_ROUTING
@@ -392,7 +456,7 @@ bool RF24Network::write_to_pipe( uint16_t node, uint8_t pipe, bool multicast )
  // Open the correct pipe for writing.
 
   // First, stop listening so we can talk
-  radio.stopListening();
+  
   radio.openWritingPipe(out_pipe);  
   radio.writeFast(frame_buffer, frame_size,multicast);
   ok = radio.txStandBy(txTimeout);    
@@ -448,7 +512,6 @@ bool RF24Network::is_direct_child( uint16_t node )
     uint16_t child_node_mask = ( ~ node_mask ) << 3;
     result = ( node & child_node_mask ) == 0 ;
   }
-
   return result;
 }
 
@@ -527,7 +590,11 @@ bool is_valid_address( uint16_t node )
   while(node)
   {
     uint8_t digit = node & 0B111;
+	#if !defined (RF24NetworkMulticast)
     if (digit < 1 || digit > 5)
+	#else
+	if (digit < 0 || digit > 5)	//Allow our out of range multicast address
+	#endif
     {
       result = false;
       printf_P(PSTR("*** WARNING *** Invalid address 0%o\n\r"),node);
@@ -540,26 +607,51 @@ bool is_valid_address( uint16_t node )
 }
 
 /******************************************************************/
+#if defined (RF24NetworkMulticast)
+void RF24Network::multicastLevel(uint8_t level){
+  multicast_level = level;
+  radio.stopListening();  
+  radio.openReadingPipe(0,pipe_address(levelToAddress(level),0));
+  radio.startListening();
+  }
+  
+uint16_t levelToAddress(uint8_t level){
+	uint16_t levelAddr = 1;
+	levelAddr = levelAddr << ((level-1) * 3);
+	return levelAddr;
+}  
+#endif
+/******************************************************************/
 
 uint64_t pipe_address( uint16_t node, uint8_t pipe )
 {
   
-  static uint8_t address_translation[] = { 0xc3,0x3c,0x33,0xce,0x3e,0xe3 };
+  static uint8_t address_translation[] = { 0xc3,0x3c,0x33,0xce,0x3e,0xe3,0xec };
   uint64_t result = 0xCCCCCCCCCCLL;
   uint8_t* out = reinterpret_cast<uint8_t*>(&result);
   
   // Translate the address to use our optimally chosen radio address bytes
-	uint8_t count = 0; uint16_t dec = node;
+	uint8_t count = 1; uint16_t dec = node;
+   #if defined (RF24NetworkMulticast)
+	if(pipe != 0 || !node){
+   #endif
 	while(dec){		
-		out[count]=address_translation[dec % 8];		// Convert our decimal values to octal, translate them to address bytes, and set our address
+		out[count]=address_translation[(dec % 8)];		// Convert our decimal values to octal, translate them to address bytes, and set our address
 		dec /= 8;	
 		count++;
-	}   
-
-  //if( pipe > 0 ){	
-  result = result << 8; 					// Shift the result by 1 byte	
-  out[0] = address_translation[pipe];		// Set last byte by pipe number
-  //}
+	}
+ 		
+	out[0] = address_translation[pipe];		// Set last byte by pipe number
+   #if defined (RF24NetworkMulticast)
+	}else{
+		while(dec){
+			dec/=8;
+			count++;
+		}
+		out[1] = address_translation[count-1];	
+	}
+  
+  #endif
   
   IF_SERIAL_DEBUG(uint32_t* top = reinterpret_cast<uint32_t*>(out+1);printf_P(PSTR("%lu: NET Pipe %i on node 0%o has address %lx%x\n\r"),millis(),pipe,node,*top,*out));
 	
@@ -572,17 +664,11 @@ uint64_t pipe_address( uint16_t node, uint8_t pipe )
 
 #if defined ENABLE_SLEEP_MODE
 
-#if !defined( __AVR_ATtiny85__ ) && !defined( __AVR_ATtiny84__) && !defined(__arm__)
-
-RF24NetworkHeader sleepHeader(/*to node*/ 00, /*type*/ 'S' /*Sleep*/);
-
-//bool awoke = 0;
+#if !defined(__arm__)
 
 void wakeUp(){
-  //detachInterrupt(0);
   sleep_disable();
   sleep_cycles_remaining = 0;
-  //awoke = 1;
 }
 
 ISR(WDT_vect){
@@ -593,25 +679,27 @@ ISR(WDT_vect){
 
 void RF24Network::sleepNode( unsigned int cycles, int interruptPin ){
 
-
   sleep_cycles_remaining = cycles;
   set_sleep_mode(SLEEP_MODE_PWR_DOWN); // sleep mode is set here
   sleep_enable();
   if(interruptPin != 255){
   	attachInterrupt(interruptPin,wakeUp, LOW);
-  }
+  }    
+  #if defined(__AVR_ATtiny25__) || defined(__AVR_ATtiny45__) || defined(__AVR_ATtiny85__)
+  WDTCR |= _BV(WDIE);
+  #else
   WDTCSR |= _BV(WDIE);
+  #endif
   while(sleep_cycles_remaining){
-	//uint8_t junk = 23;
-    //write(&junk,1);
     sleep_mode();                        // System sleeps here
   }                                     // The WDT_vect interrupt wakes the MCU from here
   sleep_disable();                     // System continues execution here when watchdog timed out
-  //if(awoke){ update(); awoke = 0; }
   detachInterrupt(interruptPin);
-  WDTCSR &= ~_BV(WDIE);
-  //radio.startListening();
-
+  #if defined(__AVR_ATtiny25__) || defined(__AVR_ATtiny45__) || defined(__AVR_ATtiny85__)
+	WDTCR &= ~_BV(WDIE);
+  #else
+	WDTCSR &= ~_BV(WDIE);
+  #endif
 }
 
 void RF24Network::setup_watchdog(uint8_t prescalar){
@@ -620,8 +708,14 @@ void RF24Network::setup_watchdog(uint8_t prescalar){
   if ( prescalar & 8 )
     wdtcsr |= _BV(WDP3);
   MCUSR &= ~_BV(WDRF);                      // Clear the WD System Reset Flag
+
+  #if defined(__AVR_ATtiny25__) || defined(__AVR_ATtiny45__) || defined(__AVR_ATtiny85__)
+  WDTCR = _BV(WDCE) | _BV(WDE);            // Write the WD Change enable bit to enable changing the prescaler and enable system reset
+  WDTCR = _BV(WDCE) | wdtcsr | _BV(WDIE);  // Write the prescalar bits (how long to sleep, enable the interrupt to wake the MCU
+  #else
   WDTCSR = _BV(WDCE) | _BV(WDE);            // Write the WD Change enable bit to enable changing the prescaler and enable system reset
   WDTCSR = _BV(WDCE) | wdtcsr | _BV(WDIE);  // Write the prescalar bits (how long to sleep, enable the interrupt to wake the MCU
+  #endif
 }
 
 

@@ -23,6 +23,9 @@
 uint16_t RF24NetworkHeader::next_id = 1;
 
 uint64_t pipe_address( uint16_t node, uint8_t pipe );
+#if defined (RF24NetworkMulticast)
+uint16_t levelToAddress( uint8_t level );
+#endif
 bool is_valid_address( uint16_t node );
 uint32_t nFails = 0, nOK=0;
 
@@ -54,9 +57,9 @@ void RF24Network::begin(uint8_t _channel, uint16_t _node_address )
 
   //uint8_t retryVar = (node_address % 7) + 5;
   uint8_t retryVar = (((node_address % 6)+1) *2) + 3;
-  radio.setRetries(retryVar, 15);
-  txTimeout = retryVar * 17;
-  routeTimeout = txTimeout+25;
+  radio.setRetries(retryVar, 5);
+  txTimeout = 20;
+  routeTimeout = txTimeout*10;
   
   // Setup our address helper cache
   setup_address();
@@ -66,7 +69,14 @@ void RF24Network::begin(uint8_t _channel, uint16_t _node_address )
   while (i--){
     radio.openReadingPipe(i,pipe_address(_node_address,i));
   }
-  //radio.setAutoAck(5,0);
+    #if defined (RF24NetworkMulticast)
+    uint8_t count = 0; uint16_t addy = _node_address;
+	while(addy){
+		addy/=8;
+		count++;
+	}
+	multicast_level = count;	
+  #endif
   radio.startListening();
 
 }
@@ -106,16 +116,41 @@ uint8_t RF24Network::update(void)
       // Is this for us?
       if ( header.to_node == node_address ){
 			if(res == NETWORK_ACK){
+				#ifdef SERIAL_DEBUG_ROUTING
+					printf_P(PSTR("MAC: Network ACK Rcvd\n"));
+				#endif
 				return NETWORK_ACK;
 			}
-	  
-		// Add it to the buffer of frames for us
-		enqueue();		
+			enqueue();
+
 		
       }else{
-			// Relay it as a routed message
-			write(header.to_node,1);
-	  }
+	  
+	  #if defined	(RF24NetworkMulticast)		
+			if( header.to_node == 0100){
+				if(header.id != lastMultiMessageID){
+					if(multicastRelay){					
+						#ifdef SERIAL_DEBUG_ROUTING
+							printf_P(PSTR("MAC: FWD multicast frame from 0%o to level %d\n"),header.from_node,multicast_level+1);
+						#endif
+						write(levelToAddress(multicast_level)<<3,4);
+					}
+				enqueue();				
+				lastMultiMessageID = header.id;
+				}
+				#ifdef SERIAL_DEBUG_ROUTING
+				else{				
+					printf_P(PSTR("MAC: Drop duplicate multicast frame %d from 0%o\n"),header.id,header.from_node);
+				}
+				#endif
+			}else{
+				write(header.to_node,1);	//Send it on, indicate it is a routed payload
+			}
+		#else
+		//if(radio.available()){printf("------FLUSHED DATA --------------");}
+		write(header.to_node,1);	//Send it on, indicate it is a routed payload	
+		#endif
+	 }
 
       // NOT NEEDED anymore.  Now all reading pipes are open to start.
 #if 0
@@ -220,6 +255,35 @@ size_t RF24Network::read(RF24NetworkHeader& header,void* message, size_t maxlen)
 }
 
 /******************************************************************/
+#if defined RF24NetworkMulticast
+
+bool RF24Network::multicast(RF24NetworkHeader& header,const void* message, size_t len, uint8_t level){
+	// Fill out the header
+	
+  header.to_node = 0100;	
+  header.from_node = node_address;
+  
+  // Build the full frame to send
+  memcpy(frame_buffer,&header,sizeof(RF24NetworkHeader));
+  if (len)
+    memcpy(frame_buffer + sizeof(RF24NetworkHeader),message,std::min(frame_size-sizeof(RF24NetworkHeader),len));
+
+  IF_SERIAL_DEBUG(printf_P(PSTR("%u: NET Sending %s\n\r"),millis(),header.toString()));
+  if (len)
+  {
+    IF_SERIAL_DEBUG(const uint16_t* i = reinterpret_cast<const uint16_t*>(message);printf_P(PSTR("%u: NET message %04x\n\r"),millis(),*i));
+  }
+
+	//uint16_t levelAddr = (level * 10)*8;     
+    uint16_t levelAddr = 1;
+    levelAddr = levelAddr << ((level-1) * 3); 
+  
+    return write(levelAddr,4);
+  
+}
+#endif
+
+/******************************************************************/
 bool RF24Network::write(RF24NetworkHeader& header,const void* message, size_t len){
 	return _write(header,message,len,070);
 }
@@ -280,33 +344,40 @@ bool RF24Network::write(uint16_t to_node, uint8_t directTo)
   // Where do we send this?  By default, to our parent
   uint16_t send_node = parent_node;
   // On which pipe
-  uint8_t send_pipe = parent_pipe;
+  uint8_t send_pipe = parent_pipe%5;
   
-  if(directTo>1){    
+  if(directTo == 4){
+		send_node = to_node;
+		send_pipe = 0;
+
+  }
+  
+  else if(directTo>1){    
 		send_node = to_node;
 		send_pipe = parent_pipe;	
+
   }
   
   // If the node is a direct child,
   else if ( is_direct_child(to_node) )
-  {
+  {  
     // Send directly
     send_node = to_node;
 
     // To its listening pipe
-    send_pipe = 0;
+    send_pipe = 5;
   }
   // If the node is a child of a child
   // talk on our child's listening pipe,
   // and let the direct child relay it.
   else if ( is_descendant(to_node) )
-  {
+  {  
     send_node = direct_child_route_to(to_node);
-    send_pipe = 0;
+    send_pipe = 5;
   }
 
   
-  if( ( send_node != to_node) || frame_buffer[6] == NETWORK_ACK || directTo == 3){
+  if( ( send_node != to_node) || frame_buffer[6] == NETWORK_ACK || directTo == 3 || directTo == 4){
 		multicast = 1;
   }
   
@@ -380,7 +451,7 @@ bool RF24Network::write_to_pipe( uint16_t node, uint8_t pipe, bool multicast )
   radio.openWritingPipe(out_pipe);
 
   // Retry a few times
-  radio.writeFast(frame_buffer, frame_size, multicast);
+  radio.writeFast(frame_buffer, frame_size,multicast);
   ok = radio.txStandBy();
   //ok = radio.write(frame_buffer,frame_size);
   
@@ -496,7 +567,11 @@ bool is_valid_address( uint16_t node )
   while(node)
   {
     uint8_t digit = node & 0B111;
+	#if !defined (RF24NetworkMulticast)
     if (digit < 1 || digit > 5)
+	#else
+	if (digit < 0 || digit > 5)	//Allow our out of range multicast address
+	#endif
     {
       result = false;
       printf_P(PSTR("*** WARNING *** Invalid address 0%o\n\r"),node);
@@ -509,45 +584,56 @@ bool is_valid_address( uint16_t node )
 }
 
 /******************************************************************/
+#if defined (RF24NetworkMulticast)
+void RF24Network::multicastLevel(uint8_t level){
+  multicast_level = level;
+  radio.stopListening();  
+  radio.openReadingPipe(0,pipe_address(levelToAddress(level),0));
+  radio.startListening();
+  }
+  
+uint16_t levelToAddress(uint8_t level){
+	uint16_t levelAddr = 1;
+	levelAddr = levelAddr << ((level-1) * 3);
+	return levelAddr;
+}  
+#endif
+
+/******************************************************************/
 
 uint64_t pipe_address( uint16_t node, uint8_t pipe )
 {
-
   
-  static uint8_t address_translation[] = { 0xc3,0x3c,0x33,0xce,0x3e,0xe3 };
+  static uint8_t address_translation[] = { 0xc3,0x3c,0x33,0xce,0x3e,0xe3,0xec };
   uint64_t result = 0xCCCCCCCCCCLL;
   uint8_t* out = reinterpret_cast<uint8_t*>(&result);
   
   // Translate the address to use our optimally chosen radio address bytes
-	uint8_t count = 0; uint16_t dec = node;
+	uint8_t count = 1; uint16_t dec = node;
+   #if defined (RF24NetworkMulticast)
+	if(pipe != 0 || !node){
+   #endif
 	while(dec){		
-		out[count]=address_translation[dec % 8];		// Convert our decimal values to octal, translate them to address bytes, and set our address
+		out[count]=address_translation[(dec % 8)];		// Convert our decimal values to octal, translate them to address bytes, and set our address
 		dec /= 8;	
 		count++;
-	}   
-
-  //if( pipe > 0 ){
-    result = result << 8; 					// Shift the result by 1 byte	
-    out[0] = address_translation[pipe];		// Set last byte by pipe number
-  //}
-  /*
-  out[0] = pipe_segment[pipe];
-
-  uint8_t w;
-  short i = 4;
-  short shift = 12;
-  while(i--)
-  {
-    w = ( node >> shift ) & 0xF ;
-    w |= ~w << 4;
-    out[i+1] = w;
-
-    shift -= 4;
-  }
-*/
-  IF_SERIAL_DEBUG(uint32_t* top = reinterpret_cast<uint32_t*>(out+1);printf_P(PSTR("%d: NET Pipe %i on node 0%o has address %x%x\n\r"),millis(),pipe,node,*top,*out));
-
+	}
+ 		
+	out[0] = address_translation[pipe];		// Set last byte by pipe number
+   #if defined (RF24NetworkMulticast)
+	}else{
+		while(dec){
+			dec/=8;
+			count++;
+		}
+		out[1] = address_translation[count-1];	
+	}
+  
+  #endif
+  
+  IF_SERIAL_DEBUG(uint32_t* top = reinterpret_cast<uint32_t*>(out+1);printf_P(PSTR("%u: NET Pipe %i on node 0%o has address %x%x\n\r"),millis(),pipe,node,*top,*out));
+	
   return result;
 }
 
-// vim:ai:cin:sts=2 sw=2 ft=cpp
+

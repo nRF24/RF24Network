@@ -17,6 +17,8 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include "RF24Network_config.h"
+
 
 class RF24;
 
@@ -31,7 +33,7 @@ struct RF24NetworkHeader
   uint16_t to_node; /**< Logical address where the message is going */
   uint16_t id; /**< Sequential message ID, incremented every message */
   unsigned char type; /**< Type of the packet.  0-127 are user-defined types, 128-255 are reserved for system */
-  unsigned char reserved; /**< Reserved for routing messages */
+  unsigned char reserved; /**< Reserved for future use */
 
   static uint16_t next_id; /**< The message ID of the next message to be sent */
 
@@ -152,6 +154,21 @@ public:
   bool write(RF24NetworkHeader& header,const void* message, size_t len);
   bool write(RF24NetworkHeader& header,const void* message, size_t len, uint16_t writeDirect);
   
+  /**
+   * Send a multicast message to multiple nodes at once
+   * Allows messages to be rapidly broadcast through the network  
+   *   
+   * Multicasting is arranged in levels, with all nodes on the same level listening to the same address  
+   * Levels are assigned by network level ie: nodes 01-05: Level 1, nodes 011-055: Level 2
+   * @see multicastLevel
+   * @param message Pointer to memory where the message is located
+   * @param len The size of the message
+   * @param level Multicast level to broadcast to
+   * @return Whether the message was successfully received
+   */
+   
+   bool multicast(RF24NetworkHeader& header,const void* message, size_t len, uint8_t level);
+  
 /**
    * Sleep this node - Still Under Development
    * @note NEW - Nodes can now be slept while the radio is not actively transmitting. This must be manually enabled by uncommenting
@@ -239,7 +256,22 @@ public:
   
    uint16_t routeTimeout;
   
-
+   #if defined (RF24NetworkMulticast)
+	/**
+	* By default, multicast addresses are divided into levels. Nodes 1-5 share a multicast address,
+	* nodes n1-n5 share a multicast address, and nodes n11-n55 share a multicast address. This option
+	* is used to override the defaults, and create custom multicast groups that all share a single
+	* address.  
+	* The level should be specified in decimal format 1-6
+	* @param level Levels 1 to 6 are available. All nodes at the same level will receive the same
+	* messages if in range. Messages will be routed in order of level, low to high by default.
+	*/
+	
+	void multicastLevel(uint8_t level);
+	
+	bool multicastRelay;
+   #endif
+   
 private:
   void open_pipes(void);
   uint16_t find_node( uint16_t current_node, uint16_t target_node );
@@ -259,6 +291,11 @@ private:
 
 #if defined (DUAL_HEAD_RADIO)
   RF24& radio1;
+#endif
+#if defined (RF24NetworkMulticast)
+  uint16_t lastMultiMessageID;
+  
+  uint8_t multicast_level;  
 #endif
   uint16_t node_address; /**< Logical node address of this unit, 1 .. UINT_MAX */
   const static int frame_size = 32; /**< How large is each frame over the air */

@@ -22,6 +22,7 @@
 
 //#define DUAL_HEAD_RADIO
 //#define ENABLE_SLEEP_MODE
+//#define RF24NetworkMulticast
 
 /*************************************/
 
@@ -98,6 +99,5 @@
 	#define PRIPSTR "%s"
 
 #endif
-
 #endif // __RF24_CONFIG_H__
 // vim:ai:cin:sts=2 sw=2 ft=cpp

@@ -12,6 +12,12 @@
 
 #include <stddef.h>
 
+/********** USER CONFIG **************/
+
+//#define RF24NetworkMulticast
+
+/*************************************/
+
 // Stuff that is normally provided by Arduino
 #ifndef ARDUINO
 #include <stdint.h>
