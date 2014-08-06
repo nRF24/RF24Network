@@ -158,23 +158,6 @@ public:
   bool write(RF24NetworkHeader& header,const void* message, size_t len);
   bool write(RF24NetworkHeader& header,const void* message, size_t len, uint16_t writeDirect);
   
- #if defined RF24NetworkMulticast
-    /**
-   * Send a multicast message to multiple nodes at once
-   * Allows messages to be rapidly broadcast through the network  
-   *   
-   * Multicasting is arranged in levels, with all nodes on the same level listening to the same address  
-   * Levels are assigned by network level ie: nodes 01-05: Level 1, nodes 011-055: Level 2
-   * @see multicastLevel
-   * @param message Pointer to memory where the message is located
-   * @param len The size of the message
-   * @param level Multicast level to broadcast to
-   * @return Whether the message was successfully received
-   */
-   
-   bool multicast(RF24NetworkHeader& header,const void* message, size_t len, uint8_t level);
- #endif
- 
   /**
    * This node's parent address
    * 
@@ -203,22 +186,57 @@ public:
    */
   
    uint16_t routeTimeout;
+
+  /**@}*/
+  /**
+   * @name Advanced Operation
+   *
+   *  Methods you can use to drive the network in more advanced ways
+   */
+  /**@{*/
+ #if defined RF24NetworkMulticast
+   /**
+   * Send a multicast message to multiple nodes at once
+   * Allows messages to be rapidly broadcast through the network  
+   *   
+   * Multicasting is arranged in levels, with all nodes on the same level listening to the same address  
+   * Levels are assigned by network level ie: nodes 01-05: Level 1, nodes 011-055: Level 2
+   * @see multicastLevel
+   * @param message Pointer to memory where the message is located
+   * @param len The size of the message
+   * @param level Multicast level to broadcast to
+   * @return Whether the message was successfully received
+   */
    
-   #if defined (RF24NetworkMulticast)
+   bool multicast(RF24NetworkHeader& header,const void* message, size_t len, uint8_t level);
+   
 	/**
 	* By default, multicast addresses are divided into levels. Nodes 1-5 share a multicast address,
 	* nodes n1-n5 share a multicast address, and nodes n11-n55 share a multicast address. This option
 	* is used to override the defaults, and create custom multicast groups that all share a single
 	* address.  
-	* The level should be specified in decimal format 1-6
+	* The level should be specified in decimal format 1-6  
+	* Nodes can be configured to automatically forward multicast payloads to the next multicast level
+	* @see multicastRelay 
+	*
 	* @param level Levels 1 to 6 are available. All nodes at the same level will receive the same
-	* messages if in range. Messages will be routed in order of level, low to high by default.
+	* messages if in range. 
 	*/
 	
-	void multicastLevel(uint8_t level);	
+	void multicastLevel(uint8_t level);
 	
+	/**
+	 * Set individual nodes to relay received multicast payloads onto the next multicast level. 
+	 * Relay nodes will still receive the payloads, but they will also forward them on.
+	 * Relay nodes can have a maximum of 4 direct child nodes, but can multicast to any number
+	 * of nodes. 
+	 * Multicast nodes and relays are configured to filter out duplicate payloads, so having multiple
+	 * relays in an area should not be a problem.
+	 */
+	 
 	bool multicastRelay;
-   #endif
+
+#endif	
    
 protected:
   void open_pipes(void);
@@ -243,7 +261,7 @@ private:
   uint16_t node_address; /**< Logical node address of this unit, 1 .. UINT_MAX */
   const static int frame_size = 32; /**< How large is each frame over the air */ 
   uint8_t frame_buffer[frame_size]; /**< Space to put the frame that will be sent/received over the air */
-  uint8_t frame_queue[500*frame_size]; /**< RPi can buffer 500 frames (16kB) - Arduino does 5 by default. Space for a small set of frames that need to be delivered to the app layer */
+  uint8_t frame_queue[255*frame_size]; /**< RPi can buffer 500 frames (16kB) - Arduino does 5 by default. Space for a small set of frames that need to be delivered to the app layer */
   uint8_t* next_frame; /**< Pointer into the @p frame_queue where we should place the next received frame */
 
   uint16_t parent_node; /**< Our parent's node address */

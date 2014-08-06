@@ -55,7 +55,7 @@ void RF24Network::begin(uint8_t _channel, uint16_t _node_address )
   radio.enableDynamicAck();
   // Use different retry periods to reduce data collisions
 
-  uint8_t retryVar = ((node_address % 6) *2) + 3;
+    uint8_t retryVar = (((node_address % 6)+1) *2) + 3;
   radio.setRetries(retryVar, 5);
   txTimeout = 20;
   routeTimeout = txTimeout+35; // About 2.5ms max delay per node at optimal routing speeds, 10 nodes maximum hop + max retry time for auto-ack + some delay to relieve congestion
@@ -124,14 +124,14 @@ uint8_t RF24Network::update(void)
       if ( header.to_node == node_address   ){
 			if(res == NETWORK_ACK){	// If received a routing payload, (Network ACK) discard it, and indicate what it was.
 				#ifdef SERIAL_DEBUG_ROUTING
-					printf_P(PSTR("MAC: Network ACK Rcvd\n"));
+					printf_P(PSTR("MAC: Network ACK Rcvd \n"));
 				#endif
 				return NETWORK_ACK;
 			}								     // Add it to the buffer of frames for us
 		
 			enqueue();
 		
-		nOK++;
+		
 	  
 	  }else{	  
 	  
@@ -317,10 +317,10 @@ bool RF24Network::_write(RF24NetworkHeader& header,const void* message, size_t l
 
 
   // If the user is trying to send it to himself
-  if ( header.to_node == node_address )
+  if ( header.to_node == node_address ){
     // Just queue it in the received queue
     return enqueue();
-  else
+  }else{
     // Otherwise send it out over the air	
 	if(writeDirect != 070){
 		if(header.to_node == writeDirect){
@@ -331,7 +331,7 @@ bool RF24Network::_write(RF24NetworkHeader& header,const void* message, size_t l
 	}else{
 	   return write(header.to_node,0); 
 	}
-
+  }
 }
 
 /******************************************************************/
@@ -386,19 +386,28 @@ bool RF24Network::write(uint16_t to_node, uint8_t directTo)  // Direct To: 0 = F
   
 
   IF_SERIAL_DEBUG(printf_P(PSTR("%lu: MAC Sending to 0%o via 0%o on pipe %x\n\r"),millis(),to_node,send_node,send_pipe));
- 
+  
+  #if !defined (DUAL_HEAD_RADIO)
   radio.stopListening();
+  #endif
+  
   ok=write_to_pipe(send_node, send_pipe, multicast);
   
   #ifdef SERIAL_DEBUG_ROUTING
   if(!ok){	printf_P(PSTR("%lu: MAC Send fail to 0%o via 0%o on pipe %x\n\r"),millis(),to_node,send_node,send_pipe); }
   #endif
-   		if( directTo == 1 && ok && !multicast ){
-			frame_buffer[6] = NETWORK_ACK;								// Set the payload type to NETWORK_ACK			
-			frame_buffer[2] = frame_buffer[0]; frame_buffer[3] = frame_buffer[1];   					// Change the 'to' address to the 'from' address
+ 
+	if( directTo == 1 && ok && !multicast ){			
+			frame_buffer[6] = NETWORK_ACK;								            // Set the payload type to NETWORK_ACK			
+			frame_buffer[2] = frame_buffer[0]; frame_buffer[3] = frame_buffer[1];   // Change the 'to' address to the 'from' address
 			write(frame_buffer[0] | (frame_buffer[1] << 8),1);						// Send it back as a routed message			
 			#if defined (SERIAL_DEBUG_ROUTING)
+				//if(!test){
 				printf_P(PSTR("MAC: Route OK to 0%o ACK sent to 0%o\n"),to_node,frame_buffer[0] | (frame_buffer[1] << 8));
+				//}else{
+				//printf("ACK send fail");
+				//}
+			
 			#endif
 		}
    
@@ -436,7 +445,7 @@ bool RF24Network::write(uint16_t to_node, uint8_t directTo)  // Direct To: 0 = F
     }
 	
   if(ok == true){
-			//nOK++;
+			nOK++;
   }else{	nFails++;
 			//printf("Fail to %o",to_node);
   }

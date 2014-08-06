@@ -59,7 +59,7 @@ void RF24Network::begin(uint8_t _channel, uint16_t _node_address )
   uint8_t retryVar = (((node_address % 6)+1) *2) + 3;
   radio.setRetries(retryVar, 5);
   txTimeout = 20;
-  routeTimeout = txTimeout*10;
+  routeTimeout = txTimeout+35;
   
   // Setup our address helper cache
   setup_address();
@@ -311,10 +311,10 @@ bool RF24Network::_write(RF24NetworkHeader& header,const void* message, size_t l
 
 
   // If the user is trying to send it to himself
-  if ( header.to_node == node_address )
+  if ( header.to_node == node_address ){
     // Just queue it in the received queue
     return enqueue();
-  else
+  }else{
 	if(writeDirect != 070){
 		if(header.to_node == writeDirect){
 			return write(writeDirect,2);
@@ -325,6 +325,7 @@ bool RF24Network::_write(RF24NetworkHeader& header,const void* message, size_t l
 		// Otherwise send it out over the air
 		return write(header.to_node,0);
 	}
+  }
 }
 
 /******************************************************************/
@@ -452,7 +453,7 @@ bool RF24Network::write_to_pipe( uint16_t node, uint8_t pipe, bool multicast )
 
   // Retry a few times
   radio.writeFast(frame_buffer, frame_size,multicast);
-  ok = radio.txStandBy();
+  ok = radio.txStandBy(txTimeout);
   //ok = radio.write(frame_buffer,frame_size);
   
   IF_SERIAL_DEBUG(printf_P(PSTR("%d: MAC Sent on %x %s\n\r"),millis(),(uint32_t)out_pipe,ok?PSTR("ok"):PSTR("failed")));
