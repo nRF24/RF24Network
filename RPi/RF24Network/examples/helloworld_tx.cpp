@@ -37,11 +37,11 @@ RF24 radio(RPI_V2_GPIO_P1_15, BCM2835_SPI_CS1, BCM2835_SPI_SPEED_8MHZ);
 
 RF24Network network(radio);
 
-// Address of our node
-const uint16_t this_node = 1;
+// Address of our node in Octal format (01,021, etc)
+const uint16_t this_node = 01;
 
 // Address of the other node
-const uint16_t other_node = 0;
+const uint16_t other_node = 00;
 
 const unsigned long interval = 2000; //ms  // How often to send 'hello world to the other unit
 

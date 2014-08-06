@@ -23,8 +23,8 @@ RF24 radio(9,10);                    // nRF24L01(+) radio attached using Getting
 
 RF24Network network(radio);          // Network uses that radio
 
-const uint16_t this_node = 1;        // Address of our node
-const uint16_t other_node = 0;       // Address of the other node
+const uint16_t this_node = 01;        // Address of our node in Octal format
+const uint16_t other_node = 00;       // Address of the other node in Octal format
 
 const unsigned long interval = 2000; //ms  // How often to send 'hello world to the other unit
 

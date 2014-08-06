@@ -26,10 +26,10 @@ RF24 radio(RPI_V2_GPIO_P1_15, BCM2835_SPI_CS1, BCM2835_SPI_SPEED_8MHZ);
 RF24Network network(radio);
 
 // Address of our node
-const uint16_t this_node = 0;
+const uint16_t this_node = 00;
 
 // Address of the other node
-const uint16_t other_node = 1;
+const uint16_t other_node = 01;
 
 // Structure of our payload
 struct payload_power_t
