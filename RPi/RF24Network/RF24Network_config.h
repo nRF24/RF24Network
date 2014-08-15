@@ -15,6 +15,8 @@
 /********** USER CONFIG **************/
 
 //#define RF24NetworkMulticast
+//#define SERIAL_DEBUG  //Change #undef to #define for debug
+#define SERIAL_DEBUG_ROUTING
 
 /*************************************/
 
@@ -26,8 +28,7 @@
 #define _BV(x) (1<<(x))
 #endif
 
-#undef SERIAL_DEBUG  //Change #undef to #define for debug
-#define SERIAL_DEBUG_ROUTING
+
 #if defined (SERIAL_DEBUG)
 #define IF_SERIAL_DEBUG(x) ({x;})
 #else

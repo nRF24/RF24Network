@@ -269,7 +269,14 @@ public:
 	
 	void multicastLevel(uint8_t level);
 	
+	/**
+	* Enabling this will allow this node to automatically forward received multicast frames to the next highest
+	* multicast level. Duplicate frames are filtered out, so multiple forwarding nodes at the same level should
+	* not interfere
+	*/
+	
 	bool multicastRelay;
+   
    #endif
    
 private:

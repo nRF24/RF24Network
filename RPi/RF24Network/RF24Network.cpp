@@ -103,8 +103,8 @@ uint8_t RF24Network::update(void)
       // Read the beginning of the frame as the header
       const RF24NetworkHeader& header = * reinterpret_cast<RF24NetworkHeader*>(frame_buffer);
 
-      IF_SERIAL_DEBUG(printf_P("%d: MAC Received on %u %s\n\r",millis(),pipe_num,header.toString()));
-      IF_SERIAL_DEBUG(const uint16_t* i = reinterpret_cast<const uint16_t*>(frame_buffer + sizeof(RF24NetworkHeader));printf("%d: NET message %04x\n\r",millis(),*i));
+      IF_SERIAL_DEBUG(printf_P("%u: MAC Received on %u %s\n\r",millis(),pipe_num,header.toString()));
+      IF_SERIAL_DEBUG(const uint16_t* i = reinterpret_cast<const uint16_t*>(frame_buffer + sizeof(RF24NetworkHeader));printf("%u: NET message %04x\n\r",millis(),*i));
 
       // Throw it away if it's not a valid address
       if ( !is_valid_address(header.to_node) ){
@@ -140,7 +140,7 @@ uint8_t RF24Network::update(void)
 				}
 				#ifdef SERIAL_DEBUG_ROUTING
 				else{				
-					printf_P(PSTR("MAC: Drop duplicate multicast frame %d from 0%o\n"),header.id,header.from_node);
+					printf_P(PSTR("MAC: Drop duplicate multicast frame %u from 0%o\n"),header.id,header.from_node);
 				}
 				#endif
 			}else{
@@ -181,7 +181,7 @@ bool RF24Network::enqueue(void)
 {
   bool result = false;
 
-  IF_SERIAL_DEBUG(printf_P(PSTR("%d: NET Enqueue @%x "),millis(),next_frame-frame_queue));
+  IF_SERIAL_DEBUG(printf_P(PSTR("%u: NET Enqueue @%x "),millis(),next_frame-frame_queue));
 
   // Copy the current frame into the frame queue
   if ( next_frame < frame_queue + sizeof(frame_queue) )
@@ -248,7 +248,7 @@ size_t RF24Network::read(RF24NetworkHeader& header,void* message, size_t maxlen)
     memcpy(&header,frame,sizeof(RF24NetworkHeader));
     memcpy(message,frame+sizeof(RF24NetworkHeader),bufsize);
 
-    IF_SERIAL_DEBUG(printf_P(PSTR("%d: NET Received %s\n\r"),millis(),header.toString()));
+    IF_SERIAL_DEBUG(printf_P(PSTR("%u: NET Received %s\n\r"),millis(),header.toString()));
   }
 
   return bufsize;
@@ -303,10 +303,11 @@ bool RF24Network::_write(RF24NetworkHeader& header,const void* message, size_t l
   if (len)
     memcpy(frame_buffer + sizeof(RF24NetworkHeader),message,std::min(frame_size-sizeof(RF24NetworkHeader),len));
 
-  IF_SERIAL_DEBUG(printf_P(PSTR("%d: NET Sending %s\n\r"),millis(),header.toString()));
+  IF_SERIAL_DEBUG(printf_P(PSTR("%u: NET Sending %s\n\r"),millis(),header.toString()));
   if (len)
   {
-    IF_SERIAL_DEBUG(const uint16_t* i = reinterpret_cast<const uint16_t*>(message);printf_P(PSTR("%d: NET message %04x\n\r"),millis(),*i));
+   // IF_SERIAL_DEBUG(const uint16_t* i = reinterpret_cast<const uint16_t*>(message);printf_P(PSTR("%u: NET message %04x\n\r"),millis(),*i));
+	IF_SERIAL_DEBUG(printf("%u: NET message ",millis());const char* charPtr = reinterpret_cast<const char*>(message);while(len--){ printf("%02x ",charPtr[len]);} printf("\n\r") );
   }
 
 
@@ -334,6 +335,8 @@ bool RF24Network::write(uint16_t to_node, uint8_t directTo)
 {
   bool ok = false;
   bool multicast = 0; // Radio ACK requested = 0
+  const uint16_t fromAddress = frame_buffer[0] | (frame_buffer[1] << 8);
+  const uint16_t logicalAddress = frame_buffer[2] | (frame_buffer[3] << 8);
   
   // Throw it away if it's not a valid address
   if ( !is_valid_address(to_node) )
@@ -347,16 +350,12 @@ bool RF24Network::write(uint16_t to_node, uint8_t directTo)
   // On which pipe
   uint8_t send_pipe = parent_pipe%5;
   
-  if(directTo == 4){
-		send_node = to_node;
-		send_pipe = 0;
-
-  }
-  
-  else if(directTo>1){    
-		send_node = to_node;
-		send_pipe = parent_pipe;	
-
+ if(directTo>1){    
+	send_node = to_node;
+	multicast = 1;	
+	if(directTo == 4){
+		send_pipe=0;
+	}	
   }
   
   // If the node is a direct child,
@@ -378,12 +377,11 @@ bool RF24Network::write(uint16_t to_node, uint8_t directTo)
   }
 
   
-  if( ( send_node != to_node) || frame_buffer[6] == NETWORK_ACK || directTo == 3 || directTo == 4){
-		multicast = 1;
-  }
+  //if( ( send_node != to_node) || frame_buffer[6] == NETWORK_ACK || directTo == 3 || directTo == 4){
+//		multicast = 1;
+ // }
   
-  IF_SERIAL_DEBUG(printf_P(PSTR("%d: MAC Sending to 0%o via 0%o on pipe %x\n\r"),millis(),to_node,send_node,send_pipe));
-
+  IF_SERIAL_DEBUG(printf_P(PSTR("%u: MAC Sending to 0%o via 0%o on pipe %x\n\r"),millis(),logicalAddress,send_node,send_pipe));
 
   
   // Put the frame on the pipe
@@ -391,15 +389,15 @@ bool RF24Network::write(uint16_t to_node, uint8_t directTo)
 //printf("Multi %d\n",multicast);
    
   #if defined (SERIAL_DEBUG_ROUTING) || defined(SERIAL_DEBUG)
-  if(!ok){ printf_P(PSTR("%u: MAC Send fail to 0%o via 0%o on pipe %x\n\r"),millis(),to_node,send_node,send_pipe); }
+  if(!ok){ printf_P(PSTR("%u: MAC Send fail to 0%o from 0%o via 0%o on pipe %x\n\r"),millis(),logicalAddress,fromAddress,send_node,send_pipe); }
   #endif
   
-   	   if( directTo == 1 && ok && !multicast ){
+   	   if( directTo == 1 && ok && send_node == to_node && frame_buffer[6] != NETWORK_ACK && fromAddress != node_address ){
 			frame_buffer[6] = NETWORK_ACK;
 			frame_buffer[2] = frame_buffer[0]; frame_buffer[3] = frame_buffer[1];
-			write(frame_buffer[0] | (frame_buffer[1] << 8),1);	
+			write(fromAddress,1);	
 			#if defined (SERIAL_DEBUG_ROUTING)
-				printf("MAC: Route OK to 0%o ACK sent to 0%o\n",to_node,frame_buffer[0] | (frame_buffer[1] << 8));
+				printf("MAC: Route OK to 0%o ACK sent to 0%o\n",to_node,fromAddress);
 			#endif
 	   }
 	   
@@ -418,13 +416,13 @@ bool RF24Network::write(uint16_t to_node, uint8_t directTo)
   // Now, continue listening
   radio.startListening();
 
-  if( (send_node != to_node && directTo==0) || directTo == 3 ){
+  if( (send_node != logicalAddress) && (directTo==0 || directTo == 3 )){
 		uint32_t reply_time = millis(); 
 		while( update() != NETWORK_ACK){
 			if(millis() - reply_time > routeTimeout){ 
 				ok=0; 
 				#ifdef SERIAL_DEBUG_ROUTING
-					printf_P(PSTR("%u: MAC Network ACK fail from 0%o via 0%o on pipe %x\n\r"),millis(),to_node,send_node,send_pipe); 
+					printf_P(PSTR("%u: MAC Network ACK fail from 0%o via 0%o on pipe %x\n\r"),millis(),logicalAddress,send_node,send_pipe); 
 				#endif
 				break;
 			}
@@ -456,7 +454,7 @@ bool RF24Network::write_to_pipe( uint16_t node, uint8_t pipe, bool multicast )
   ok = radio.txStandBy(txTimeout);
   //ok = radio.write(frame_buffer,frame_size);
   
-  IF_SERIAL_DEBUG(printf_P(PSTR("%d: MAC Sent on %x %s\n\r"),millis(),(uint32_t)out_pipe,ok?PSTR("ok"):PSTR("failed")));
+  IF_SERIAL_DEBUG(printf_P(PSTR("%u: MAC Sent on %x %s\n\r"),millis(),(uint32_t)out_pipe,ok?PSTR("ok"):PSTR("failed")));
 
   return ok;
 }

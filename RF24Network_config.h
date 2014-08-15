@@ -23,9 +23,10 @@
 //#define DUAL_HEAD_RADIO
 //#define ENABLE_SLEEP_MODE
 //#define RF24NetworkMulticast
-
+//#define SERIAL_DEBUG
+#define SERIAL_DEBUG_ROUTING
 /*************************************/
-
+ 
 
   // Define _BV for non-Arduino platforms and for Arduino DUE
 #if defined (ARDUINO) && !defined (__arm__)
@@ -52,8 +53,7 @@
 #endif
 
 
-  #undef SERIAL_DEBUG
-  #define SERIAL_DEBUG_ROUTING
+  
   #if defined (SERIAL_DEBUG)
 	#define IF_SERIAL_DEBUG(x) ({x;})
   #else
