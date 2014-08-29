@@ -78,6 +78,52 @@ struct RF24NetworkHeader
 };
 
 /**
+ * Frame structure for each message
+ *
+ * The frame put over the air consists of a header and a message payload
+ */
+struct RF24NetworkFrame
+{
+  RF24NetworkHeader header; /**< Header which is sent with each message */
+  uint8_t payload_size; /**< The size in bytes of the payload length */
+
+  /**
+   * Default constructor
+   *
+   * Simply constructs a blank frame
+   */
+  RF24NetworkFrame() {}
+
+  /**
+   * Send constructor
+   *
+   * Use this constructor to create a frame with header and then send a message
+   *
+   * @code
+   *  RF24NetworkFrame frame(recipient_address,'t',sizeof(message));
+   *  network.write(frame,&message,sizeof(message));
+   * @endcode
+   *
+   * @param _to The logical node address where the message is going.
+   * @param _type The type of message which follows.  Only 0-127 are allowed for
+   * user messages.
+   * @param _psize Length in bytes of the payload.
+   */
+  RF24NetworkFrame(uint16_t _to, unsigned char _type = 0, uint16_t _psize = 0) : header(RF24NetworkHeader(_to,_type)), payload_size(_psize) {}
+
+  /**
+   * Create debugging string
+   *
+   * Useful for debugging.  Dumps all members into a single string, using
+   * internal static memory.  This memory will get overridden next time
+   * you call the method.
+   *
+   * @return String representation of this object
+   */
+  const char* toString(void) const;
+};
+
+/**
  * TMRh20 2014 - Optimized Network Layer for RF24 Radios
  *
  * This class implements an OSI Network Layer using nRF24L01(+) radios driven
