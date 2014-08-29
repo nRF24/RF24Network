@@ -104,9 +104,9 @@ public:
    * @param _node_address The logical address of this node
    */
   void begin(uint8_t _channel, uint16_t _node_address );
-  
+
   void failures(uint32_t *_fails, uint32_t *_ok);
-  
+
   /**
    * Main layer loop
    *
@@ -117,11 +117,11 @@ public:
 
   /**
    * Test whether there is a message available for this node
-   * 
+   *
    * @return Whether there is a message available for this node
    */
   bool available(void);
- 
+
   /**
    * Read the next available header
    *
@@ -143,7 +143,7 @@ public:
    * @return The total number of bytes copied into @p message
    */
   size_t read(RF24NetworkHeader& header, void* message, size_t maxlen);
-  
+
   /**
    * Send a message
    *
@@ -151,20 +151,20 @@ public:
    * @param[in,out] header The header (envelope) of this message.  The critical
    * thing to fill in is the @p to_node field so we know where to send the
    * message.  It is then updated with the details of the actual header sent.
-   * @param message Pointer to memory where the message is located 
-   * @param len The size of the message 
-   * @return Whether the message was successfully received 
+   * @param message Pointer to memory where the message is located
+   * @param len The size of the message
+   * @return Whether the message was successfully received
    */
   bool write(RF24NetworkHeader& header,const void* message, size_t len);
   bool write(RF24NetworkHeader& header,const void* message, size_t len, uint16_t writeDirect);
-  
+
   /**
    * This node's parent address
-   * 
-   * @return This node's parent address, or -1 if this is the base 
+   *
+   * @return This node's parent address, or -1 if this is the base
    */
   uint16_t parent() const;
- 
+
    /**
    * @note: Optimization:This value is automatically assigned based on the node address
    * to reduce errors and increase throughput of the network.
@@ -176,7 +176,7 @@ public:
    */
 
   unsigned long txTimeout;
- 
+
    /**
    * @note: Optimization: This new value defaults to 200 milliseconds.
    * This only affects payloads that are routed by one or more nodes.
@@ -184,7 +184,7 @@ public:
    * Radios routing directly to their parent or children nodes do not
    * utilize this value.
    */
-  
+
    uint16_t routeTimeout;
 
   /**@}*/
@@ -194,12 +194,12 @@ public:
    *  Methods you can use to drive the network in more advanced ways
    */
   /**@{*/
- #if defined RF24NetworkMulticast
+#if defined RF24NetworkMulticast
    /**
    * Send a multicast message to multiple nodes at once
-   * Allows messages to be rapidly broadcast through the network  
-   *   
-   * Multicasting is arranged in levels, with all nodes on the same level listening to the same address  
+   * Allows messages to be rapidly broadcast through the network
+   *
+   * Multicasting is arranged in levels, with all nodes on the same level listening to the same address
    * Levels are assigned by network level ie: nodes 01-05: Level 1, nodes 011-055: Level 2
    * @see multicastLevel
    * @param message Pointer to memory where the message is located
@@ -207,37 +207,37 @@ public:
    * @param level Multicast level to broadcast to
    * @return Whether the message was successfully received
    */
-   
-   bool multicast(RF24NetworkHeader& header,const void* message, size_t len, uint8_t level);
-   
-	/**
-	* By default, multicast addresses are divided into levels. Nodes 1-5 share a multicast address,
-	* nodes n1-n5 share a multicast address, and nodes n11-n55 share a multicast address. This option
-	* is used to override the defaults, and create custom multicast groups that all share a single
-	* address.  
-	* The level should be specified in decimal format 1-6  
-	* Nodes can be configured to automatically forward multicast payloads to the next multicast level
-	* @see multicastRelay 
-	*
-	* @param level Levels 1 to 6 are available. All nodes at the same level will receive the same
-	* messages if in range. 
-	*/
-	
-	void multicastLevel(uint8_t level);
-	
-	/**
-	 * Set individual nodes to relay received multicast payloads onto the next multicast level. 
-	 * Relay nodes will still receive the payloads, but they will also forward them on.
-	 * Relay nodes can have a maximum of 4 direct child nodes, but can multicast to any number
-	 * of nodes. 
-	 * Multicast nodes and relays are configured to filter out duplicate payloads, so having multiple
-	 * relays in an area should not be a problem.
-	 */
-	 
-	bool multicastRelay;
 
-#endif	
-   
+  bool multicast(RF24NetworkHeader& header,const void* message, size_t len, uint8_t level);
+
+  /**
+  * By default, multicast addresses are divided into levels. Nodes 1-5 share a multicast address,
+  * nodes n1-n5 share a multicast address, and nodes n11-n55 share a multicast address. This option
+  * is used to override the defaults, and create custom multicast groups that all share a single
+  * address.
+  * The level should be specified in decimal format 1-6
+  * Nodes can be configured to automatically forward multicast payloads to the next multicast level
+  * @see multicastRelay
+  *
+  * @param level Levels 1 to 6 are available. All nodes at the same level will receive the same
+  * messages if in range.
+  */
+
+  void multicastLevel(uint8_t level);
+
+  /**
+   * Set individual nodes to relay received multicast payloads onto the next multicast level.
+   * Relay nodes will still receive the payloads, but they will also forward them on.
+   * Relay nodes can have a maximum of 4 direct child nodes, but can multicast to any number
+   * of nodes.
+   * Multicast nodes and relays are configured to filter out duplicate payloads, so having multiple
+   * relays in an area should not be a problem.
+   */
+
+  bool multicastRelay;
+
+#endif
+
 protected:
   void open_pipes(void);
   uint16_t find_node( uint16_t current_node, uint16_t target_node );
@@ -251,15 +251,15 @@ protected:
   uint8_t pipe_to_descendant( uint16_t node );
   void setup_address(void);
   bool _write(RF24NetworkHeader& header,const void* message, size_t len, uint16_t writeDirect);
-  
+
 private:
 #if defined (RF24NetworkMulticast)
   uint16_t lastMultiMessageID;
   uint8_t multicast_level;
 #endif
-  RF24& radio; /**< Underlying radio driver, provides link/physical layers */ 
+  RF24& radio; /**< Underlying radio driver, provides link/physical layers */
   uint16_t node_address; /**< Logical node address of this unit, 1 .. UINT_MAX */
-  const static int frame_size = 32; /**< How large is each frame over the air */ 
+  const static int frame_size = 32; /**< How large is each frame over the air */
   uint8_t frame_buffer[frame_size]; /**< Space to put the frame that will be sent/received over the air */
   uint8_t frame_queue[255*frame_size]; /**< RPi can buffer 500 frames (16kB) - Arduino does 5 by default. Space for a small set of frames that need to be delivered to the app layer */
   uint8_t* next_frame; /**< Pointer into the @p frame_queue where we should place the next received frame */
@@ -277,7 +277,7 @@ private:
  * Simplest possible example of using RF24Network.  Put this sketch
  * on one node, and helloworld_rx.pde on the other.  Tx will send
  * Rx a nice message every 2 seconds which rx will print out for us.
- * 
+ *
  */
 
 /**
