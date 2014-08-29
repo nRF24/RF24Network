@@ -24,6 +24,7 @@
 #include <stddef.h>
 #include "RF24Network_config.h"
 
+#define MAX_FRAME_SIZE 32
 
 class RF24;
 
@@ -85,7 +86,8 @@ struct RF24NetworkHeader
 struct RF24NetworkFrame
 {
   RF24NetworkHeader header; /**< Header which is sent with each message */
-  uint8_t payload_size; /**< The size in bytes of the payload length */
+  size_t payload_size; /**< The size in bytes of the payload length */
+  uint8_t payload_buffer[MAX_FRAME_SIZE]; /**< Space to put the frame payload that will be sent/received over the air */
 
   /**
    * Default constructor
@@ -97,19 +99,43 @@ struct RF24NetworkFrame
   /**
    * Send constructor
    *
-   * Use this constructor to create a frame with header and then send a message
+   * Use this constructor to create a frame with header and payload and then send a message
    *
    * @code
-   *  RF24NetworkFrame frame(recipient_address,'t',sizeof(message));
-   *  network.write(frame,&message,sizeof(message));
+   *  RF24NetworkFrame frame(recipient_address,'t',message,sizeof(message));
+   *  network.write(frame);
    * @endcode
    *
    * @param _to The logical node address where the message is going.
    * @param _type The type of message which follows.  Only 0-127 are allowed for
    * user messages.
+   * @param _payload The message content.
    * @param _psize Length in bytes of the payload.
    */
-  RF24NetworkFrame(uint16_t _to, unsigned char _type = 0, uint16_t _psize = 0) : header(RF24NetworkHeader(_to,_type)), payload_size(_psize) {}
+  RF24NetworkFrame(uint16_t _to, unsigned char _type = 0, const void* _payload = NULL, size_t _psize = 0) : header(RF24NetworkHeader(_to,_type)), payload_size(_psize) {
+    if (_payload != NULL)
+      memcpy(payload_buffer,_payload,std::min(MAX_FRAME_SIZE-sizeof(RF24NetworkHeader),_psize));
+  }
+
+  /**
+   * Send constructor
+   *
+   * Use this constructor to create a frame with header and payload and then send a message
+   *
+   * @code
+   *  RF24NetworkHeader header(recipient_address,'t');
+   *  RF24NetworkFrame frame(header,message,sizeof(message));
+   *  network.write(frame);
+   * @endcode
+   *
+   * @param _header The header struct of the frame
+   * @param _payload The message content.
+   * @param _psize Length in bytes of the payload.
+   */
+  RF24NetworkFrame(RF24NetworkHeader& _header, const void* _payload = NULL, size_t _psize = 0) : header(_header), payload_size(_psize) {
+    if (_payload != NULL)
+      memcpy(payload_buffer,_payload,std::min(MAX_FRAME_SIZE-sizeof(RF24NetworkHeader),_psize));
+  }
 
   /**
    * Create debugging string
@@ -305,7 +331,7 @@ private:
 #endif
   RF24& radio; /**< Underlying radio driver, provides link/physical layers */
   uint16_t node_address; /**< Logical node address of this unit, 1 .. UINT_MAX */
-  const static int frame_size = 32; /**< How large is each frame over the air */
+  const static int frame_size = MAX_FRAME_SIZE; /**< How large is each frame over the air */
   uint8_t frame_buffer[frame_size]; /**< Space to put the frame that will be sent/received over the air */
   uint8_t frame_queue[255*frame_size]; /**< RPi can buffer 500 frames (16kB) - Arduino does 5 by default. Space for a small set of frames that need to be delivered to the app layer */
   uint8_t* next_frame; /**< Pointer into the @p frame_queue where we should place the next received frame */
