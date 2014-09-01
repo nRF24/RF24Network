@@ -1,5 +1,6 @@
 /*
  Copyright (C) 2011 James Coliz, Jr. <maniacbug@ymail.com>
+ Copyright (C) 2014 Rei <devel@reixd.net>
 
  This program is free software; you can redistribute it and/or
  modify it under the terms of the GNU General Public License
@@ -31,7 +32,7 @@ uint32_t nFails = 0, nOK=0;
 
 /******************************************************************/
 
-RF24Network::RF24Network( RF24& _radio ): radio(_radio), next_frame(frame_queue)
+RF24Network::RF24Network( RF24& _radio ): radio(_radio)
 {}
 
 /******************************************************************/
@@ -96,10 +97,17 @@ uint8_t RF24Network::update(void)
     //while (radio.available())
     //{
       // Fetch the payload, and see if this was the last one.
-      radio.read( frame_buffer, sizeof(frame_buffer) );
+      size_t len = radio.getDynamicPayloadSize();
+      radio.read( frame_buffer, len );
+
+      //Do we have a valid length for a frame?
+      //We need at least a frame with header a no payload (payload_size equals 0).
+      if (len < sizeof(RF24NetworkHeader))
+        continue;
 
       // Read the beginning of the frame as the header
-      const RF24NetworkHeader& header = * reinterpret_cast<RF24NetworkHeader*>(frame_buffer);
+      RF24NetworkHeader header;
+      memcpy(&header,frame_buffer,sizeof(RF24NetworkHeader));
 
       IF_SERIAL_DEBUG(printf_P("%u: MAC Received on %u %s\n\r",millis(),pipe_num,header.toString()));
       IF_SERIAL_DEBUG(const uint16_t* i = reinterpret_cast<const uint16_t*>(frame_buffer + sizeof(RF24NetworkHeader));printf("%u: NET message %04x\n\r",millis(),*i));
@@ -109,6 +117,9 @@ uint8_t RF24Network::update(void)
         continue;
       }
 
+      // Build the full frame
+      size_t payload_size = len-sizeof(RF24NetworkHeader);
+      RF24NetworkFrame frame = RF24NetworkFrame(header,frame_buffer+sizeof(RF24NetworkHeader),payload_size);
 
       uint8_t res = header.type;
       // Is this for us?
@@ -119,7 +130,7 @@ uint8_t RF24Network::update(void)
                 #endif
                 return NETWORK_ACK;
             }
-            enqueue();
+            enqueue(frame);
 
 
       }else{
@@ -133,7 +144,7 @@ uint8_t RF24Network::update(void)
                         #endif
                         write(levelToAddress(multicast_level)<<3,4);
                     }
-                enqueue();
+                enqueue(frame);
                 lastMultiMessageID = header.id;
                 }
                 #ifdef SERIAL_DEBUG_ROUTING
@@ -170,28 +181,20 @@ uint8_t RF24Network::update(void)
   return 0;
 }
 
-
-
-
 /******************************************************************/
 
-bool RF24Network::enqueue(void)
-{
+bool RF24Network::enqueue(RF24NetworkFrame frame) {
   bool result = false;
 
-  IF_SERIAL_DEBUG(printf_P(PSTR("%u: NET Enqueue @%x "),millis(),next_frame-frame_queue));
+  IF_SERIAL_DEBUG(printf_P(PSTR("%u: NET Enqueue @%x "),millis(),frame_queue.remain()));
 
   // Copy the current frame into the frame queue
-  if ( next_frame < frame_queue + sizeof(frame_queue) )
-  {
-    memcpy(next_frame,frame_buffer, frame_size );
-    next_frame += frame_size;
+  frame_queue.push(frame);
+  result = true;
 
-    result = true;
+  if (result) {
     IF_SERIAL_DEBUG(printf("ok\n\r"));
-  }
-  else
-  {
+  } else {
     IF_SERIAL_DEBUG(printf("failed\n\r"));
   }
 
@@ -203,7 +206,7 @@ bool RF24Network::enqueue(void)
 bool RF24Network::available(void)
 {
   // Are there frames on the queue for us?
-  return (next_frame > frame_queue);
+  return (!frame_queue.isEmpty());
 }
 
 /******************************************************************/
@@ -222,8 +225,8 @@ void RF24Network::peek(RF24NetworkHeader& header)
 {
   if ( available() )
   {
-    // Copy the next available frame from the queue into the provided buffer
-    memcpy(&header,next_frame-frame_size,sizeof(RF24NetworkHeader));
+    RF24NetworkFrame frame = frame_queue.front();
+    memcpy(&header,&frame,sizeof(RF24NetworkHeader));
   }
 }
 
@@ -235,16 +238,13 @@ size_t RF24Network::read(RF24NetworkHeader& header,void* message, size_t maxlen)
 
   if ( available() )
   {
-    // Move the pointer back one in the queue
-    next_frame -= frame_size;
-    uint8_t* frame = next_frame;
+    RF24NetworkFrame frame = frame_queue.pop();
 
     // How much buffer size should we actually copy?
-    bufsize = std::min(maxlen,frame_size-sizeof(RF24NetworkHeader));
+    bufsize = std::min(frame.payload_size,maxlen);
 
-    // Copy the next available frame from the queue into the provided buffer
-    memcpy(&header,frame,sizeof(RF24NetworkHeader));
-    memcpy(message,frame+sizeof(RF24NetworkHeader),bufsize);
+    memcpy(&header,&(frame.header),sizeof(RF24NetworkHeader));
+    memcpy(message,frame.payload_buffer,bufsize);
 
     IF_SERIAL_DEBUG(printf_P(PSTR("%u: NET Received %s\n\r"),millis(),header.toString()));
   }
@@ -262,9 +262,7 @@ bool RF24Network::multicast(RF24NetworkHeader& header,const void* message, size_
   header.from_node = node_address;
 
   // Build the full frame to send
-  memcpy(frame_buffer,&header,sizeof(RF24NetworkHeader));
-  if (len)
-    memcpy(frame_buffer + sizeof(RF24NetworkHeader),message,std::min(frame_size-sizeof(RF24NetworkHeader),len));
+  RF24NetworkFrame frame = RF24NetworkFrame(header,message,std::min(sizeof(message),len));
 
   IF_SERIAL_DEBUG(printf_P(PSTR("%u: NET Sending %s\n\r"),millis(),header.toString()));
   if (len)
@@ -297,9 +295,7 @@ bool RF24Network::_write(RF24NetworkHeader& header,const void* message, size_t l
   header.from_node = node_address;
 
   // Build the full frame to send
-  memcpy(frame_buffer,&header,sizeof(RF24NetworkHeader));
-  if (len)
-    memcpy(frame_buffer + sizeof(RF24NetworkHeader),message,std::min(frame_size-sizeof(RF24NetworkHeader),len));
+  RF24NetworkFrame frame = RF24NetworkFrame(header,message,sizeof(message));
 
   IF_SERIAL_DEBUG(printf_P(PSTR("%u: NET Sending %s\n\r"),millis(),header.toString()));
   if (len)
@@ -312,7 +308,7 @@ bool RF24Network::_write(RF24NetworkHeader& header,const void* message, size_t l
   // If the user is trying to send it to himself
   if ( header.to_node == node_address ){
     // Just queue it in the received queue
-    return enqueue();
+    return enqueue(frame);
   }else{
     if(writeDirect != 070){
         if(header.to_node == writeDirect){

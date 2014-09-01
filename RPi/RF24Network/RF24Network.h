@@ -1,5 +1,6 @@
 /*
  Copyright (C) 2011 James Coliz, Jr. <maniacbug@ymail.com>
+ Copyright (C) 2014 Rei <devel@reixd.net>
 
  This program is free software; you can redistribute it and/or
  modify it under the terms of the GNU General Public License
@@ -23,8 +24,10 @@
 #include <sys/time.h>
 #include <stddef.h>
 #include "RF24Network_config.h"
+#include "utils/CircularBuffer.h"
 
 #define MAX_FRAME_SIZE 32
+#define MAX_FRAME_BUFFER_SIZE 255
 
 class RF24;
 
@@ -315,7 +318,7 @@ protected:
   uint16_t find_node( uint16_t current_node, uint16_t target_node );
   bool write(uint16_t, uint8_t directTo);
   bool write_to_pipe( uint16_t node, uint8_t pipe, bool multicast );
-  bool enqueue(void);
+  bool enqueue(RF24NetworkFrame frame);
 
   bool is_direct_child( uint16_t node );
   bool is_descendant( uint16_t node );
@@ -333,8 +336,7 @@ private:
   uint16_t node_address; /**< Logical node address of this unit, 1 .. UINT_MAX */
   const static int frame_size = MAX_FRAME_SIZE; /**< How large is each frame over the air */
   uint8_t frame_buffer[frame_size]; /**< Space to put the frame that will be sent/received over the air */
-  uint8_t frame_queue[255*frame_size]; /**< RPi can buffer 500 frames (16kB) - Arduino does 5 by default. Space for a small set of frames that need to be delivered to the app layer */
-  uint8_t* next_frame; /**< Pointer into the @p frame_queue where we should place the next received frame */
+  CircularBuffer<RF24NetworkFrame,MAX_FRAME_BUFFER_SIZE> frame_queue; /**< RPi can buffer 500 frames (16kB) - Arduino does 5 by default. Space for a small set of frames that need to be delivered to the app layer */
 
   uint16_t parent_node; /**< Our parent's node address */
   uint8_t parent_pipe; /**< The pipe our parent uses to listen to us */
