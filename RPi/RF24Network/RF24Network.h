@@ -17,17 +17,24 @@
  * Class declaration for RF24Network
  */
 
+
 #include <stdint.h>
 #include <stdio.h>
 #include <time.h>
 #include <string.h>
 #include <sys/time.h>
 #include <stddef.h>
+#include <assert.h>
+//!#include <vector>
+#include <list>
 #include "RF24Network_config.h"
-#include "utils/CircularBuffer.h"
+#include "CircularBuffer.h"
+#include "FrameLRUCache.h"
 
 #define MAX_FRAME_SIZE 32
 #define MAX_FRAME_BUFFER_SIZE 255
+#define MAX_PAYLOAD_SIZE ((MAX_FRAME_SIZE-sizeof(RF24NetworkHeader))*255)
+#define MAX_LRU_CACHE_SIZE 32
 
 class RF24;
 
@@ -42,7 +49,7 @@ struct RF24NetworkHeader
   uint16_t to_node; /**< Logical address where the message is going */
   uint16_t id; /**< Sequential message ID, incremented every message */
   unsigned char type; /**< Type of the packet.  0-127 are user-defined types, 128-255 are reserved for system */
-  unsigned char reserved; /**< Reserved for future use */
+  unsigned char fragment_id; /**< Used to count the number of fragments of the payload. Zero (0) means no more fragments left. */
 
   static uint16_t next_id; /**< The message ID of the next message to be sent */
 
@@ -90,7 +97,7 @@ struct RF24NetworkFrame
 {
   RF24NetworkHeader header; /**< Header which is sent with each message */
   size_t payload_size; /**< The size in bytes of the payload length */
-  uint8_t payload_buffer[MAX_FRAME_SIZE]; /**< Space to put the frame payload that will be sent/received over the air */
+  std::list<uint8_t> payload_buffer; /**< Vector to put the frame payload that will be sent/received over the air */
 
   /**
    * Default constructor
@@ -116,8 +123,7 @@ struct RF24NetworkFrame
    * @param _psize Length in bytes of the payload.
    */
   RF24NetworkFrame(uint16_t _to, unsigned char _type = 0, const void* _payload = NULL, size_t _psize = 0) : header(RF24NetworkHeader(_to,_type)), payload_size(_psize) {
-    if (_payload != NULL)
-      memcpy(payload_buffer,_payload,std::min(MAX_FRAME_SIZE-sizeof(RF24NetworkHeader),_psize));
+    appendToPayload(_payload,payload_size);
   }
 
   /**
@@ -136,8 +142,7 @@ struct RF24NetworkFrame
    * @param _psize Length in bytes of the payload.
    */
   RF24NetworkFrame(RF24NetworkHeader& _header, const void* _payload = NULL, size_t _psize = 0) : header(_header), payload_size(_psize) {
-    if (_payload != NULL)
-      memcpy(payload_buffer,_payload,std::min(MAX_FRAME_SIZE-sizeof(RF24NetworkHeader),_psize));
+    appendToPayload(_payload,payload_size);
   }
 
   /**
@@ -150,6 +155,48 @@ struct RF24NetworkFrame
    * @return String representation of this object
    */
   const char* toString(void) const;
+
+  /**
+   * Get the frame payload (message) as array
+   *
+   * Internally is the payload a vector.
+   * @return array pointer to the payload
+   */
+  const void* getPayloadArray(void) {
+    //!const void* res = &payload_buffer[0];
+    //!return res;
+    uint8_t *arr = new uint8_t[payload_buffer.size()];
+    std::copy(payload_buffer.begin(),payload_buffer.end(),arr);
+    return arr;
+  }
+
+  /**
+   *  Get the payload size
+   *
+   * @return Size in bytes of the current payload
+   */
+  size_t getPayloadSize(void) {
+    return payload_buffer.size();
+  }
+
+  /**
+   * Append the given payload to the current payload_buffer
+   *
+   */
+  void appendToPayload(const void* payload, size_t len) {
+    if (payload && len) {
+      if ((payload_buffer.size()+len) <= MAX_PAYLOAD_SIZE) {
+        //Cast the payload as uint8_t
+        const uint8_t *q = (const uint8_t *)payload;
+        //Append the payload to the buffer
+        payload_buffer.insert(payload_buffer.end(), q, q+len);
+        //Save space in RAM
+        //!payload_buffer.shrink_to_fit();
+      }
+    }
+    //Set the new payload_buffer size
+    payload_size = payload_buffer.size();
+  };
 };
 
 /**
@@ -334,9 +381,11 @@ private:
 #endif
   RF24& radio; /**< Underlying radio driver, provides link/physical layers */
   uint16_t node_address; /**< Logical node address of this unit, 1 .. UINT_MAX */
-  const static int frame_size = MAX_FRAME_SIZE; /**< How large is each frame over the air */
+  const static unsigned int frame_size = MAX_FRAME_SIZE; /**< How large is each frame over the air */
+  const static unsigned int max_frame_payload_size = frame_size-sizeof(RF24NetworkHeader);
   uint8_t frame_buffer[frame_size]; /**< Space to put the frame that will be sent/received over the air */
   CircularBuffer<RF24NetworkFrame,MAX_FRAME_BUFFER_SIZE> frame_queue; /**< RPi can buffer 500 frames (16kB) - Arduino does 5 by default. Space for a small set of frames that need to be delivered to the app layer */
+  //!FrameLRUCache<uint16_t,RF24NetworkFrame,MAX_LRU_CACHE_SIZE> frameAssemblyCache;
 
   uint16_t parent_node; /**< Our parent's node address */
   uint8_t parent_pipe; /**< The pipe our parent uses to listen to us */

@@ -186,11 +186,32 @@ uint8_t RF24Network::update(void)
 bool RF24Network::enqueue(RF24NetworkFrame frame) {
   bool result = false;
 
-  IF_SERIAL_DEBUG(printf_P(PSTR("%u: NET Enqueue @%x "),millis(),frame_queue.remain()));
+  if (frame.header.fragment_id > 0) {
+    IF_SERIAL_DEBUG(printf("%u: NET message as fragment %i received\n\r",millis(),header.fragment_id););
 
-  // Copy the current frame into the frame queue
-  frame_queue.push(frame);
-  result = true;
+    //if fragment_id > 1 then
+    if (frame.header.fragment_id > 1) {
+      //Enqueue the frame with it fragmented payload in the LRUCache
+      //The cache will assemble all payloads into one big payload
+      //!frameAssemblyCache.put(frame.header.from_node,frame);
+      result = true;
+    } else if (frame.header.fragment_id == 1) {
+      //if we got a fragment_id == 1, then we got the last fragment
+      //Enqueue this frame into the frame_queue
+      //!frame_queue.push( frameAssemblyCache.get(frame.header.from_node) );
+      result = true;
+    } else {
+      //  otherwise discard the message with the large payload
+      result = false;
+    }
+
+  } else {
+    IF_SERIAL_DEBUG(printf_P(PSTR("%u: NET Enqueue @%x "),millis(),frame_queue.remain()));
+
+    // Copy the current frame into the frame queue
+    frame_queue.push(frame);
+    result = true;
+  }
 
   if (result) {
     IF_SERIAL_DEBUG(printf("ok\n\r"));
@@ -241,10 +262,10 @@ size_t RF24Network::read(RF24NetworkHeader& header,void* message, size_t maxlen)
     RF24NetworkFrame frame = frame_queue.pop();
 
     // How much buffer size should we actually copy?
-    bufsize = std::min(frame.payload_size,maxlen);
+    bufsize = std::min(frame.getPayloadSize(),maxlen);
 
     memcpy(&header,&(frame.header),sizeof(RF24NetworkHeader));
-    memcpy(message,frame.payload_buffer,bufsize);
+    memcpy(message,frame.getPayloadArray(),bufsize);
 
     IF_SERIAL_DEBUG(printf_P(PSTR("%u: NET Received %s\n\r"),millis(),header.toString()));
   }
@@ -281,11 +302,71 @@ bool RF24Network::multicast(RF24NetworkHeader& header,const void* message, size_
 
 /******************************************************************/
 bool RF24Network::write(RF24NetworkHeader& header,const void* message, size_t len){
-    return _write(header,message,len,070);
+    return write(header,message,len,070);
 }
 /******************************************************************/
 bool RF24Network::write(RF24NetworkHeader& header,const void* message, size_t len, uint16_t writeDirect){
+  bool txSuccess = true;
+
+  //Check payload size
+  if (len <= max_frame_payload_size) {
+    //If message payload length fits in a single message
+    //then use the normal _write() function
     return _write(header,message,len,writeDirect);
+  }
+
+  if (len >= 255*max_frame_payload_size) {
+    //If the message payload is too big, whe cannot generate enough fragments
+    //and enumerate them
+    txSuccess = false;
+    return txSuccess;
+  }
+  //The payload is smaller than 6kBytes. We cann transmit it.
+
+  //Divide the message payload into chuncks of max_frame_payload_size
+  uint8_t fragment_id = 1 + ((len - 1) / max_frame_payload_size);  //the number of fragments to send = ceil(len/max_frame_payload_size)
+  uint8_t msgCount = 0;
+
+  IF_SERIAL_DEBUG(printf("%u: NET total message fragments %i\n\r",millis(),fragment_id););
+
+  //Iterate over the payload chuncks
+  //  Assemble a new message, copy and fill out the header
+  //  Try to send this message
+  //  If it fails
+  //    then break
+  //    return result as false
+  while (fragment_id > 0) {
+
+    //Copy and fill out the header
+    RF24NetworkHeader fragmentHeader;
+    fragmentHeader = header;
+    fragmentHeader.fragment_id = fragment_id;
+
+    size_t offset = msgCount*max_frame_payload_size;
+
+    IF_SERIAL_DEBUG(printf("%u: NET try to transmit msg with fragment '%i'\n\r",millis(),(msgCount+1)););
+
+    //Try to send the payload chunk with the copied header
+    bool ok = _write(fragmentHeader,message+offset,len-offset,writeDirect);
+    if (!ok) {
+      IF_SERIAL_DEBUG(printf("%u: NET message transmission with fragmentID '%i' failed. Abort.\n\r",millis(),(msgCount+1)););
+      txSuccess = false;
+      break;
+    }
+    IF_SERIAL_DEBUG(printf("%u: NET message transmission with fragmentID '%i' sucessfull.\n\r",millis(),(msgCount+1)););
+
+    //Message was successful sent
+    //Check and modify counters
+    fragment_id--;
+    msgCount++;
+
+    IF_SERIAL_DEBUG(printf("%u: NET DEBUG: fragmentID=%i msgCount=%i loop_done?=%i\n\r",millis(),fragment_id,msgCount,!(fragment_id > 0)););
+  }
+
+  //Return true if all the chuncks where sent successfuly
+  //else return false
+  IF_SERIAL_DEBUG(printf("%u: NET total message fragments sent %i. Status",millis(),msgCount); printf("%s\n\r", ok ? "ok" : "not ok"););
+  return txSuccess;
 }
 /******************************************************************/
 
@@ -295,7 +376,8 @@ bool RF24Network::_write(RF24NetworkHeader& header,const void* message, size_t l
   header.from_node = node_address;
 
   // Build the full frame to send
-  RF24NetworkFrame frame = RF24NetworkFrame(header,message,sizeof(message));
+  if (len)
+    memcpy(frame_buffer + sizeof(RF24NetworkHeader),message,std::min(frame_size-sizeof(RF24NetworkHeader),len));
 
   IF_SERIAL_DEBUG(printf_P(PSTR("%u: NET Sending %s\n\r"),millis(),header.toString()));
   if (len)
@@ -307,6 +389,8 @@ bool RF24Network::_write(RF24NetworkHeader& header,const void* message, size_t l
 
   // If the user is trying to send it to himself
   if ( header.to_node == node_address ){
+    // Build the frame to send
+    RF24NetworkFrame frame = RF24NetworkFrame(header,message,sizeof(message));
     // Just queue it in the received queue
     return enqueue(frame);
   }else{
