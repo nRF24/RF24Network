@@ -58,7 +58,7 @@ public:
     return remain_;
   }
   bool isEmpty() {
-    if (remain_)
+    if (remain_ > 0)
       return true;
     return false;
   }
