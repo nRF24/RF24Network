@@ -25,16 +25,22 @@
 #include <sys/time.h>
 #include <stddef.h>
 #include <assert.h>
-//!#include <vector>
-#include <list>
+#include <map>
+#include <utility>      // std::pair
+#include <queue>
 #include "RF24Network_config.h"
-#include "CircularBuffer.h"
-#include "FrameLRUCache.h"
 
 #define MAX_FRAME_SIZE 32
 #define MAX_FRAME_BUFFER_SIZE 255
-#define MAX_PAYLOAD_SIZE ((MAX_FRAME_SIZE-sizeof(RF24NetworkHeader))*255)
+#define MAX_PAYLOAD_SIZE 1500
 #define MAX_LRU_CACHE_SIZE 32
+
+//Network header message types
+#define NETWORK_ACK_REQUEST 128
+#define NETWORK_ACK 129
+#define NETWORK_MORE_FRAGMENTS 130
+#define NETWORK_LAST_FRAGMENT 131
+
 
 class RF24;
 
@@ -96,8 +102,8 @@ struct RF24NetworkHeader
 struct RF24NetworkFrame
 {
   RF24NetworkHeader header; /**< Header which is sent with each message */
-  size_t payload_size; /**< The size in bytes of the payload length */
-  std::list<uint8_t> payload_buffer; /**< Vector to put the frame payload that will be sent/received over the air */
+  size_t message_size; /**< The size in bytes of the payload length */
+  uint8_t message_buffer[MAX_PAYLOAD_SIZE]; /**< Vector to put the frame payload that will be sent/received over the air */
 
   /**
    * Default constructor
@@ -110,39 +116,24 @@ struct RF24NetworkFrame
    * Send constructor
    *
    * Use this constructor to create a frame with header and payload and then send a message
-   *
-   * @code
-   *  RF24NetworkFrame frame(recipient_address,'t',message,sizeof(message));
-   *  network.write(frame);
-   * @endcode
-   *
-   * @param _to The logical node address where the message is going.
-   * @param _type The type of message which follows.  Only 0-127 are allowed for
-   * user messages.
-   * @param _payload The message content.
-   * @param _psize Length in bytes of the payload.
    */
-  RF24NetworkFrame(uint16_t _to, unsigned char _type = 0, const void* _payload = NULL, size_t _psize = 0) : header(RF24NetworkHeader(_to,_type)), payload_size(_psize) {
-    appendToPayload(_payload,payload_size);
+  RF24NetworkFrame(uint16_t _to, unsigned char _type = 0, const void* _message = NULL, size_t _len = 0) :
+                  header(RF24NetworkHeader(_to,_type)), message_size(_len) {
+    if (_message && _len) {
+      memcpy(message_buffer,_message,_len);
+    }
   }
 
   /**
    * Send constructor
    *
    * Use this constructor to create a frame with header and payload and then send a message
-   *
-   * @code
-   *  RF24NetworkHeader header(recipient_address,'t');
-   *  RF24NetworkFrame frame(header,message,sizeof(message));
-   *  network.write(frame);
-   * @endcode
-   *
-   * @param _header The header struct of the frame
-   * @param _payload The message content.
-   * @param _psize Length in bytes of the payload.
    */
-  RF24NetworkFrame(RF24NetworkHeader& _header, const void* _payload = NULL, size_t _psize = 0) : header(_header), payload_size(_psize) {
-    appendToPayload(_payload,payload_size);
+  RF24NetworkFrame(RF24NetworkHeader& _header, const void* _message = NULL, size_t _len = 0) :
+                  header(_header), message_size(_len) {
+    if (_message && _len) {
+      memcpy(message_buffer,_message,_len);
+    }
   }
 
   /**
@@ -156,47 +147,6 @@ struct RF24NetworkFrame
    */
   const char* toString(void) const;
 
-  /**
-   * Get the frame payload (message) as array
-   *
-   * Internally is the payload a vector.
-   * @return array pointer to the payload
-   */
-  const void* getPayloadArray(void) {
-    //!const void* res = &payload_buffer[0];
-    //!return res;
-    uint8_t *arr = new uint8_t[payload_buffer.size()];
-    std::copy(payload_buffer.begin(),payload_buffer.end(),arr);
-    return arr;
-  }
-
-  /**
-   *  Get the payload size
-   *
-   * @return Size in bytes of the current payload
-   */
-  size_t getPayloadSize(void) {
-    return payload_buffer.size();
-  }
-
-  /**
-   * Append the given payload to the current payload_buffer
-   *
-   */
-  void appendToPayload(const void* payload, size_t len) {
-    if (payload && len) {
-      if ((payload_buffer.size()+len) <= MAX_PAYLOAD_SIZE) {
-        //Cast the payload as uint8_t
-        const uint8_t *q = (const uint8_t *)payload;
-        //Append the payload to the buffer
-        payload_buffer.insert(payload_buffer.end(), q, q+len);
-        //Save space in RAM
-        //!payload_buffer.shrink_to_fit();
-      }
-    }
-    //Set the new payload_buffer size
-    payload_size = payload_buffer.size();
-  };
 };
 
 /**
@@ -373,6 +323,7 @@ protected:
   uint8_t pipe_to_descendant( uint16_t node );
   void setup_address(void);
   bool _write(RF24NetworkHeader& header,const void* message, size_t len, uint16_t writeDirect);
+  void appendFragmentToFrame(RF24NetworkFrame frame);
 
 private:
 #if defined (RF24NetworkMulticast)
@@ -381,17 +332,17 @@ private:
 #endif
   RF24& radio; /**< Underlying radio driver, provides link/physical layers */
   uint16_t node_address; /**< Logical node address of this unit, 1 .. UINT_MAX */
-  const static unsigned int frame_size = MAX_FRAME_SIZE; /**< How large is each frame over the air */
-  const static unsigned int max_frame_payload_size = frame_size-sizeof(RF24NetworkHeader);
-  uint8_t frame_buffer[frame_size]; /**< Space to put the frame that will be sent/received over the air */
-  CircularBuffer<RF24NetworkFrame,MAX_FRAME_BUFFER_SIZE> frame_queue; /**< RPi can buffer 500 frames (16kB) - Arduino does 5 by default. Space for a small set of frames that need to be delivered to the app layer */
-  //!FrameLRUCache<uint16_t,RF24NetworkFrame,MAX_LRU_CACHE_SIZE> frameAssemblyCache;
+  uint8_t frame_size; /**< How large is each frame over the air */
+  const static unsigned int max_frame_payload_size = MAX_FRAME_SIZE-sizeof(RF24NetworkHeader);
+  uint8_t frame_buffer[MAX_FRAME_SIZE]; /**< Space to put the frame that will be sent/received over the air */
+  std::queue<RF24NetworkFrame> frame_queue;
+  std::map<std::pair<uint16_t, uint16_t>, RF24NetworkFrame> frameFragmentsCache;
+
 
   uint16_t parent_node; /**< Our parent's node address */
   uint8_t parent_pipe; /**< The pipe our parent uses to listen to us */
   uint16_t node_mask; /**< The bits which contain signfificant node address information */
-  #define NETWORK_ACK_REQUEST 128
-  #define NETWORK_ACK 129
+
 };
 
 /**

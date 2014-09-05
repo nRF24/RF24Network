@@ -15,8 +15,9 @@
 /********** USER CONFIG **************/
 
 //#define RF24NetworkMulticast
-//#define SERIAL_DEBUG  //Change #undef to #define for debug
+#define SERIAL_DEBUG  //Change #undef to #define for debug
 #define SERIAL_DEBUG_ROUTING
+//#define SERIAL_DEBUG_FRAGMENTATION
 
 /*************************************/
 
@@ -33,6 +34,12 @@
 #define IF_SERIAL_DEBUG(x) ({x;})
 #else
 #define IF_SERIAL_DEBUG(x)
+#endif
+
+#if defined (SERIAL_DEBUG_FRAGMENTATION)
+#define IF_SERIAL_DEBUG_FRAGMENTATION(x) ({x;})
+#else
+#define IF_SERIAL_DEBUG_FRAGMENTATION(x)
 #endif
 
 // Avoid spurious warnings
