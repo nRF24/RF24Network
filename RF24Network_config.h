@@ -28,7 +28,9 @@
 
   // Define _BV for non-Arduino platforms and for Arduino DUE
 #if defined (ARDUINO) && !defined (__arm__)
-	#include <SPI.h>
+	#if !defined(__AVR_ATtiny25__) && !defined(__AVR_ATtiny45__) && !defined(__AVR_ATtiny85__) && !defined(__AVR_ATtiny24__) && !defined(__AVR_ATtiny44__) && !defined(__AVR_ATtiny84__)
+		#include <SPI.h>
+	#endif
 #else
 
   #include <stdint.h>
