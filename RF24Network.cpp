@@ -24,6 +24,7 @@ uint16_t levelToAddress( uint8_t level );
 #endif
 bool is_valid_address( uint16_t node );
 uint32_t nFails = 0, nOK=0;
+uint8_t dynLen = 0;
 
 /******************************************************************/
 #if !defined (DUAL_HEAD_RADIO)
@@ -53,11 +54,12 @@ void RF24Network::begin(uint8_t _channel, uint16_t _node_address )
   radio.setDataRate(RF24_1MBPS);
   radio.setCRCLength(RF24_CRC_16);
   radio.enableDynamicAck();
+  radio.enableDynamicPayloads();
   // Use different retry periods to reduce data collisions
 
     uint8_t retryVar = (((node_address % 6)+1) *2) + 3;
   radio.setRetries(retryVar, 5);
-  txTimeout = 25;
+  txTimeout = 30;
   routeTimeout = txTimeout*9; // Adjust for max delay per node
 
   //printf_P(PSTR("Retries: %d, txTimeout: %d"),retryVar,txTimeout);
@@ -102,7 +104,7 @@ uint8_t RF24Network::update(void)
   {
 
     // Dump the payloads until we've gotten everything
-
+	
     //while (radio.available())
     //{
       // Fetch the payload, and see if this was the last one.
@@ -124,7 +126,7 @@ uint8_t RF24Network::update(void)
       if ( header.to_node == node_address   ){
 			if(res == NETWORK_ACK){	// If received a routing payload, (Network ACK) discard it, and indicate what it was.
 				#ifdef SERIAL_DEBUG_ROUTING
-					printf_P(PSTR("MAC: Network ACK Rcvd \n"));
+					//printf_P(PSTR("MAC: Network ACK Rcvd \n"));
 				#endif
 				return NETWORK_ACK;
 			}								     // Add it to the buffer of frames for us
@@ -133,7 +135,8 @@ uint8_t RF24Network::update(void)
 
 	  
 	  }else{	  
-	  
+	  dynLen = radio.getDynamicPayloadSize();
+	  if(!dynLen){continue;}
 	  #if defined	(RF24NetworkMulticast)		
 			if( header.to_node == 0100){
 				if(header.id != lastMultiMessageID){
@@ -383,9 +386,9 @@ bool RF24Network::write(uint16_t to_node, uint8_t directTo)  // Direct To: 0 = F
   }
   
 
-  //if( ( send_node != to_node) || frame_buffer[6] == NETWORK_ACK || directTo == 4){
+  //if( ( send_node != to_node) || frame_buffer[6] == NETWORK_ACK ){
 //		multicast = 0;
- // }
+  //}
  // printf("Multi %d\n\r",multicast);
 
   IF_SERIAL_DEBUG(printf_P(PSTR("%lu: MAC Sending to 0%o via 0%o on pipe %x\n\r"),millis(),logicalAddress,send_node,send_pipe));
@@ -401,11 +404,14 @@ bool RF24Network::write(uint16_t to_node, uint8_t directTo)  // Direct To: 0 = F
  
 	if( directTo == 1 && ok && send_node == to_node && frame_buffer[6] != NETWORK_ACK && fromAddress != node_address){			
 			frame_buffer[6] = NETWORK_ACK;								            // Set the payload type to NETWORK_ACK			
+			//frame_buffer[7] = 0;
 			frame_buffer[2] = frame_buffer[0]; frame_buffer[3] = frame_buffer[1];   // Change the 'to' address to the 'from' address
+			dynLen=8;
 			write(fromAddress,1);						// Send it back as a routed message			
+			dynLen=0;
 			#if defined (SERIAL_DEBUG_ROUTING)
 				//if(!test){
-				printf_P(PSTR("MAC: Route OK to 0%o ACK sent to 0%o\n"),send_node,fromAddress);
+				//printf_P(PSTR("MAC: Route OK to 0%o ACK sent to 0%o\n"),send_node,fromAddress);
 				//}else{
 				//printf("ACK send fail");
 				//}
@@ -433,7 +439,7 @@ bool RF24Network::write(uint16_t to_node, uint8_t directTo)  // Direct To: 0 = F
   radio.startListening();
 #endif
 
-	if( (send_node != logicalAddress) && (directTo==0 || directTo == 3 )){
+	if( ok && (send_node != logicalAddress) && (directTo==0 || directTo == 3 )){
 		uint32_t reply_time = millis(); 
 		while( update() != NETWORK_ACK){
 			if(millis() - reply_time > routeTimeout){  
@@ -469,7 +475,8 @@ bool RF24Network::write_to_pipe( uint16_t node, uint8_t pipe, bool multicast )
   // First, stop listening so we can talk
   radio.stopListening();
   radio.openWritingPipe(out_pipe);  
-  radio.writeFast(frame_buffer, frame_size,multicast);
+  size_t wLen = dynLen ? dynLen: frame_size;
+  radio.writeFast(frame_buffer, wLen,multicast);  
   ok = radio.txStandBy(txTimeout);    
  
 #else

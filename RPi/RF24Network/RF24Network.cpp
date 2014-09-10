@@ -97,9 +97,9 @@ uint8_t RF24Network::update(void)
 
     //while (radio.available())
     //{
-      // Fetch the payload, and see if this was the last one.	  
+      // Fetch the payload, and get the size	  
       size_t len = radio.getDynamicPayloadSize();
-	  if(len == 0){ /*printf("bad payload dropped\n");*/continue; }
+	  if(len == 0){ delay(2);/*printf("bad payload dropped\n");*/continue; }
       radio.read( frame_buffer, len );
 
       //Do we have a valid length for a frame?
