@@ -10,12 +10,12 @@
 #ifndef __RF24_CONFIG_H__
 #define __RF24_CONFIG_H__
 
-#include <stddef.h>
+//#include <stddef.h>
 
 /********** USER CONFIG **************/
 
 //#define RF24NetworkMulticast
-#define SERIAL_DEBUG  //Change #undef to #define for debug
+//#define SERIAL_DEBUG  //Change #undef to #define for debug
 #define SERIAL_DEBUG_ROUTING
 //#define SERIAL_DEBUG_FRAGMENTATION
 

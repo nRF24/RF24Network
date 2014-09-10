@@ -58,8 +58,8 @@ void RF24Network::begin(uint8_t _channel, uint16_t _node_address ) {
   //uint8_t retryVar = (node_address % 7) + 5;
   uint8_t retryVar = (((node_address % 6)+1) *2) + 3;
   radio.setRetries(retryVar, 5);
-  txTimeout = 20;
-  routeTimeout = txTimeout+35;
+  txTimeout = 25;
+  routeTimeout = txTimeout*9;
 
   // Setup our address helper cache
   setup_address();
@@ -97,8 +97,9 @@ uint8_t RF24Network::update(void)
 
     //while (radio.available())
     //{
-      // Fetch the payload, and see if this was the last one.
+      // Fetch the payload, and see if this was the last one.	  
       size_t len = radio.getDynamicPayloadSize();
+	  if(len == 0){ /*printf("bad payload dropped\n");*/continue; }
       radio.read( frame_buffer, len );
 
       //Do we have a valid length for a frame?
@@ -112,8 +113,8 @@ uint8_t RF24Network::update(void)
 
       IF_SERIAL_DEBUG(printf_P("%u: MAC Received on %u %s\n\r",millis(),pipe_num,header.toString()));
       if (len) {
-        IF_SERIAL_DEBUG_FRAGMENTATION(printf("%u: MAC frame size %i",millis(),len););
-        IF_SERIAL_DEBUG_FRAGMENTATION(printf("%u: MAC frame ",millis()); const char* charPtr = reinterpret_cast<const char*>(frame_buffer); for (size_t i = 0; i < len; i++) { printf("%02X ", charPtr[i]); }; printf("\n\r"));
+        IF_SERIAL_DEBUG_FRAGMENTATION(printf("%u: Rcv MAC frame size %i\n",millis(),len););
+        IF_SERIAL_DEBUG_FRAGMENTATION(printf("%u: Rcv MAC frame ",millis()); const char* charPtr = reinterpret_cast<const char*>(frame_buffer); for (size_t i = 0; i < len; i++) { printf("%02X ", charPtr[i]); }; printf("\n\r"));
       }
 
       // Throw it away if it's not a valid address
@@ -199,16 +200,16 @@ bool RF24Network::enqueue(RF24NetworkFrame frame) {
     appendFragmentToFrame(frame);
     result = true;
 
-  } else if (frame.header.fragment_id == 1 && frame.header.type == NETWORK_LAST_FRAGMENT) {
+	} else if (frame.header.fragment_id == 1 && frame.header.type == NETWORK_LAST_FRAGMENT) {
     //Set the last fragment flag to indicate the last fragment
     IF_SERIAL_DEBUG_FRAGMENTATION(printf("%u: MAC Last fragment with size %i Bytes and fragmentID '%i' received.\n\r",millis(),frame.message_size,frame.header.fragment_id););
 
     //Append payload
-    appendFragmentToFrame(frame);
-
+    appendFragmentToFrame(frame);	
+	
     IF_SERIAL_DEBUG(printf_P(PSTR("%u: NET Enqueue assembled frame @%x "),millis(),frame_queue.size()));
     //Push the assembled frame in the frame_queue and remove it from cache
-    frame_queue.push( frameFragmentsCache[ std::make_pair(frame.header.from_node,frame.header.id) ] );
+	frame_queue.push( frameFragmentsCache[ std::make_pair(frame.header.from_node,frame.header.id) ] );
     frameFragmentsCache.erase( std::make_pair(frame.header.from_node,frame.header.id) );
 
     result = true;
@@ -235,19 +236,34 @@ bool RF24Network::enqueue(RF24NetworkFrame frame) {
 void RF24Network::appendFragmentToFrame(RF24NetworkFrame frame) {
 
   if (frameFragmentsCache.count(std::make_pair(frame.header.from_node,frame.header.id)) == 0 ) {
+	
+	//If there is an un-finished fragment:
+	 for (std::map<std::pair<uint16_t, uint16_t>, RF24NetworkFrame>::iterator it=frameFragmentsCache.begin(); it!=frameFragmentsCache.end(); ++it){		
+		if( it->first.first == frame.header.from_node){
+			frameFragmentsCache.erase( it );
+			//printf("Map Size: %d\n",frameFragmentsCache.size());
+			break;
+		}
+	 }
+
     //This is the first of many fragments
     frameFragmentsCache[ std::make_pair(frame.header.from_node,frame.header.id) ] = frame;
+	
   } else {
     //We have at least received one fragments.
-
     //Append payload
     RF24NetworkFrame *f = &(frameFragmentsCache[ std::make_pair(frame.header.from_node,frame.header.id) ]);
+	
+	if(frame.message_size + f->message_size > MAX_PAYLOAD_SIZE){	
+		frameFragmentsCache.erase( std::make_pair(frame.header.from_node,frame.header.id) );
+		printf("cleared corrupt frame\n");
+	}else{
     memcpy(f->message_buffer+f->message_size, frame.message_buffer, frame.message_size);
-
     //Increment message size
     f->message_size += frame.message_size;
     //Update header
     f->header = frame.header;
+	}
   }
 }
 
@@ -406,7 +422,7 @@ bool RF24Network::write(RF24NetworkHeader& header,const void* message, size_t le
     fragment_id--;
     msgCount++;
   }
-
+  int frag_delay = int(len/16); delay( std::min(frag_delay,15)  ); 
   //Return true if all the chuncks where sent successfuly
   //else return false
   IF_SERIAL_DEBUG(printf("%u: NET total message fragments sent %i. txSuccess ",millis(),msgCount); printf("%s\n\r", txSuccess ? "YES" : "NO"););
@@ -431,7 +447,7 @@ bool RF24Network::_write(RF24NetworkHeader& header,const void* message, size_t l
   if (frame_size)
   {
    // IF_SERIAL_DEBUG(const uint16_t* i = reinterpret_cast<const uint16_t*>(message);printf_P(PSTR("%u: NET message %04x\n\r"),millis(),*i));
-    IF_SERIAL_DEBUG_FRAGMENTATION(printf("%u: MAC frame size %i",millis(),frame_size););
+    IF_SERIAL_DEBUG_FRAGMENTATION(printf("%u: MAC frame size %i\n",millis(),frame_size););
     IF_SERIAL_DEBUG_FRAGMENTATION(printf("%u: MAC frame ",millis()); const char* charPtr = reinterpret_cast<const char*>(frame_buffer); for (size_t i = 0; i < frame_size; i++) { printf("%02X ", charPtr[i]); }; printf("\n\r"));
   }
 
@@ -504,9 +520,9 @@ bool RF24Network::write(uint16_t to_node, uint8_t directTo)
   }
 
 
-  //if( ( send_node != to_node) || frame_buffer[6] == NETWORK_ACK || directTo == 3 || directTo == 4){
-  //      multicast = 1;
-  // }
+ // if( ( send_node != to_node) || frame_buffer[6] == NETWORK_ACK ){
+   //     multicast = 1;
+   //}
 
   IF_SERIAL_DEBUG(printf_P(PSTR("%u: MAC Sending to 0%o via 0%o on pipe %x\n\r"),millis(),logicalAddress,send_node,send_pipe));
 
@@ -543,7 +559,7 @@ bool RF24Network::write(uint16_t to_node, uint8_t directTo)
   // Now, continue listening
   radio.startListening();
 
-  if( (send_node != logicalAddress) && (directTo==0 || directTo == 3 )){
+  if( ok && (send_node != logicalAddress) && (directTo==0 || directTo == 3 )){
         uint32_t reply_time = millis();
         while( update() != NETWORK_ACK){
             if(millis() - reply_time > routeTimeout){
