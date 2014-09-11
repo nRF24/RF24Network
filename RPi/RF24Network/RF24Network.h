@@ -38,8 +38,10 @@
 //Network header message types
 #define NETWORK_ACK_REQUEST 128
 #define NETWORK_ACK 129
-#define NETWORK_MORE_FRAGMENTS 130
-#define NETWORK_LAST_FRAGMENT 131
+#define NETWORK_FIRST_FRAGMENT 130
+#define NETWORK_MORE_FRAGMENTS 131
+#define NETWORK_LAST_FRAGMENT 132
+
 
 
 class RF24;
@@ -104,7 +106,7 @@ struct RF24NetworkFrame
   RF24NetworkHeader header; /**< Header which is sent with each message */
   size_t message_size; /**< The size in bytes of the payload length */
   uint8_t message_buffer[MAX_PAYLOAD_SIZE]; /**< Vector to put the frame payload that will be sent/received over the air */
-
+  uint8_t total_fragments; /**<Total number of expected fragments*/
   /**
    * Default constructor
    *
@@ -118,7 +120,7 @@ struct RF24NetworkFrame
    * Use this constructor to create a frame with header and payload and then send a message
    */
   RF24NetworkFrame(uint16_t _to, unsigned char _type = 0, const void* _message = NULL, size_t _len = 0) :
-                  header(RF24NetworkHeader(_to,_type)), message_size(_len) {
+                  header(RF24NetworkHeader(_to,_type)), message_size(_len), total_fragments(0) {
     if (_message && _len) {
       memcpy(message_buffer,_message,_len);
     }
@@ -130,7 +132,7 @@ struct RF24NetworkFrame
    * Use this constructor to create a frame with header and payload and then send a message
    */
   RF24NetworkFrame(RF24NetworkHeader& _header, const void* _message = NULL, size_t _len = 0) :
-                  header(_header), message_size(_len) {
+                  header(_header), message_size(_len), total_fragments(0) {
     if (_message && _len) {
       memcpy(message_buffer,_message,_len);
     }
