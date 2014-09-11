@@ -193,15 +193,15 @@ bool RF24Network::enqueue(RF24NetworkFrame frame) {
   bool result = false;
 
   
-  if (frame.header.fragment_id > 1 && (frame.header.type == NETWORK_MORE_FRAGMENTS || frame.header.type== NETWORK_FIRST_FRAGMENT)){
+  if ((frame.header.fragment_id > 1 && (frame.header.type == NETWORK_MORE_FRAGMENTS || frame.header.type== NETWORK_FIRST_FRAGMENT)) ){
     //Set the more fragments flag to indicate a fragmented frame
     IF_SERIAL_DEBUG_FRAGMENTATION(printf("%u: FRG fragmented payload of size %i Bytes with fragmentID '%i' received.\n\r",millis(),frame.message_size,frame.header.fragment_id););
 
     //Append payload
     appendFragmentToFrame(frame);
-    result = true;
-
-	} else if (frame.header.fragment_id == 1 && frame.header.type == NETWORK_LAST_FRAGMENT) {
+    result = true;	
+	
+	}else if ( frame.header.type == NETWORK_LAST_FRAGMENT) {
     //Set the last fragment flag to indicate the last fragment
     IF_SERIAL_DEBUG_FRAGMENTATION(printf("%u: FRG Last fragment with size %i Bytes and fragmentID '%i' received.\n\r",millis(),frame.message_size,frame.header.fragment_id););
     
@@ -262,6 +262,10 @@ void RF24Network::appendFragmentToFrame(RF24NetworkFrame frame) {
     //Append payload
     RF24NetworkFrame *f = &(frameFragmentsCache[ std::make_pair(frame.header.from_node,frame.header.id) ]);
 	
+	if(frame.header.type == NETWORK_LAST_FRAGMENT){
+		f->header.type = frame.header.fragment_id;
+		frame.header.fragment_id = 1;
+	}
 	//Error checking for missed fragments and payload size
 	if(frame.header.fragment_id != f->header.fragment_id-1){
 		if(frame.header.fragment_id > f->header.fragment_id){
@@ -407,7 +411,7 @@ bool RF24Network::write(RF24NetworkHeader& header,const void* message, size_t le
 
   IF_SERIAL_DEBUG_FRAGMENTATION(printf("%u: FRG Total message fragments %i\n\r",millis(),fragment_id););
 
-  bool firstFrag = 1;
+ 
   //Iterate over the payload chuncks
   //  Assemble a new message, copy and fill out the header
   //  Try to send this message
@@ -422,10 +426,10 @@ bool RF24Network::write(RF24NetworkHeader& header,const void* message, size_t le
 
     if (fragment_id == 1) {
       fragmentHeader.type = NETWORK_LAST_FRAGMENT;  //Set the last fragment flag to indicate the last fragment
+	  fragmentHeader.fragment_id = header.type;
     } else {
-	  if(firstFrag == 1){
+	  if(msgCount == 0){
 		fragmentHeader.type = NETWORK_FIRST_FRAGMENT;
-		firstFrag = 0;
 	  }else{		
 		fragmentHeader.type = NETWORK_MORE_FRAGMENTS; //Set the more fragments flag to indicate a fragmented frame
 	  }
