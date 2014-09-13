@@ -35,12 +35,25 @@
 #define MAX_PAYLOAD_SIZE 1500
 #define MAX_LRU_CACHE_SIZE 32
 
-//Network header message types
+/**
+ * Network Management message types for management of network frames and messages
+ * System discard types (128 to 147) Contain no user data, just additional system sub-types sent for informational purposes. (Initially within NETWORK_ACK responses)
+ * System retained types (148-167) Contain user data
+ *
+ * System types can also contain sub-types, included as information, TBD
+ *
+ */ 
+ 
+/* System Discard Types */
 #define NETWORK_ACK_REQUEST 128
 #define NETWORK_ACK 129
-#define NETWORK_FIRST_FRAGMENT 130
-#define NETWORK_MORE_FRAGMENTS 131
-#define NETWORK_LAST_FRAGMENT 132
+		/*System-Sub Types (0-255)*/
+		#define NETWORK_REQ_STREAM 11;
+
+/* System retained types */
+#define NETWORK_FIRST_FRAGMENT 148
+#define NETWORK_MORE_FRAGMENTS 149
+#define NETWORK_LAST_FRAGMENT 150
 
 
 

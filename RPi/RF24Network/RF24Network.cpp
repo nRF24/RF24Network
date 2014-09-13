@@ -58,7 +58,7 @@ void RF24Network::begin(uint8_t _channel, uint16_t _node_address ) {
   //uint8_t retryVar = (node_address % 7) + 5;
   uint8_t retryVar = (((node_address % 6)+1) *2) + 3;
   radio.setRetries(retryVar, 5);
-  txTimeout = 25;
+  txTimeout = 30;
   routeTimeout = txTimeout*9;
 
   // Setup our address helper cache
@@ -91,7 +91,13 @@ uint8_t RF24Network::update(void)
 {
   // if there is data ready
   uint8_t pipe_num;
+  uint8_t returnVal = 0;
+  
+  #if defined (SERIAL_DEBUG)
   while ( radio.isValid() && radio.available(&pipe_num) )
+  #else
+  while ( radio.isValid() && radio.available() )
+  #endif
   {
     // Dump the payloads until we've gotten everything
 
@@ -99,7 +105,7 @@ uint8_t RF24Network::update(void)
     //{
       // Fetch the payload, and get the size	  
       size_t len = radio.getDynamicPayloadSize();
-	  if(len == 0){ delay(2);/*printf("bad payload dropped\n");*/continue; }
+	  if(len == 0){ delay(2);printf("Bad Dyn Payload\n");continue; }
       radio.read( frame_buffer, len );
 
       //Do we have a valid length for a frame?
@@ -134,9 +140,23 @@ uint8_t RF24Network::update(void)
                 #ifdef SERIAL_DEBUG_ROUTING
                     printf_P(PSTR("RT: Network ACK Rcvd\n"));
                 #endif
-                return NETWORK_ACK;
+                returnVal = NETWORK_ACK;
+				continue;
             }
-            enqueue(frame);
+			
+			enqueue(frame);
+			
+			if(radio.rxFifoFull()){
+			//if(millis() - timeout > 1){ 
+				printf(" fifo full\n");
+				//break;
+				//}
+			}
+			//if(res == NETWORK_FIRST_FRAGMENT || res == NETWORK_MORE_FRAGMENTS){
+			//	uint32_t timeout = millis();
+			//
+			//}
+				
 
 
       }else{
@@ -184,7 +204,7 @@ uint8_t RF24Network::update(void)
 #endif
     //}
   }
-  return 0;
+  return returnVal;
 }
 
 /******************************************************************/
@@ -192,11 +212,17 @@ uint8_t RF24Network::update(void)
 bool RF24Network::enqueue(RF24NetworkFrame frame) {
   bool result = false;
 
-  
+  // This is sent to itself
+  if(frame.header.from_node == node_address){    
+		bool isFragment = ( frame.header.type == NETWORK_FIRST_FRAGMENT || frame.header.type == NETWORK_MORE_FRAGMENTS || frame.header.type == NETWORK_LAST_FRAGMENT );
+		if(isFragment){ printf("Cannot enqueue multi-payload frames to self\n"); return false; }
+	frame_queue.push(frame);
+	//printf("self\n");
+	return true;
+  }
   if ((frame.header.fragment_id > 1 && (frame.header.type == NETWORK_MORE_FRAGMENTS || frame.header.type== NETWORK_FIRST_FRAGMENT)) ){
     //Set the more fragments flag to indicate a fragmented frame
     IF_SERIAL_DEBUG_FRAGMENTATION(printf("%u: FRG fragmented payload of size %i Bytes with fragmentID '%i' received.\n\r",millis(),frame.message_size,frame.header.fragment_id););
-
     //Append payload
     appendFragmentToFrame(frame);
     result = true;	
@@ -204,7 +230,6 @@ bool RF24Network::enqueue(RF24NetworkFrame frame) {
 	}else if ( frame.header.type == NETWORK_LAST_FRAGMENT) {
     //Set the last fragment flag to indicate the last fragment
     IF_SERIAL_DEBUG_FRAGMENTATION(printf("%u: FRG Last fragment with size %i Bytes and fragmentID '%i' received.\n\r",millis(),frame.message_size,frame.header.fragment_id););
-    
     //Append payload
     appendFragmentToFrame(frame);	
 	
@@ -212,9 +237,10 @@ bool RF24Network::enqueue(RF24NetworkFrame frame) {
 
 	//Push the assembled frame in the frame_queue and remove it from cache
 	// If total_fragments == 0, we are finished
-	if(!frame.total_fragments){ 
+	if( frame.header.to_node == node_address || (!frame.header.fragment_id && frameFragmentsCache.count(std::make_pair(frame.header.from_node,frame.header.id)) ) ){ 
 		frame_queue.push( frameFragmentsCache[ std::make_pair(frame.header.from_node,frame.header.id) ] );
 	}else{
+		
 		IF_SERIAL_DEBUG_MINIMAL( printf("%u: NET Dropped frame missing %d fragments\n",millis(),frame.total_fragments ););
 	}
     frameFragmentsCache.erase( std::make_pair(frame.header.from_node,frame.header.id) );
@@ -223,12 +249,12 @@ bool RF24Network::enqueue(RF24NetworkFrame frame) {
 
   } else if(frame.header.type < 128){
     IF_SERIAL_DEBUG(printf_P(PSTR("%u: NET Enqueue @%x "),millis(),frame_queue.size()));
-
     // Copy the current frame into the frame queue
     frame_queue.push(frame);
     result = true;
   }else{
-	IF_SERIAL_DEBUG_MINIMAL( printf("%u: FRG Received unknown or system header type %d \n",millis(),frame.header.type); );
+	IF_SERIAL_DEBUG_MINIMAL( printf("%u: FRG Received unknown or system header type %d with fragment id %d\n",millis(),frame.header.type, frame.header.fragment_id); );
+	
   }
   
 
@@ -245,34 +271,46 @@ bool RF24Network::enqueue(RF24NetworkFrame frame) {
 
 void RF24Network::appendFragmentToFrame(RF24NetworkFrame frame) {
   
+  bool isFragment = ( frame.header.type == NETWORK_FIRST_FRAGMENT || frame.header.type == NETWORK_MORE_FRAGMENTS || frame.header.type == NETWORK_LAST_FRAGMENT );
+  
+  if(!isFragment){
+	frameFragmentsCache[ std::make_pair(frame.header.from_node,frame.header.id) ] = frame;	
+	//printf("not frag type %d\n",frame.header.type);
+  }else
+
   if (frameFragmentsCache.count(std::make_pair(frame.header.from_node,frame.header.id)) == 0 ) {
 	
 	// If this is the first of many fragments.
-	if(frame.header.type == NETWORK_FIRST_FRAGMENT){
+	if(frame.header.type == NETWORK_FIRST_FRAGMENT || ( frame.header.type != NETWORK_MORE_FRAGMENTS && frame.header.type != NETWORK_LAST_FRAGMENT)){
 		// Decrement the stored total_fragments counter
-		frame.total_fragments = frame.header.fragment_id-1;
+		frame.header.fragment_id = frame.header.fragment_id-1;
 		// Cache the fragment
 		frameFragmentsCache[ std::make_pair(frame.header.from_node,frame.header.id) ] = frame;
+		
 	}else{
-		IF_SERIAL_DEBUG_MINIMAL(printf("%u: FRG Dropping all fragments for frame id:%d, missing first fragment(s).\n",millis(),frame.header.id););
+		IF_SERIAL_DEBUG_MINIMAL(printf("%u: FRG Dropping all fragments for frame with header id:%d, missing first fragment(s).\n",millis(),frame.header.id););
 	}
 	
   } else {
     //We have at least received one fragments.
     //Append payload
     RF24NetworkFrame *f = &(frameFragmentsCache[ std::make_pair(frame.header.from_node,frame.header.id) ]);
-	
+
 	if(frame.header.type == NETWORK_LAST_FRAGMENT){
-		f->header.type = frame.header.fragment_id;
+		//Note: The type is sent with the last fragment in the fragment_id field
+		frame.header.type = frame.header.fragment_id;
 		frame.header.fragment_id = 1;
+		//printf("frag last\n");
 	}
 	//Error checking for missed fragments and payload size
-	if(frame.header.fragment_id != f->header.fragment_id-1){
+	//if(frame.header.fragment_id != f->header.fragment_id-1){
+	if(frame.header.fragment_id != f->header.fragment_id){
 		if(frame.header.fragment_id > f->header.fragment_id){
 			IF_SERIAL_DEBUG_MINIMAL(printf("%u: FRG Duplicate or out of sequence frame %d, expected %d. Cleared.\n",millis(),frame.header.fragment_id,f->header.fragment_id););
+			frameFragmentsCache.erase( std::make_pair(frame.header.from_node,frame.header.id) );
 		}else{
-		frameFragmentsCache.erase( std::make_pair(frame.header.from_node,frame.header.id) );
-		IF_SERIAL_DEBUG_MINIMAL(printf("%u: FRG Out of sequence frame %d, expected %d. Cleared.\n",millis(),frame.header.fragment_id,f->header.fragment_id-1););
+			frameFragmentsCache.erase( std::make_pair(frame.header.from_node,frame.header.id) );
+			IF_SERIAL_DEBUG_MINIMAL(printf("%u: FRG Out of sequence frame %d, expected %d. Cleared.\n",millis(),frame.header.fragment_id,f->header.fragment_id););
 		}
 		return;
 	}
@@ -288,7 +326,7 @@ void RF24Network::appendFragmentToFrame(RF24NetworkFrame frame) {
     //Update header
     f->header = frame.header;
 	//Update Total fragments
-	f->total_fragments--;
+	f->header.fragment_id--;
 
   }
 }
@@ -379,9 +417,13 @@ bool RF24Network::write(RF24NetworkHeader& header,const void* message, size_t le
     return write(header,message,len,070);
 }
 /******************************************************************/
+
+bool noListen = 1;
+
 bool RF24Network::write(RF24NetworkHeader& header,const void* message, size_t len, uint16_t writeDirect){
   bool txSuccess = true;
-
+  
+  //printf("x\n");
   //Check payload size
   if (len > MAX_PAYLOAD_SIZE) {
     IF_SERIAL_DEBUG(printf("%u: NET write message failed. Given 'len' is bigger than the MAX Payload size %i\n\r",millis(),MAX_PAYLOAD_SIZE););
@@ -390,14 +432,14 @@ bool RF24Network::write(RF24NetworkHeader& header,const void* message, size_t le
 
   //If message payload length fits in a single message
   //then use the normal _write() function
-  if (len <= max_frame_payload_size) {
-    return _write(header,message,len,writeDirect);
-  }
+  //if (len <= max_frame_payload_size) {
+  //  return _write(header,message,len,writeDirect);
+  //}
 
   //If the message payload is too big, whe cannot generate enough fragments
   //and enumerate them
   if (len > 255*max_frame_payload_size) {
-
+	//printf("max size exceeded\n");
     txSuccess = false;
     return txSuccess;
   }
@@ -418,12 +460,29 @@ bool RF24Network::write(RF24NetworkHeader& header,const void* message, size_t le
   //  If it fails
   //    then break
   //    return result as false
+	
+	radio.stopListening();
+	
+  
+  //Normal Write (Un-Fragmented)
+  if(len <= max_frame_payload_size){
+		txSuccess = _write(header,message,len,writeDirect);
+		radio.startListening();
+		//printf("NRML write - type %d\n",header.type);
+		return txSuccess;
+  }
+  
+  noListen = 1;
+  
+  //Fragmented Write
   while (fragment_id > 0) {
-
+  
+	//printf("fragWrite");
     //Copy and fill out the header
     RF24NetworkHeader fragmentHeader = header;
     fragmentHeader.fragment_id = fragment_id;
 
+	//if(!isFragmented){
     if (fragment_id == 1) {
       fragmentHeader.type = NETWORK_LAST_FRAGMENT;  //Set the last fragment flag to indicate the last fragment
 	  fragmentHeader.fragment_id = header.type;
@@ -434,7 +493,7 @@ bool RF24Network::write(RF24NetworkHeader& header,const void* message, size_t le
 		fragmentHeader.type = NETWORK_MORE_FRAGMENTS; //Set the more fragments flag to indicate a fragmented frame
 	  }
     }
-
+	//}
     size_t offset = msgCount*max_frame_payload_size;
     size_t fragmentLen = std::min(len-offset,max_frame_payload_size);
 
@@ -442,20 +501,35 @@ bool RF24Network::write(RF24NetworkHeader& header,const void* message, size_t le
 
     //Try to send the payload chunk with the copied header
     bool ok = _write(fragmentHeader,message+offset,fragmentLen,writeDirect);
+	if(!noListen){
+		delayMicroseconds(50);
+	}
     if (!ok) {
-      IF_SERIAL_DEBUG_FRAGMENTATION(printf("%u: FRG message transmission with fragmentID '%i' failed. Abort.\n\r",millis(),fragment_id););
-      txSuccess = false;
-      break;
+	  //ok = _write(fragmentHeader,message+offset,fragmentLen,writeDirect);
+	  //if(!ok){
+		IF_SERIAL_DEBUG_FRAGMENTATION(printf("%u: FRG message transmission with fragmentID '%i' failed. Abort.\n\r",millis(),fragment_id););
+		txSuccess = false;
+		break;
+	  //}
     }
     IF_SERIAL_DEBUG_FRAGMENTATION(printf("%u: FRG message transmission with fragmentID '%i' sucessfull.\n\r",millis(),fragment_id););
 
+	
     //Message was successful sent
     //Check and modify counters
     fragment_id--;
     msgCount++;
   }
-  int frag_delay = int(len/32); 
-  delay( std::min(frag_delay,15)  ); 
+  
+  noListen = 0;
+  //txSuccess = radio.txStandBy(txTimeout);
+  
+  radio.startListening();
+  
+  int frag_delay = uint8_t(len/48); 
+  //if(!txSuccess){ 
+	delay( std::min(frag_delay,20));  
+  //} 
   //Return true if all the chuncks where sent successfuly
   //else return false
   IF_SERIAL_DEBUG(printf("%u: NET total message fragments sent %i. txSuccess ",millis(),msgCount); printf("%s\n\r", txSuccess ? "YES" : "NO"););
@@ -520,7 +594,10 @@ bool RF24Network::write(uint16_t to_node, uint8_t directTo)
 
   // First, stop listening so we can talk.
   //radio.stopListening();
-
+  if(to_node != parent_node && !is_direct_child(to_node) ){
+	 noListen=0;
+  }
+  
   // Where do we send this?  By default, to our parent
   uint16_t send_node = parent_node;
   // On which pipe
@@ -539,7 +616,7 @@ bool RF24Network::write(uint16_t to_node, uint8_t directTo)
   {
     // Send directly
     send_node = to_node;
-
+	
     // To its listening pipe
     send_pipe = 5;
   }
@@ -548,6 +625,7 @@ bool RF24Network::write(uint16_t to_node, uint8_t directTo)
   // and let the direct child relay it.
   else if ( is_descendant(to_node) )
   {
+	
     send_node = direct_child_route_to(to_node);
     send_pipe = 5;
   }
@@ -559,7 +637,7 @@ bool RF24Network::write(uint16_t to_node, uint8_t directTo)
 
   IF_SERIAL_DEBUG(printf_P(PSTR("%u: MAC Sending to 0%o via 0%o on pipe %x\n\r"),millis(),logicalAddress,send_node,send_pipe));
 
-
+  
   // Put the frame on the pipe
   ok = write_to_pipe( send_node, send_pipe, multicast );
   //printf("Multi %d\n",multicast);
@@ -568,6 +646,7 @@ bool RF24Network::write(uint16_t to_node, uint8_t directTo)
     if(!ok){ printf_P(PSTR("%u: MAC Send fail to 0%o from 0%o via 0%o on pipe %x\n\r"),millis(),logicalAddress,fromAddress,send_node,send_pipe); }
   #endif
 
+	
        if( directTo == 1 && ok && send_node == to_node && frame_buffer[6] != NETWORK_ACK && fromAddress != node_address ){
             frame_buffer[6] = NETWORK_ACK;
             frame_buffer[2] = frame_buffer[0]; frame_buffer[3] = frame_buffer[1];
@@ -576,9 +655,10 @@ bool RF24Network::write(uint16_t to_node, uint8_t directTo)
                 printf("RT Route OK to 0%o ACK sent to 0%o\n",to_node,fromAddress);
             #endif
        }
-
-
-
+	
+	if(!noListen ){
+		radio.startListening();
+	}
   // NOT NEEDED anymore.  Now all reading pipes are open to start.
 #if 0
   // If we are talking on our talking pipe, it's possible that no one is listening.
@@ -589,10 +669,14 @@ bool RF24Network::write(uint16_t to_node, uint8_t directTo)
     ok = write_to_pipe( parent_node, 0 );
 #endif
 
+
   // Now, continue listening
-  radio.startListening();
+  //radio.startListening();
 
   if( ok && (send_node != logicalAddress) && (directTo==0 || directTo == 3 )){
+	    if(!noListen){
+			radio.startListening();
+		}
         uint32_t reply_time = millis();
         while( update() != NETWORK_ACK){
             if(millis() - reply_time > routeTimeout){
@@ -603,6 +687,9 @@ bool RF24Network::write(uint16_t to_node, uint8_t directTo)
                 break;
             }
         }
+		if(!noListen){
+			radio.stopListening();
+		}
         //if(pOK){printf("pOK\n");}
    }
     if(ok == true){
@@ -613,6 +700,7 @@ return ok;
 }
 
 /******************************************************************/
+uint32_t lastWriteTime = 0;
 
 bool RF24Network::write_to_pipe( uint16_t node, uint8_t pipe, bool multicast )
 {
@@ -621,13 +709,27 @@ bool RF24Network::write_to_pipe( uint16_t node, uint8_t pipe, bool multicast )
   uint64_t out_pipe = pipe_address( node, pipe );
 
   // First, stop listening so we can talk
-  radio.stopListening();
+  //while(millis() - lastWriteTime < 4);
+  //lastWriteTime = millis();
+
+  if(!noListen){
+	radio.stopListening();
+  }
   // Open the correct pipe for writing.
   radio.openWritingPipe(out_pipe);
 
   // Retry a few times
+  //ok = radio.write(frame_buffer, frame_size,multicast);
   radio.writeFast(frame_buffer, frame_size,multicast);
-  ok = radio.txStandBy(txTimeout);
+  
+  ok = radio.txStandBy(txTimeout);  
+  
+  //if(!ok){
+	//update();
+	//radio.writeFast(frame_buffer, frame_size,multicast);
+	//ok = radio.txStandBy(0);
+  //}
+  
   //ok = radio.write(frame_buffer,frame_size);
 
   IF_SERIAL_DEBUG(printf_P(PSTR("%u: MAC Sent on %x %s\n\r"),millis(),(uint32_t)out_pipe,ok?PSTR("ok"):PSTR("failed")));
