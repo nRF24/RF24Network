@@ -42,13 +42,14 @@
  *
  * System types can also contain sub-types, included as information, TBD
  *
- */ 
- 
+ */
+
 /* System Discard Types */
 #define NETWORK_ACK_REQUEST 128
 #define NETWORK_ACK 129
-		/*System-Sub Types (0-255)*/
-		#define NETWORK_REQ_STREAM 11;
+
+/*System-Sub Types (0-255)*/
+#define NETWORK_REQ_STREAM 11;
 
 /* System retained types */
 #define NETWORK_FIRST_FRAGMENT 148
@@ -64,14 +65,12 @@ class RF24;
  *
  * The frame put over the air consists of this header and a message
  */
-struct RF24NetworkHeader
-{
+struct RF24NetworkHeader {
   uint16_t from_node; /**< Logical address where the message was generated */
   uint16_t to_node; /**< Logical address where the message is going */
   uint16_t id; /**< Sequential message ID, incremented every message */
   unsigned char type; /**< Type of the packet.  0-127 are user-defined types, 128-255 are reserved for system */
   unsigned char fragment_id; /**< Used to count the number of fragments of the payload. Zero (0) means no more fragments left. */
-
   static uint16_t next_id; /**< The message ID of the next message to be sent */
 
   /**
@@ -107,6 +106,7 @@ struct RF24NetworkHeader
    * @return String representation of this object
    */
   const char* toString(void) const;
+
 };
 
 /**
@@ -114,12 +114,13 @@ struct RF24NetworkHeader
  *
  * The frame put over the air consists of a header and a message payload
  */
-struct RF24NetworkFrame
-{
+struct RF24NetworkFrame {
+
   RF24NetworkHeader header; /**< Header which is sent with each message */
   size_t message_size; /**< The size in bytes of the payload length */
   uint8_t message_buffer[MAX_PAYLOAD_SIZE]; /**< Vector to put the frame payload that will be sent/received over the air */
   uint8_t total_fragments; /**<Total number of expected fragments*/
+
   /**
    * Default constructor
    *
@@ -171,8 +172,8 @@ struct RF24NetworkFrame
  * by RF24 library.
  */
 
-class RF24Network
-{
+class RF24Network {
+
 public:
   /**
    * Construct the network
@@ -348,7 +349,7 @@ private:
   RF24& radio; /**< Underlying radio driver, provides link/physical layers */
   uint16_t node_address; /**< Logical node address of this unit, 1 .. UINT_MAX */
   uint8_t frame_size; /**< How large is each frame over the air */
-  const static unsigned int max_frame_payload_size = MAX_FRAME_SIZE-sizeof(RF24NetworkHeader);
+  size_t max_frame_payload_size = MAX_FRAME_SIZE-sizeof(RF24NetworkHeader);
   uint8_t frame_buffer[MAX_FRAME_SIZE]; /**< Space to put the frame that will be sent/received over the air */
   std::queue<RF24NetworkFrame> frame_queue;
   std::map<std::pair<uint16_t, uint16_t>, RF24NetworkFrame> frameFragmentsCache;
@@ -357,6 +358,10 @@ private:
   uint16_t parent_node; /**< Our parent's node address */
   uint8_t parent_pipe; /**< The pipe our parent uses to listen to us */
   uint16_t node_mask; /**< The bits which contain signfificant node address information */
+
+  uint16_t lastMultiMessageID; //FIXME
+  bool noListen; //FIXME
+  uint32_t lastWriteTime; //FIXME
 
 };
 
