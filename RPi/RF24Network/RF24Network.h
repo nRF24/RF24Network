@@ -44,6 +44,10 @@
  *
  */
 
+/* Header types range */
+#define MIN_USER_DEFINED_HEADER_TYPE 0
+#define MAX_USER_DEFINED_HEADER_TYPE 127
+
 /* System Discard Types */
 #define NETWORK_ACK_REQUEST 128
 #define NETWORK_ACK 129

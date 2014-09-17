@@ -225,7 +225,7 @@ bool RF24Network::enqueue(RF24NetworkFrame frame) {
 
     result = true;
 
-  } else if (frame.header.type < 128) {
+  } else if (frame.header.type <= MAX_USER_DEFINED_HEADER_TYPE) {
     //This is not a fragmented payload but a whole frame.
 
     IF_SERIAL_DEBUG(printf_P(PSTR("%u: NET Enqueue @%x "),millis(),frame_queue.size()));
