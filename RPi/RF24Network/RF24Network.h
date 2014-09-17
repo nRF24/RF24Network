@@ -1,5 +1,6 @@
 /*
  Copyright (C) 2011 James Coliz, Jr. <maniacbug@ymail.com>
+ Copyright (C) 2014 TMRh20 <tmrh20@gmail.com>
  Copyright (C) 2014 Rei <devel@reixd.net>
 
  This program is free software; you can redistribute it and/or
