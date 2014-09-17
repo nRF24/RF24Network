@@ -254,13 +254,6 @@ bool RF24Network::enqueue(RF24NetworkFrame frame) {
 
 void RF24Network::appendFragmentToFrame(RF24NetworkFrame frame) {
 
-  bool isFragment = ( frame.header.type == NETWORK_FIRST_FRAGMENT || frame.header.type == NETWORK_MORE_FRAGMENTS || frame.header.type == NETWORK_LAST_FRAGMENT );
-
-  if (!isFragment) {
-    //The received payload is not a fragment.
-    frameFragmentsCache[ std::make_pair(frame.header.from_node,frame.header.id) ] = frame;
-  } else
-
   if (frameFragmentsCache.count(std::make_pair(frame.header.from_node,frame.header.id)) == 0 ) {
     // This is the first of many fragments.
 
