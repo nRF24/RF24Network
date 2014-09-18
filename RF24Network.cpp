@@ -51,8 +51,8 @@ void RF24Network::begin(uint8_t _channel, uint16_t _node_address )
 
   // Set up the radio the way we want it to look
   radio.setChannel(_channel);
-  radio.setDataRate(RF24_1MBPS);
-  radio.setCRCLength(RF24_CRC_16);
+  //radio.setDataRate(RF24_1MBPS);
+  //radio.setCRCLength(RF24_CRC_16);
   radio.enableDynamicAck();
   radio.enableDynamicPayloads();
   // Use different retry periods to reduce data collisions
@@ -100,13 +100,12 @@ uint8_t RF24Network::update(void)
 {
   // if there is data ready
   uint8_t pipe_num;
+  uint8_t returnVal = 0;
+  
   while ( radio.isValid() && radio.available())//&pipe_num) )
   {
 
-    // Dump the payloads until we've gotten everything
-	
-    //while (radio.available())
-    //{
+      // Dump the payloads until we've gotten everything
       // Fetch the payload, and see if this was the last one.
       radio.read( frame_buffer, sizeof(frame_buffer) );
 
@@ -126,9 +125,10 @@ uint8_t RF24Network::update(void)
       if ( header.to_node == node_address   ){
 			if(res == NETWORK_ACK){	// If received a routing payload, (Network ACK) discard it, and indicate what it was.
 				#ifdef SERIAL_DEBUG_ROUTING
-					//printf_P(PSTR("MAC: Network ACK Rcvd \n"));
+					printf_P(PSTR("MAC: Network ACK Rcvd \n"));
 				#endif
-				return NETWORK_ACK;
+				returnVal = NETWORK_ACK;				
+				continue;
 			}								     // Add it to the buffer of frames for us
 		    
 			enqueue();
@@ -158,8 +158,8 @@ uint8_t RF24Network::update(void)
 				write(header.to_node,1);	//Send it on, indicate it is a routed payload
 			}
 		#else
-		//if(radio.available()){printf("------FLUSHED DATA --------------");}
-		write(header.to_node,1);	//Send it on, indicate it is a routed payload	
+		//if(radio.available()){printf("------FLUSHED DATA --------------");}	
+		write(header.to_node,1);	//Send it on, indicate it is a routed payload
 		#endif
 	  }
 	  
@@ -181,8 +181,7 @@ uint8_t RF24Network::update(void)
 #endif
     //}
   }
-  
-  return 0;
+  return returnVal;
 }
 
 /******************************************************************/
@@ -286,7 +285,7 @@ bool RF24Network::multicast(RF24NetworkHeader& header,const void* message, size_
     IF_SERIAL_DEBUG(const uint16_t* i = reinterpret_cast<const uint16_t*>(message);printf_P(PSTR("%lu: NET message %04x\n\r"),millis(),*i));
   }  
     
-	return write(levelToAddress(level),4);
+	return write(levelToAddress(level),USER_TX_MULTICAST);
   
 }
 #endif
@@ -324,18 +323,18 @@ bool RF24Network::_write(RF24NetworkHeader& header,const void* message, size_t l
   if ( header.to_node == node_address ){
     // Just queue it in the received queue
     return enqueue();
-  }else{
+  }
     // Otherwise send it out over the air	
 	if(writeDirect != 070){
 		if(header.to_node == writeDirect){
-			return write(writeDirect,2);
+			return write(writeDirect,USER_TX_TO_PHYSICAL_ADDRESS);
 	    }else{
-			return write(writeDirect,3);
+			return write(writeDirect,USER_TX_TO_LOGICAL_ADDRESS);
 		}		
 	}else{
-	   return write(header.to_node,0); 
+	   return write(header.to_node,TX_NORMAL); 
 	}
-  }
+  
 }
 
 /******************************************************************/
@@ -344,107 +343,60 @@ bool RF24Network::write(uint16_t to_node, uint8_t directTo)  // Direct To: 0 = F
 {
   bool ok = false;
   bool multicast = 0; // Radio ACK requested = 0
-  const uint16_t fromAddress = frame_buffer[0] | (frame_buffer[1] << 8);
-  const uint16_t logicalAddress = frame_buffer[2] | (frame_buffer[3] << 8);
+  //const uint16_t fromAddress = frame_buffer[0] | (frame_buffer[1] << 8);
   
   // Throw it away if it's not a valid address
   if ( !is_valid_address(to_node) )
-    return false;
-
-
-  // Where do we send this?  By default, to our parent
-  uint16_t send_node = parent_node; 
-
-  // On which pipe
-  uint8_t send_pipe = parent_pipe %5;
+    return false;  
   
-  
- if(directTo>1){    
-	send_node = to_node;
-	multicast = 1;	
-	if(directTo == 4){
-		send_pipe=0;
-	}	
-  }
-     
-  // If the node is a direct child,
-  else
-  if ( is_direct_child(to_node) )
-  {
-    // Send directly
-    send_node = to_node;
-    // To its listening pipe
-    send_pipe = 5;
-  }
-  // If the node is a child of a child
-  // talk on our child's listening pipe,
-  // and let the direct child relay it.
-  else if ( is_descendant(to_node) )
-  {
-    send_node = direct_child_route_to(to_node);
-    send_pipe = 5;
-  }
-  
+  //Load info into our conversion structure, and get the converted address info
+  conversion.send_node = to_node;
+  conversion.send_pipe = directTo;
+  conversion.multicast = multicast;
+  logicalToPhysicalAddress(&conversion);
 
-  //if( ( send_node != to_node) || frame_buffer[6] == NETWORK_ACK ){
-//		multicast = 0;
-  //}
- // printf("Multi %d\n\r",multicast);
-
-  IF_SERIAL_DEBUG(printf_P(PSTR("%lu: MAC Sending to 0%o via 0%o on pipe %x\n\r"),millis(),logicalAddress,send_node,send_pipe));
+  IF_SERIAL_DEBUG(printf_P(PSTR("%lu: MAC Sending to 0%o via 0%o on pipe %x\n\r"),millis(),to_node,conversion.send_node,conversion.send_pipe));
   
-
+  /**Write it*/
+  ok=write_to_pipe(conversion.send_node, conversion.send_pipe, conversion.multicast);  	
   
-
-	ok=write_to_pipe(send_node, send_pipe, multicast);  
-	
   #ifdef SERIAL_DEBUG_ROUTING
-  if(!ok){	printf_P(PSTR("%lu: MAC Send fail to 0%o from 0%o via 0%o on pipe %x\n\r"),millis(),logicalAddress,fromAddress, send_node,send_pipe); }
+  if(!ok){	printf_P(PSTR("%lu: MAC Send fail to 0%o via 0%o on pipe %x\n\r"),millis(),to_node,conversion.send_node,conversion.send_pipe); }
   #endif
  
-	if( directTo == 1 && ok && send_node == to_node && frame_buffer[6] != NETWORK_ACK && fromAddress != node_address){			
-			frame_buffer[6] = NETWORK_ACK;								            // Set the payload type to NETWORK_ACK			
-			//frame_buffer[7] = 0;
-			frame_buffer[2] = frame_buffer[0]; frame_buffer[3] = frame_buffer[1];   // Change the 'to' address to the 'from' address
-			dynLen=8;
-			write(fromAddress,1);						// Send it back as a routed message			
+	if( directTo == TX_ROUTED && ok && conversion.send_node == to_node && frame_buffer[6] != NETWORK_ACK ){			
+			
+			RF24NetworkHeader& header = * reinterpret_cast<RF24NetworkHeader*>(frame_buffer);
+			header.type = NETWORK_ACK;				    // Set the payload type to NETWORK_ACK			
+			header.to_node = header.from_node;          // Change the 'to' address to the 'from' address
+			dynLen=8;		
+
+			conversion.send_node=header.from_node;
+			conversion.send_pipe = TX_ROUTED;			
+			logicalToPhysicalAddress(&conversion);
+			
+			//Write the data using the resulting physical address
+			write_to_pipe(conversion.send_node, conversion.send_pipe, multicast);
+			
 			dynLen=0;
 			#if defined (SERIAL_DEBUG_ROUTING)
-				//if(!test){
-				//printf_P(PSTR("MAC: Route OK to 0%o ACK sent to 0%o\n"),send_node,fromAddress);
-				//}else{
-				//printf("ACK send fail");
-				//}
-			
+				printf_P(PSTR("%lu MAC: Route OK to 0%o ACK sent to 0%o\n"),millis(),conversion.send_node,fromAddress);
 			#endif
-		}
-   
-  
+	}
+	
  // if(!ok){ printf_P(PSTR("%lu: MAC No Ack from 0%o via 0%o on pipe %x\n\r"),millis(),to_node,send_node,send_pipe); }
  
-		
-  //printf_P(PSTR("%lu: MAC Sending to 0%o via 0%o on pipe %x\n\r"),millis(),to_node,send_node,send_pipe);
-      // NOT NEEDED anymore.  Now all reading pipes are open to start.
-#if 0
-  // If we are talking on our talking pipe, it's possible that no one is listening.
-  // If this fails, try sending it on our parent's listening pipe.  That will wake
-  // it up, and next time it will listen to us.
-
-  //if ( !ok && send_node == parent_node )
-  //  ok = write_to_pipe( parent_node, 0 );
-#endif
-
 #if !defined (DUAL_HEAD_RADIO)
   // Now, continue listening
   radio.startListening();
 #endif
 
-	if( ok && (send_node != logicalAddress) && (directTo==0 || directTo == 3 )){
+	if( ok && (conversion.send_node != to_node) && (directTo==0 || directTo == 3 )){
 		uint32_t reply_time = millis(); 
 		while( update() != NETWORK_ACK){
 			if(millis() - reply_time > routeTimeout){  
 				#ifdef SERIAL_DEBUG_ROUTING
-					printf_P(PSTR("%lu: MAC Network ACK fail from 0%o via 0%o on pipe %x\n\r"),millis(),logicalAddress,send_node,send_pipe); 
+					printf_P(PSTR("%lu: MAC Network ACK fail from 0%o via 0%o on pipe %x\n\r"),millis(),to_node,conversion.send_node,conversion.send_pipe); 
 				#endif	
 				ok=0;
 				break;					
@@ -462,6 +414,56 @@ bool RF24Network::write(uint16_t to_node, uint8_t directTo)  // Direct To: 0 = F
 
 /******************************************************************/
 
+	// Provided the to_node and directTo option, it will return the resulting node and pipe
+bool RF24Network::logicalToPhysicalAddress(logicalToPhysicalStruct *conversionInfo){
+
+  //Create pointers so this makes sense.. kind of
+  //We take in the to_node(logical) now, at the end of the function, output the send_node(physical) address, etc.
+  //back to the original memory address that held the logical information.
+  uint16_t *to_node = &conversionInfo->send_node;
+  uint8_t *directTo = &conversionInfo->send_pipe;
+  bool *multicast = &conversionInfo->multicast;    
+  
+  // Where do we send this?  By default, to our parent
+  uint16_t pre_conversion_send_node = parent_node; 
+
+  // On which pipe
+  uint8_t pre_conversion_send_pipe = parent_pipe %5;
+  
+ if(*directTo > TX_ROUTED ){    
+	pre_conversion_send_node = *to_node;
+	*multicast = 1;	
+	if(*directTo == USER_TX_MULTICAST){
+		pre_conversion_send_pipe=0;
+	}	
+  }     
+  // If the node is a direct child,
+  else
+  if ( is_direct_child(*to_node) )
+  {
+    // Send directly
+    pre_conversion_send_node = *to_node;
+    // To its listening pipe
+    pre_conversion_send_pipe = 5;
+  }
+  // If the node is a child of a child
+  // talk on our child's listening pipe,
+  // and let the direct child relay it.
+  else if ( is_descendant(*to_node) )
+  {
+    pre_conversion_send_node = direct_child_route_to(*to_node);
+    pre_conversion_send_pipe = 5;
+  }
+  
+  *to_node = pre_conversion_send_node;
+  *directTo = pre_conversion_send_pipe;
+  
+  return 1;
+  
+}
+
+/********************************************************/
+
 
 bool RF24Network::write_to_pipe( uint16_t node, uint8_t pipe, bool multicast )
 {
@@ -478,7 +480,8 @@ bool RF24Network::write_to_pipe( uint16_t node, uint8_t pipe, bool multicast )
   size_t wLen = dynLen ? dynLen: frame_size;
   radio.writeFast(frame_buffer, wLen,multicast);  
   ok = radio.txStandBy(txTimeout);    
- 
+  
+
 #else
   radio1.openWritingPipe(out_pipe);
   radio1.writeFast(frame_buffer, frame_size);
@@ -574,20 +577,37 @@ void RF24Network::setup_address(void)
 }
 
 /******************************************************************/
-
-uint16_t RF24Network::direct_child_route_to( uint16_t node )
+uint16_t RF24Network::addressOfPipe( uint16_t node, uint8_t pipeNo )
 {
-  // Presumes that this is in fact a child!!
-
-  uint16_t child_mask = ( node_mask << 3 ) | 0B111;
-  return node & child_mask ;
+		//Say this node is 013 (1011), mask is 077 or (00111111)
+		//Say we want to use pipe 3 (11)
+        //6 bits in node mask, so shift pipeNo 6 times left and | into address		
+	uint16_t m = node_mask >> 3;
+	uint8_t i=0;
+	
+	while (m){ 	   //While there are bits left in the node mask
+		m>>=1;     //Shift to the right
+		i++;       //Count the # of increments
+	}
+	
+	return node | (pipeNo << i);	
 }
 
 /******************************************************************/
 
+uint16_t RF24Network::direct_child_route_to( uint16_t node )
+{
+  // Presumes that this is in fact a child!!
+  uint16_t child_mask = ( node_mask << 3 ) | 0B111;
+  return node & child_mask;
+  
+}
+
+/******************************************************************/
+/*
 uint8_t RF24Network::pipe_to_descendant( uint16_t node )
 {
-  uint16_t i = node;
+  uint16_t i = node;       
   uint16_t m = node_mask;
 
   while (m)
@@ -597,7 +617,7 @@ uint8_t RF24Network::pipe_to_descendant( uint16_t node )
   }
 
   return i & 0B111;
-}
+}*/
 
 /******************************************************************/
 
@@ -634,8 +654,13 @@ void RF24Network::multicastLevel(uint8_t level){
   }
   
 uint16_t levelToAddress(uint8_t level){
+	
 	uint16_t levelAddr = 1;
-	levelAddr = levelAddr << ((level-1) * 3);
+	if(level){
+		levelAddr = levelAddr << ((level-1) * 3);
+	}else{
+		return 0;		
+	}
 	return levelAddr;
 }  
 #endif

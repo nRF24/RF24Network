@@ -24,7 +24,7 @@
 //#define ENABLE_SLEEP_MODE
 //#define RF24NetworkMulticast
 //#define SERIAL_DEBUG
-#define SERIAL_DEBUG_ROUTING
+//#define SERIAL_DEBUG_ROUTING
 /*************************************/
  
 

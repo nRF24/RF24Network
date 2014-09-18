@@ -1,7 +1,6 @@
 /*
  Copyright (C) 2011 James Coliz, Jr. <maniacbug@ymail.com>
- Copyright (C) 2014 TMRh20 <tmrh20@gmail.com>
- Copyright (C) 2014 Rei <devel@reixd.net>
+ Copyright (C) 2014 Rei <devel@reixd.net> (Initial development portion of fragmentation code only)
 
  This program is free software; you can redistribute it and/or
  modify it under the terms of the GNU General Public License
@@ -60,7 +59,16 @@
 #define NETWORK_FIRST_FRAGMENT 148
 #define NETWORK_MORE_FRAGMENTS 149
 #define NETWORK_LAST_FRAGMENT 150
+/* System retained - response messages */
+#define NETWORK_REQ_ADDRESS 151
+#define NETWORK_ADDR_RESPONSE 152
 
+/** Defines for handling written payloads */
+#define TX_NORMAL 0
+#define TX_ROUTED 1
+#define USER_TX_TO_PHYSICAL_ADDRESS 2
+#define USER_TX_TO_LOGICAL_ADDRESS 3
+#define USER_TX_MULTICAST 4
 
 
 class RF24;
@@ -330,10 +338,11 @@ public:
   bool multicastRelay;
 
 #endif
+uint16_t addressOfPipe( uint16_t node,uint8_t pipeNo );
 
 protected:
-  void open_pipes(void);
-  uint16_t find_node( uint16_t current_node, uint16_t target_node );
+  //void open_pipes(void);
+  //uint16_t find_node( uint16_t current_node, uint16_t target_node );
   bool write(uint16_t, uint8_t directTo);
   bool write_to_pipe( uint16_t node, uint8_t pipe, bool multicast );
   bool enqueue(RF24NetworkFrame frame);
@@ -341,11 +350,19 @@ protected:
   bool is_direct_child( uint16_t node );
   bool is_descendant( uint16_t node );
   uint16_t direct_child_route_to( uint16_t node );
-  uint8_t pipe_to_descendant( uint16_t node );
+  //uint8_t pipe_to_descendant( uint16_t node );
   void setup_address(void);
   bool _write(RF24NetworkHeader& header,const void* message, size_t len, uint16_t writeDirect);
   void appendFragmentToFrame(RF24NetworkFrame frame);
 
+  struct logicalToPhysicalStruct{
+	uint16_t send_node; 
+	uint8_t send_pipe;
+	bool multicast;
+  }conversion;
+  
+  bool logicalToPhysicalAddress(logicalToPhysicalStruct *conversionInfo);
+  
 private:
 #if defined (RF24NetworkMulticast)
   uint16_t lastMultiMessageID;
