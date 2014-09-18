@@ -19,6 +19,36 @@
 #include <stdint.h>
 #include "RF24Network_config.h"
 
+/**
+ * Network Management message types for management of network frames and messages
+ * System discard types (128 to 147) Contain no user data, just additional system sub-types sent for informational purposes. (Initially within NETWORK_ACK responses)
+ * System retained types (148-167) Contain user data
+ *
+ * System types can also contain sub-types, included as information, TBD
+ *
+ */  
+ 
+/** System Discard Types */
+#define NETWORK_ACK_REQUEST 128
+#define NETWORK_ACK 129
+		/**System-Sub Types (0-255)*/
+		#define NETWORK_REQ_STREAM 11;
+
+/** System retained types */
+#define NETWORK_FIRST_FRAGMENT 148
+#define NETWORK_MORE_FRAGMENTS 149
+#define NETWORK_LAST_FRAGMENT 150
+/* System retained - response messages */
+#define NETWORK_REQ_ADDRESS 151
+#define NETWORK_ADDR_RESPONSE 152
+
+/** Defines for handling written payloads */
+#define TX_NORMAL 0
+#define TX_ROUTED 1
+#define USER_TX_TO_PHYSICAL_ADDRESS 2
+#define USER_TX_TO_LOGICAL_ADDRESS 3
+#define USER_TX_MULTICAST 4
+
 
 class RF24;
 
@@ -46,10 +76,14 @@ struct RF24NetworkHeader
   RF24NetworkHeader() {}
 
   /**
-   * Send constructor
-   *
-   * Use this constructor to create a header and then send a message
-   *
+   * Send constructor  
+   *  
+   * @note Raspberry Pi now supports fragmentation for very long messages, send as normal. Arduino, ATTiny will handle routing of fragmented messages, but cannot receive them properly  
+   * @warning The latest updates to add fragmentation requires updating ALL devices  
+   *  
+   *  
+   * Use this constructor to create a header and then send a message  
+   *   
    * @code
    *  RF24NetworkHeader header(recipient_address,'t');
    *  network.write(header,&message,sizeof(message));
@@ -59,8 +93,9 @@ struct RF24NetworkHeader
    * @param _type The type of message which follows.  Only 0-127 are allowed for
    * user messages.
    */
-  RF24NetworkHeader(uint16_t _to, unsigned char _type = 0): to_node(_to), id(next_id++), type(_type&0x7f) {}
-
+  //RF24NetworkHeader(uint16_t _to, unsigned char _type = 0): to_node(_to), id(next_id++), type(_type&0x7f) {}
+  RF24NetworkHeader(uint16_t _to, unsigned char _type = 0): to_node(_to), id(next_id++), type(_type) {}
+  
   /**
    * Create debugging string
    *
@@ -72,6 +107,66 @@ struct RF24NetworkHeader
    */
   const char* toString(void) const;
 };
+
+
+/**
+ * Frame structure for each message
+ *
+ * The frame put over the air consists of a header and a message payload
+ */
+/** 
+@code
+ struct RF24NetworkFrame
+{
+  RF24NetworkHeader header; /**< Header which is sent with each message /
+  size_t message_size; /**< The size in bytes of the payload length /
+  uint8_t message_buffer[MAX_PAYLOAD_SIZE]; /**< Vector to put the frame payload that will be sent/received over the air /
+  uint8_t total_fragments; /**<Total number of expected fragments/
+  /**
+   * Default constructor
+   *
+   * Simply constructs a blank frame
+   * /
+  RF24NetworkFrame() {}
+
+  /**
+   * Send constructor
+   *
+   * Use this constructor to create a frame with header and payload and then send a message
+   * /
+  RF24NetworkFrame(uint16_t _to, unsigned char _type = 0, const void* _message = NULL, size_t _len = 0) :
+                  header(RF24NetworkHeader(_to,_type)), message_size(_len), total_fragments(0) {
+    if (_message && _len) {
+      memcpy(message_buffer,_message,_len);
+    }
+  }
+
+  /**
+   * Send constructor
+   *
+   * Use this constructor to create a frame with header and payload and then send a message
+   * /
+  RF24NetworkFrame(RF24NetworkHeader& _header, const void* _message = NULL, size_t _len = 0) :
+                  header(_header), message_size(_len), total_fragments(0) {
+    if (_message && _len) {
+      memcpy(message_buffer,_message,_len);
+    }
+  }
+
+  /**
+   * Create debugging string
+   *
+   * Useful for debugging.  Dumps all members into a single string, using
+   * internal static memory.  This memory will get overridden next time
+   * you call the method.
+   *
+   * @return String representation of this object
+   * /
+  const char* toString(void) const;
+
+};
+ ... @endcode
+ */
 
 /**
  * 2014 - Optimized Network Layer for RF24 Radios
@@ -143,7 +238,10 @@ public:
   /**
    * Send a message
    *
-   * @note Optimization: Extended timeouts/retries enabled. See txTimeout for more info.
+   * @note Raspberry Pi now supports fragmentation for very long messages, send as normal
+   * Arduino, ATTiny devices need to be updated if used with RPi, and will handle routing
+   * of fragmented messages, but cannot receive them properly
+   * 
    * @param[in,out] header The header (envelope) of this message.  The critical
    * thing to fill in is the @p to_node field so we know where to send the
    * message.  It is then updated with the details of the actual header sent.
@@ -276,12 +374,13 @@ public:
 	*/
 	
 	bool multicastRelay;
-   
+    
+	
    #endif
+   uint16_t addressOfPipe( uint16_t node,uint8_t pipeNo );
    
 private:
-  void open_pipes(void);
-  uint16_t find_node( uint16_t current_node, uint16_t target_node );
+
   bool write(uint16_t, uint8_t directTo);
   bool write_to_pipe( uint16_t node, uint8_t pipe, bool multicast );
   bool enqueue(void);
@@ -289,9 +388,17 @@ private:
   bool is_direct_child( uint16_t node );
   bool is_descendant( uint16_t node );
   uint16_t direct_child_route_to( uint16_t node );
-  uint8_t pipe_to_descendant( uint16_t node );
+  //uint8_t pipe_to_descendant( uint16_t node );
   void setup_address(void);
   bool _write(RF24NetworkHeader& header,const void* message, size_t len, uint16_t writeDirect);
+    
+  struct logicalToPhysicalStruct{
+	uint16_t send_node; 
+	uint8_t send_pipe;
+	bool multicast;
+  }conversion;
+  
+  bool logicalToPhysicalAddress(logicalToPhysicalStruct *conversionInfo);
   
 private:
   RF24& radio; /**< Underlying radio driver, provides link/physical layers */
@@ -307,14 +414,19 @@ private:
   uint16_t node_address; /**< Logical node address of this unit, 1 .. UINT_MAX */
   const static int frame_size = 32; /**< How large is each frame over the air */
   uint8_t frame_buffer[frame_size]; /**< Space to put the frame that will be sent/received over the air */
+  #if defined RF24TINY
+	uint8_t frame_queue[3*frame_size]; /**< Space for a small set of frames that need to be delivered to the app layer */
+  #else
   uint8_t frame_queue[5*frame_size]; /**< Space for a small set of frames that need to be delivered to the app layer */
+  #endif
   uint8_t* next_frame; /**< Pointer into the @p frame_queue where we should place the next received frame */
-  uint8_t error_frame[frame_size];
+  //uint8_t error_frame[frame_size];
+  //uint8_t tx_frame_queue[3][frame_size]; /**< Transmission queue for fast routing */
   
   uint16_t parent_node; /**< Our parent's node address */
   uint8_t parent_pipe; /**< The pipe our parent uses to listen to us */
   uint16_t node_mask; /**< The bits which contain signfificant node address information */
-  #define NETWORK_ACK 129
+  
 
 };
 
@@ -396,6 +508,11 @@ private:
  * Please see the @ref Zigbee page for a comparison against the ZigBee protocols
  *
  * @section Features Features
+ *
+ * Whats new?  
+ *  @note Fragmentation Support: (Sept 2014) - Raspberry Pi now supports fragmentation for very long messages, send as normal. Arduino, ATTiny will handle routing of fragmented messages, but cannot receive them properly  
+ *  @warning The latest updates to add fragmentation will require updating RF24Network and RF24 libraries on ALL devices 
+ *  
  *
  * The layer provides:
  * @li <b>New</b> (2014): Network ACKs: Efficient acknowledgement of network-wide transmissions, via dynamic radio acks and network protocol acks.
