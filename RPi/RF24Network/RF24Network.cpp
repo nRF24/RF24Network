@@ -294,7 +294,7 @@ void RF24Network::appendFragmentToFrame(RF24NetworkFrame frame) {
     //If so, drop the assembled frame.
     if (frame.message_size + f->message_size > MAX_PAYLOAD_SIZE) {
         frameFragmentsCache.erase( std::make_pair(frame.header.from_node,frame.header.id) );
-        IF_SERIAL_DEBUG_MINIMAL(printf("%u: FRM Payload of %l exceeds MAX_PAYLOAD_SIZE %l Bytes. Frame dropped\n",millis(),frame.message_size + f->message_size,MAX_PAYLOAD_SIZE););
+        IF_SERIAL_DEBUG_MINIMAL(printf("%u: FRM Payload of %d exceeds MAX_PAYLOAD_SIZE %d Bytes. Frame dropped\n",millis(),frame.message_size + f->message_size,MAX_PAYLOAD_SIZE););
         return;
     }
 

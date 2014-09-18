@@ -354,7 +354,7 @@ private:
   RF24& radio; /**< Underlying radio driver, provides link/physical layers */
   uint16_t node_address; /**< Logical node address of this unit, 1 .. UINT_MAX */
   uint8_t frame_size; /**< How large is each frame over the air */
-  size_t max_frame_payload_size = MAX_FRAME_SIZE-sizeof(RF24NetworkHeader);
+  const static unsigned int max_frame_payload_size = MAX_FRAME_SIZE-sizeof(RF24NetworkHeader);
   uint8_t frame_buffer[MAX_FRAME_SIZE]; /**< Space to put the frame that will be sent/received over the air */
   std::queue<RF24NetworkFrame> frame_queue;
   std::map<std::pair<uint16_t, uint16_t>, RF24NetworkFrame> frameFragmentsCache;
