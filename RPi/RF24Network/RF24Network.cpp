@@ -33,7 +33,7 @@ uint32_t nFails = 0, nOK=0;
 
 /******************************************************************/
 
-RF24Network::RF24Network( RF24& _radio ): radio(_radio), frame_size(MAX_FRAME_SIZE), lastMultiMessageID(0), noListen(1), lastWriteTime(0)
+RF24Network::RF24Network( RF24& _radio ): radio(_radio), frame_size(MAX_FRAME_SIZE)
 {}
 
 /******************************************************************/
@@ -371,7 +371,7 @@ bool RF24Network::multicast(RF24NetworkHeader& header,const void* message, size_
   header.from_node = node_address;
 
   // Build the full frame to send
-  RF24NetworkFrame frame = RF24NetworkFrame(header,message,std::min(sizeof(message),len));
+  //RF24NetworkFrame frame = RF24NetworkFrame(header,message,std::min(sizeof(message),len));
 
   IF_SERIAL_DEBUG(printf_P(PSTR("%u: NET Sending %s\n\r"),millis(),header.toString()));
   if (len) {

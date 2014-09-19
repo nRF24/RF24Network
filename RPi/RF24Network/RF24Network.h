@@ -381,7 +381,6 @@ private:
   uint8_t parent_pipe; /**< The pipe our parent uses to listen to us */
   uint16_t node_mask; /**< The bits which contain signfificant node address information */
 
-  uint16_t lastMultiMessageID; //FIXME
   bool noListen; //FIXME
   uint32_t lastWriteTime; //FIXME
 
