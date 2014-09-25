@@ -297,6 +297,9 @@ bool RF24Network::write(RF24NetworkHeader& header,const void* message, size_t le
 /******************************************************************/
 bool RF24Network::write(RF24NetworkHeader& header,const void* message, size_t len, uint16_t writeDirect){
 
+#if defined (DISABLE_FRAGMENTATION)
+	return _write(header,message,len,writeDirect);
+#else  
   bool txSuccess = true;
 
   //Check payload size
@@ -385,7 +388,7 @@ bool RF24Network::write(RF24NetworkHeader& header,const void* message, size_t le
   IF_SERIAL_DEBUG(printf("%u: NET total message fragments sent %i. txSuccess ",millis(),msgCount); printf("%s\n\r", txSuccess ? "YES" : "NO"););
   return txSuccess;
   
-//	return _write(header,message,len,writeDirect);
+#endif //Fragmentation enabled
 }
 /******************************************************************/
 
