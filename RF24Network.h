@@ -27,7 +27,11 @@
  * System types can also contain sub-types, included as information, TBD
  *
  */  
- 
+
+/* Header types range */
+#define MIN_USER_DEFINED_HEADER_TYPE 0
+#define MAX_USER_DEFINED_HEADER_TYPE 127
+
 /** System Discard Types */
 #define NETWORK_ACK_REQUEST 128
 #define NETWORK_ACK 129
@@ -49,6 +53,8 @@
 #define USER_TX_TO_LOGICAL_ADDRESS 3
 #define USER_TX_MULTICAST 4
 
+#define MAX_FRAME_SIZE 32
+#define MAX_PAYLOAD_SIZE 1500
 
 class RF24;
 
@@ -114,26 +120,26 @@ struct RF24NetworkHeader
  *
  * The frame put over the air consists of a header and a message payload
  */
-/** 
-@code
+
+
  struct RF24NetworkFrame
 {
-  RF24NetworkHeader header; /**< Header which is sent with each message /
-  size_t message_size; /**< The size in bytes of the payload length /
-  uint8_t message_buffer[MAX_PAYLOAD_SIZE]; /**< Vector to put the frame payload that will be sent/received over the air /
-  uint8_t total_fragments; /**<Total number of expected fragments/
+  RF24NetworkHeader header; /**< Header which is sent with each message */
+  size_t message_size; /**< The size in bytes of the payload length */
+  uint8_t message_buffer[MAX_PAYLOAD_SIZE]; /**< Vector to put the frame payload that will be sent/received over the air */
+  uint8_t total_fragments; /**<Total number of expected fragments */
   /**
    * Default constructor
    *
    * Simply constructs a blank frame
-   * /
+   */
   RF24NetworkFrame() {}
 
   /**
    * Send constructor
    *
    * Use this constructor to create a frame with header and payload and then send a message
-   * /
+   */
   RF24NetworkFrame(uint16_t _to, unsigned char _type = 0, const void* _message = NULL, size_t _len = 0) :
                   header(RF24NetworkHeader(_to,_type)), message_size(_len), total_fragments(0) {
     if (_message && _len) {
@@ -145,7 +151,7 @@ struct RF24NetworkHeader
    * Send constructor
    *
    * Use this constructor to create a frame with header and payload and then send a message
-   * /
+   */
   RF24NetworkFrame(RF24NetworkHeader& _header, const void* _message = NULL, size_t _len = 0) :
                   header(_header), message_size(_len), total_fragments(0) {
     if (_message && _len) {
@@ -161,12 +167,12 @@ struct RF24NetworkHeader
    * you call the method.
    *
    * @return String representation of this object
-   * /
+   */
   const char* toString(void) const;
 
 };
- ... @endcode
- */
+
+ 
 
 /**
  * 2014 - Optimized Network Layer for RF24 Radios
@@ -413,6 +419,7 @@ private:
 #endif
   uint16_t node_address; /**< Logical node address of this unit, 1 .. UINT_MAX */
   const static int frame_size = 32; /**< How large is each frame over the air */
+  const static unsigned int max_frame_payload_size = MAX_FRAME_SIZE-sizeof(RF24NetworkHeader);
   uint8_t frame_buffer[frame_size]; /**< Space to put the frame that will be sent/received over the air */
   #if defined RF24TINY
 	uint8_t frame_queue[3*frame_size]; /**< Space for a small set of frames that need to be delivered to the app layer */

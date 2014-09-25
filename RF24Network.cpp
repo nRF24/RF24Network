@@ -292,11 +292,100 @@ bool RF24Network::multicast(RF24NetworkHeader& header,const void* message, size_
 
 /******************************************************************/
 bool RF24Network::write(RF24NetworkHeader& header,const void* message, size_t len){
-	return _write(header,message,len,070);
+	return write(header,message,len,070);
 }
 /******************************************************************/
 bool RF24Network::write(RF24NetworkHeader& header,const void* message, size_t len, uint16_t writeDirect){
-	return _write(header,message,len,writeDirect);
+
+  bool txSuccess = true;
+
+  //Check payload size
+  if (len > MAX_PAYLOAD_SIZE) {
+    IF_SERIAL_DEBUG(printf("%u: NET write message failed. Given 'len' is bigger than the MAX Payload size %i\n\r",millis(),MAX_PAYLOAD_SIZE););
+    return false;
+  }
+	
+  //If the message payload is too big, whe cannot generate enough fragments
+  //and enumerate them
+  if (len > 255*max_frame_payload_size) {
+    txSuccess = false;
+    return txSuccess;
+  }
+
+  //Normal Write (Un-Fragmented)
+  if (len <= max_frame_payload_size) {
+    txSuccess = _write(header,message,len,writeDirect);
+    //radio.startListening();
+    return txSuccess;
+  }  
+  
+  //Divide the message payload into chuncks of max_frame_payload_size
+  uint8_t fragment_id = 1 + ((len - 1) / max_frame_payload_size);  //the number of fragments to send = ceil(len/max_frame_payload_size)
+  uint8_t msgCount = 0;
+
+  IF_SERIAL_DEBUG_FRAGMENTATION(printf("%u: FRG Total message fragments %i\n\r",millis(),fragment_id););
+  
+  while (fragment_id > 0) {
+
+    //Copy and fill out the header
+    RF24NetworkHeader fragmentHeader = header;
+    fragmentHeader.reserved = fragment_id;
+
+    if (fragment_id == 1) {
+      fragmentHeader.type = NETWORK_LAST_FRAGMENT;  //Set the last fragment flag to indicate the last fragment
+      fragmentHeader.reserved = header.type; //Workaroung/Hack: to transmit the user application defined header.type, save this variable in the header.fragment_id.
+    } else {
+      if (msgCount == 0) {
+        fragmentHeader.type = NETWORK_FIRST_FRAGMENT;
+      }else{
+        fragmentHeader.type = NETWORK_MORE_FRAGMENTS; //Set the more fragments flag to indicate a fragmented frame
+      }
+    }
+
+    size_t offset = msgCount*max_frame_payload_size;
+    size_t fragmentLen = min(len-offset,max_frame_payload_size);
+
+    IF_SERIAL_DEBUG_FRAGMENTATION(printf("%u: FRG try to transmit fragmented payload of size %i Bytes with fragmentID '%i'\n\r",millis(),fragmentLen,fragment_id););
+
+    //Try to send the payload chunk with the copied header
+    bool ok = _write(fragmentHeader,message+offset,fragmentLen,writeDirect);
+
+	if(!ok){ 	delay(100); ok = _write(fragmentHeader,message+offset,fragmentLen,writeDirect);
+		if(!ok){ delay(150); ok = _write(fragmentHeader,message+offset,fragmentLen,writeDirect);
+		}		
+	}
+    //if (!noListen) {      
+      delayMicroseconds(50);
+    //}
+
+    if (!ok) {
+        IF_SERIAL_DEBUG_FRAGMENTATION(printf("%u: FRG message transmission with fragmentID '%i' failed. Abort.\n\r",millis(),fragment_id););
+        txSuccess = false;
+        break;
+    }
+
+    //Message was successful sent
+    IF_SERIAL_DEBUG_FRAGMENTATION(printf("%u: FRG message transmission with fragmentID '%i' sucessfull.\n\r",millis(),fragment_id););
+
+    //Check and modify counters
+    fragment_id--;
+    msgCount++;
+  }
+
+  //noListen = 0;
+
+  // Now, continue listening
+  //radio.startListening();
+
+  int frag_delay = uint8_t(len/48);
+  delay( min(frag_delay,20));
+
+  //Return true if all the chunks where sent successfully
+  //else return false
+  IF_SERIAL_DEBUG(printf("%u: NET total message fragments sent %i. txSuccess ",millis(),msgCount); printf("%s\n\r", txSuccess ? "YES" : "NO"););
+  return txSuccess;
+  
+//	return _write(header,message,len,writeDirect);
 }
 /******************************************************************/
 
@@ -380,7 +469,7 @@ bool RF24Network::write(uint16_t to_node, uint8_t directTo)  // Direct To: 0 = F
 			
 			dynLen=0;
 			#if defined (SERIAL_DEBUG_ROUTING)
-				printf_P(PSTR("%lu MAC: Route OK to 0%o ACK sent to 0%o\n"),millis(),conversion.send_node,fromAddress);
+				printf_P(PSTR("%lu MAC: Route OK to 0%o ACK sent to 0%o\n"),millis(),to_node,header.to_node);
 			#endif
 	}
 	
