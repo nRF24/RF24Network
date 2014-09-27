@@ -22,9 +22,12 @@
 
 //#define DUAL_HEAD_RADIO
 //#define ENABLE_SLEEP_MODE
-//#define RF24NetworkMulticast
+#define RF24NetworkMulticast
+#define DISABLE_FRAGMENTATION // Saves a bit of space by disabling fragmentation
+
 //#define SERIAL_DEBUG
 //#define SERIAL_DEBUG_ROUTING
+//#define SERIAL_DEBUG_FRAGMENTATION
 /*************************************/
  
 
@@ -63,6 +66,12 @@
 	#if defined(__AVR_ATtiny84__) || defined(__AVR_ATtiny85__)
 	#define printf_P(...)
     #endif
+  #endif
+  
+  #if defined (SERIAL_DEBUG_FRAGMENTATION)
+    #define IF_SERIAL_DEBUG_FRAGMENTATION(x) ({x;})
+  #else
+    #define IF_SERIAL_DEBUG_FRAGMENTATION(x)
   #endif
 
 // Avoid spurious warnings
