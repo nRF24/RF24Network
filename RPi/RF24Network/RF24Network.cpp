@@ -89,13 +89,11 @@ void RF24Network::failures(uint32_t *_fails, uint32_t *_ok) {
 uint8_t RF24Network::update(void) {
   // if there is data ready
   uint8_t returnVal = 0;
+  uint8_t pipe_num;
 
-#if defined (SERIAL_DEBUG)
   while ( radio.isValid() && radio.available(&pipe_num) )
-#else
-  while ( radio.isValid() && radio.available() )
-#endif
   {
+
     // Fetch the payload, and get the size
     size_t len = radio.getDynamicPayloadSize();
     if (len == 0) {
@@ -186,7 +184,6 @@ uint8_t RF24Network::update(void) {
 					//printf("send poll\n");
 					continue;
 				}
-				
             lastMultiMessageID = header.id;
             enqueue(frame);
           } else {
@@ -398,23 +395,22 @@ size_t RF24Network::read(RF24NetworkHeader& header,void* message, size_t maxlen)
 
 bool RF24Network::multicast(RF24NetworkHeader& header,const void* message, size_t len, uint8_t level) {
 
-  // Fill out the header
   header.to_node = 0100;
   header.from_node = node_address;
 
   // Build the full frame to send
-  //RF24NetworkFrame frame = RF24NetworkFrame(header,message,std::min(sizeof(message),len));
+  memcpy(frame_buffer,&header,sizeof(RF24NetworkHeader));
+  if (len)
+    memcpy(frame_buffer + sizeof(RF24NetworkHeader),message,std::min(frame_size-sizeof(RF24NetworkHeader),len));
 
-  IF_SERIAL_DEBUG(printf_P(PSTR("%u: NET Sending %s\n\r"),millis(),header.toString()));
-  if (len) {
-    IF_SERIAL_DEBUG(const uint16_t* i = reinterpret_cast<const uint16_t*>(message);printf_P(PSTR("%u: NET message %04x\n\r"),millis(),*i));
-  }
-
-  uint16_t levelAddr = 1;
-  levelAddr = levelAddr << ((level-1) * 3);
-
-  return write(levelAddr,4);
-
+  IF_SERIAL_DEBUG(printf("%u: NET Sending %s\n\r",millis(),header.toString()););
+  if (len)
+  {
+    IF_SERIAL_DEBUG(const uint16_t* i = reinterpret_cast<const uint16_t*>(message);printf("%u: NET message %04x\n\r",millis(),*i););
+  }  
+    
+	return write(levelToAddress(level),USER_TX_MULTICAST);
+	
 }
 #endif  //RF24NetworkMulticast
 
@@ -613,7 +609,7 @@ bool RF24Network::write(uint16_t to_node, uint8_t directTo) {
   ok=write_to_pipe(conversion.send_node, conversion.send_pipe, conversion.multicast);
 
   #if defined (SERIAL_DEBUG_ROUTING) || defined(SERIAL_DEBUG)
-    if (!ok) { printf_P(PSTR("%u: MAC Send fail to 0%o via 0%o on pipe %x\n\r"),millis(),millis(),to_node,conversion.send_node,conversion.send_pipe); }    }
+    if (!ok) { printf("%u: MAC Send fail to 0%o via 0%o on pipe %x\n\r",millis(),to_node,conversion.send_node,conversion.send_pipe); } 
   #endif
 
 
@@ -882,9 +878,13 @@ bool is_valid_address( uint16_t node ) {
   }
 
   uint16_t levelToAddress(uint8_t level) {
-    uint16_t levelAddr = 1;
-    levelAddr = levelAddr << ((level-1) * 3);
-    return levelAddr;
+	uint16_t levelAddr = 1;
+	if(level){
+		levelAddr = levelAddr << ((level-1) * 3);
+	}else{
+		return 0;		
+	}
+	return levelAddr;
   }
 #endif
 
