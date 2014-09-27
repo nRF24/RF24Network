@@ -51,6 +51,7 @@
 /* System Discard Types */
 #define NETWORK_ACK_REQUEST 128
 #define NETWORK_ACK 129
+#define NETWORK_POLL 130
 
 /*System-Sub Types (0-255)*/
 #define NETWORK_REQ_STREAM 11;
@@ -376,12 +377,10 @@ private:
   std::queue<RF24NetworkFrame> frame_queue;
   std::map<std::pair<uint16_t, uint16_t>, RF24NetworkFrame> frameFragmentsCache;
 
-
   uint16_t parent_node; /**< Our parent's node address */
   uint8_t parent_pipe; /**< The pipe our parent uses to listen to us */
   uint16_t node_mask; /**< The bits which contain signfificant node address information */
 
-  uint16_t lastMultiMessageID; //FIXME
   bool noListen; //FIXME
   uint32_t lastWriteTime; //FIXME
 
