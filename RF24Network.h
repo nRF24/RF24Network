@@ -37,6 +37,7 @@
 #define NETWORK_ACK 129
 		/**System-Sub Types (0-255)*/
 		#define NETWORK_REQ_STREAM 11;
+#define NETWORK_POLL 130
 
 /** System retained types */
 #define NETWORK_FIRST_FRAGMENT 148
@@ -406,15 +407,12 @@ private:
   
   bool logicalToPhysicalAddress(logicalToPhysicalStruct *conversionInfo);
   
-private:
   RF24& radio; /**< Underlying radio driver, provides link/physical layers */
-
 #if defined (DUAL_HEAD_RADIO)
   RF24& radio1;
 #endif
 #if defined (RF24NetworkMulticast)
   uint16_t lastMultiMessageID;
-  
   uint8_t multicast_level;  
 #endif
   uint16_t node_address; /**< Logical node address of this unit, 1 .. UINT_MAX */
@@ -427,8 +425,6 @@ private:
   uint8_t frame_queue[5*frame_size]; /**< Space for a small set of frames that need to be delivered to the app layer */
   #endif
   uint8_t* next_frame; /**< Pointer into the @p frame_queue where we should place the next received frame */
-  //uint8_t error_frame[frame_size];
-  //uint8_t tx_frame_queue[3][frame_size]; /**< Transmission queue for fast routing */
   
   uint16_t parent_node; /**< Our parent's node address */
   uint8_t parent_pipe; /**< The pipe our parent uses to listen to us */

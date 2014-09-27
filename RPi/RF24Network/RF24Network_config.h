@@ -13,7 +13,7 @@
 
 /********** USER CONFIG **************/
 
-//#define RF24NetworkMulticast      //Use multicast capabilities
+#define RF24NetworkMulticast      //Use multicast capabilities
 //#define SERIAL_DEBUG              //Set for full debug
 #define SERIAL_DEBUG_MINIMAL        //Enable minimal debugging
 //#define SERIAL_DEBUG_ROUTING

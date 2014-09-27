@@ -22,8 +22,13 @@
 
 //#define DUAL_HEAD_RADIO
 //#define ENABLE_SLEEP_MODE
+<<<<<<< HEAD
 //#define RF24NetworkMulticast
 //#define DISABLE_FRAGMENTATION // Saves a bit of space by disabling fragmentation
+=======
+#define RF24NetworkMulticast
+#define DISABLE_FRAGMENTATION // Saves a bit of space by disabling fragmentation
+>>>>>>> origin/TMRh20
 
 //#define SERIAL_DEBUG
 //#define SERIAL_DEBUG_ROUTING

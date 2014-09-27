@@ -48,7 +48,8 @@ void RF24Network::begin(uint8_t _channel, uint16_t _node_address )
   if ( ! radio.isValid() ){
     return;
   }
-
+  
+  radio.stopListening();
   // Set up the radio the way we want it to look
   radio.setChannel(_channel);
   //radio.setDataRate(RF24_1MBPS);
@@ -110,7 +111,7 @@ uint8_t RF24Network::update(void)
       radio.read( frame_buffer, sizeof(frame_buffer) );
 
       // Read the beginning of the frame as the header
-      const RF24NetworkHeader& header = * reinterpret_cast<RF24NetworkHeader*>(frame_buffer);
+      RF24NetworkHeader& header = * reinterpret_cast<RF24NetworkHeader*>(frame_buffer);
 
       IF_SERIAL_DEBUG(printf_P(PSTR("%lu: MAC Received on %u %s\n\r"),millis(),pipe_num,header.toString()));
       IF_SERIAL_DEBUG(const uint16_t* i = reinterpret_cast<const uint16_t*>(frame_buffer + sizeof(RF24NetworkHeader));printf_P(PSTR("%lu: NET message %04x\n\r"),millis(),*i));
@@ -130,7 +131,27 @@ uint8_t RF24Network::update(void)
 				returnVal = NETWORK_ACK;				
 				continue;
 			}								     // Add it to the buffer of frames for us
-		    
+		    	if(header.type == NETWORK_ADDR_RESPONSE ){	
+				    uint16_t requester = frame_buffer[8];// | frame_buffer[9] << 8;
+					requester |= frame_buffer[9] << 8;
+					
+					if(requester != node_address){
+						header.to_node = requester;
+						//header.from_node = node_address;
+						write(header.to_node,USER_TX_TO_PHYSICAL_ADDRESS);
+						//write(header.to_node,USER_TX_TO_PHYSICAL_ADDRESS);
+						//printf("fwd addr resp to 0%o , this node: 0%o\n", requester,node_address);
+						continue;
+					}
+				}
+				if(header.type == NETWORK_REQ_ADDRESS && node_address){
+					//RF24NetworkHeader reqHeader = header;
+					header.from_node = node_address;
+					header.to_node = 0;
+					write(header.to_node,TX_NORMAL);
+					//printf("fwd addr req\n");
+					continue;
+				}
 			enqueue();
 
 	  
@@ -146,6 +167,17 @@ uint8_t RF24Network::update(void)
 						#endif
 						write(levelToAddress(multicast_level)<<3,4);
 					}
+
+				if(header.type == NETWORK_POLL ){
+					header.to_node = header.from_node;
+					header.from_node = node_address;
+					delay(2);
+					write(header.to_node,USER_TX_TO_PHYSICAL_ADDRESS);
+					//write(header.to_node,USER_TX_TO_PHYSICAL_ADDRESS);
+					//Serial.println("send poll");
+					continue;
+				}
+				
 				enqueue();				
 				lastMultiMessageID = header.id;
 				}
