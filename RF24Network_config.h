@@ -7,8 +7,8 @@
  version 2 as published by the Free Software Foundation.
  */
 
-#ifndef __RF24_CONFIG_H__
-#define __RF24_CONFIG_H__
+#ifndef __RF24NETWORK_CONFIG_H__
+#define __RF24NETWORK_CONFIG_H__
 
 #if ARDUINO < 100
 #include <WProgram.h>
@@ -30,6 +30,10 @@
 //#define SERIAL_DEBUG_FRAGMENTATION
 /*************************************/
  
+#endif
+
+#ifndef __RF24_CONFIG_H__
+#define __RF24_CONFIG_H__
 
   // Define _BV for non-Arduino platforms and for Arduino DUE
 #if defined (ARDUINO) && !defined (__arm__)
