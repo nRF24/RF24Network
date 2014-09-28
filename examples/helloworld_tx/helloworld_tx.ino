@@ -19,7 +19,7 @@
 #include <RF24.h>
 #include <SPI.h>
 
-RF24 radio(9,10);                    // nRF24L01(+) radio attached using Getting Started board 
+RF24 radio(7,8);                    // nRF24L01(+) radio attached using Getting Started board 
 
 RF24Network network(radio);          // Network uses that radio
 
