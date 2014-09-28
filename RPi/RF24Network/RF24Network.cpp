@@ -51,8 +51,8 @@ void RF24Network::begin(uint8_t _channel, uint16_t _node_address ) {
   radio.stopListening();
   // Set up the radio the way we want it to look
   radio.setChannel(_channel);
-  radio.setDataRate(RF24_1MBPS);
-  radio.setCRCLength(RF24_CRC_16);
+  //radio.setDataRate(RF24_1MBPS);
+  //radio.setCRCLength(RF24_CRC_16);
   radio.enableDynamicAck();
   radio.enableDynamicPayloads();
 
@@ -76,6 +76,7 @@ void RF24Network::begin(uint8_t _channel, uint16_t _node_address ) {
     count++;
   }
   multicast_level = count;
+ 
 #endif
   radio.startListening();
 }
@@ -158,7 +159,16 @@ uint8_t RF24Network::update(void) {
 					//printf("fwd addr req\n");
 					continue;
 				}
-
+			// This ensures that all address requests are only placed at the front of the queue	
+		    if( header.type == NETWORK_REQ_ADDRESS ){
+			    if(available()){ 
+					printf("Dropped address request\n");
+					return returnVal;
+				}else{
+					enqueue(frame);
+					return returnVal;
+				}				
+			}
       enqueue(frame);
 
       if (radio.rxFifoFull()) {
@@ -179,7 +189,7 @@ uint8_t RF24Network::update(void) {
 					header.to_node = header.from_node;
 					header.from_node = node_address;
 					memcpy(frame_buffer,&header,sizeof(RF24NetworkHeader));
-					delay(2);
+					delay(5);
 					write(header.to_node,USER_TX_TO_PHYSICAL_ADDRESS);
 					//printf("send poll\n");
 					continue;
@@ -220,11 +230,11 @@ bool RF24Network::enqueue(RF24NetworkFrame frame) {
     return true;
   }
 
-  if ((frame.header.fragment_id > 1 && (frame.header.type == NETWORK_MORE_FRAGMENTS || frame.header.type== NETWORK_FIRST_FRAGMENT)) ) {
+  if ((frame.header.reserved > 1 && (frame.header.type == NETWORK_MORE_FRAGMENTS || frame.header.type== NETWORK_FIRST_FRAGMENT)) ) {
     //The received frame contains the a fragmented payload
 
     //Set the more fragments flag to indicate a fragmented frame
-    IF_SERIAL_DEBUG_FRAGMENTATION(printf("%u: FRG fragmented payload of size %i Bytes with fragmentID '%i' received.\n\r",millis(),frame.message_size,frame.header.fragment_id););
+    IF_SERIAL_DEBUG_FRAGMENTATION(printf("%u: FRG fragmented payload of size %i Bytes with fragmentID '%i' received.\n\r",millis(),frame.message_size,frame.header.reserved););
 
     //Append payload
     appendFragmentToFrame(frame);
@@ -232,9 +242,9 @@ bool RF24Network::enqueue(RF24NetworkFrame frame) {
 
   } else if ( frame.header.type == NETWORK_LAST_FRAGMENT) {
     //The last fragment flag indicates that we received the last fragment
-    //Workaround/Hack: In this case the header.fragment_id does not count the number of fragments but is a copy of the type flags specified by the user application.
+    //Workaround/Hack: In this case the header.reserved does not count the number of fragments but is a copy of the type flags specified by the user application.
 
-    IF_SERIAL_DEBUG_FRAGMENTATION(printf("%u: FRG Last fragment with size %i Bytes and fragmentID '%i' received.\n\r",millis(),frame.message_size,frame.header.fragment_id););
+    IF_SERIAL_DEBUG_FRAGMENTATION(printf("%u: FRG Last fragment with size %i Bytes and fragmentID '%i' received.\n\r",millis(),frame.message_size,frame.header.reserved););
     //Append payload
     appendFragmentToFrame(frame);
 
@@ -242,7 +252,7 @@ bool RF24Network::enqueue(RF24NetworkFrame frame) {
 
     //Push the assembled frame in the frame_queue and remove it from cache
     // If total_fragments == 0, we are finished
-    if ( frame.header.to_node == node_address || (!frame.header.fragment_id && frameFragmentsCache.count(std::make_pair(frame.header.from_node,frame.header.id)) ) ) {
+    if ( frame.header.to_node == node_address || (!frame.header.reserved && frameFragmentsCache.count(std::make_pair(frame.header.from_node,frame.header.id)) ) ) {
       frame_queue.push( frameFragmentsCache[ std::make_pair(frame.header.from_node,frame.header.id) ] );
     } else {
       IF_SERIAL_DEBUG_MINIMAL( printf("%u: NET Dropped frame missing %d fragments\n",millis(),frame.total_fragments ););
@@ -262,7 +272,7 @@ bool RF24Network::enqueue(RF24NetworkFrame frame) {
 
   }/* else {
     //Undefined/Unknown header.type received. Drop frame!
-    IF_SERIAL_DEBUG_MINIMAL( printf("%u: FRG Received unknown or system header type %d with fragment id %d\n",millis(),frame.header.type, frame.header.fragment_id); );
+    IF_SERIAL_DEBUG_MINIMAL( printf("%u: FRG Received unknown or system header type %d with fragment id %d\n",millis(),frame.header.type, frame.header.reserved); );
     //The frame is not explicitly dropped, but the given object is ignored.
     //FIXME: does this causes problems with memory management?
   }*/
@@ -287,7 +297,7 @@ void RF24Network::appendFragmentToFrame(RF24NetworkFrame frame) {
 
     if (frame.header.type == NETWORK_FIRST_FRAGMENT || ( frame.header.type != NETWORK_MORE_FRAGMENTS && frame.header.type != NETWORK_LAST_FRAGMENT)) {
       // Decrement the stored total_fragments counter
-      frame.header.fragment_id = frame.header.fragment_id-1;
+      frame.header.reserved = frame.header.reserved-1;
       // Cache the fragment
       frameFragmentsCache[ std::make_pair(frame.header.from_node,frame.header.id) ] = frame;
     } else {
@@ -301,19 +311,19 @@ void RF24Network::appendFragmentToFrame(RF24NetworkFrame frame) {
     RF24NetworkFrame *f = &(frameFragmentsCache[ std::make_pair(frame.header.from_node,frame.header.id) ]);
 
     if (frame.header.type == NETWORK_LAST_FRAGMENT) {
-      //Workaround/Hack: The user application specified header.type is sent with the last fragment in the fragment_id field
-      frame.header.type = frame.header.fragment_id;
-      frame.header.fragment_id = 1;
+      //Workaround/Hack: The user application specified header.type is sent with the last fragment in the reserved field
+      frame.header.type = frame.header.reserved;
+      frame.header.reserved = 1;
     }
 
     //Error checking for missed fragments and payload size
-    if (frame.header.fragment_id != f->header.fragment_id) {
-        if (frame.header.fragment_id > f->header.fragment_id) {
-            IF_SERIAL_DEBUG_MINIMAL(printf("%u: FRG Duplicate or out of sequence frame %d, expected %d. Cleared.\n",millis(),frame.header.fragment_id,f->header.fragment_id););
+    if (frame.header.reserved != f->header.reserved) {
+        if (frame.header.reserved > f->header.reserved) {
+            IF_SERIAL_DEBUG_MINIMAL(printf("%u: FRG Duplicate or out of sequence frame %d, expected %d. Cleared.\n",millis(),frame.header.reserved,f->header.reserved););
             //frameFragmentsCache.erase( std::make_pair(frame.header.from_node,frame.header.id) );
         } else {
             frameFragmentsCache.erase( std::make_pair(frame.header.from_node,frame.header.id) );
-            IF_SERIAL_DEBUG_MINIMAL(printf("%u: FRG Out of sequence frame %d, expected %d. Cleared.\n",millis(),frame.header.fragment_id,f->header.fragment_id););
+            IF_SERIAL_DEBUG_MINIMAL(printf("%u: FRG Out of sequence frame %d, expected %d. Cleared.\n",millis(),frame.header.reserved,f->header.reserved););
         }
         return;
     }
@@ -330,7 +340,7 @@ void RF24Network::appendFragmentToFrame(RF24NetworkFrame frame) {
     memcpy(f->message_buffer+f->message_size, frame.message_buffer, frame.message_size);
     f->message_size += frame.message_size;  //Increment message size
     f->header = frame.header; //Update header
-    f->header.fragment_id--;  //Update Total fragments
+    f->header.reserved--;  //Update Total fragments
 
   }
 }
@@ -476,11 +486,11 @@ bool RF24Network::write(RF24NetworkHeader& header,const void* message, size_t le
 
     //Copy and fill out the header
     RF24NetworkHeader fragmentHeader = header;
-    fragmentHeader.fragment_id = fragment_id;
+    fragmentHeader.reserved = fragment_id;
 
     if (fragment_id == 1) {
       fragmentHeader.type = NETWORK_LAST_FRAGMENT;  //Set the last fragment flag to indicate the last fragment
-      fragmentHeader.fragment_id = header.type; //Workaroung/Hack: to transmit the user application defined header.type, save this variable in the header.fragment_id.
+      fragmentHeader.reserved = header.type; //Workaroung/Hack: to transmit the user application defined header.type, save this variable in the header.reserved.
     } else {
       if (msgCount == 0) {
         fragmentHeader.type = NETWORK_FIRST_FRAGMENT;
@@ -844,7 +854,7 @@ uint8_t RF24Network::pipe_to_descendant( uint16_t node ) {
 */
 /******************************************************************/
 
-bool is_valid_address( uint16_t node ) {
+bool RF24Network::is_valid_address( uint16_t node ){
   bool result = true;
 
   while(node) {

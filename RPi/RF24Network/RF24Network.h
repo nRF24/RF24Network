@@ -84,7 +84,7 @@ struct RF24NetworkHeader {
   uint16_t to_node; /**< Logical address where the message is going */
   uint16_t id; /**< Sequential message ID, incremented every message */
   unsigned char type; /**< Type of the packet.  0-127 are user-defined types, 128-255 are reserved for system */
-  unsigned char fragment_id; /**< Used to count the number of fragments of the payload. Zero (0) means no more fragments left. */
+  unsigned char reserved; /**< Used to count the number of fragments of the payload. Zero (0) means no more fragments left. */
   static uint16_t next_id; /**< The message ID of the next message to be sent */
 
   /**
@@ -296,7 +296,9 @@ public:
    *  Methods you can use to drive the network in more advanced ways
    */
   /**@{*/
-#if defined RF24NetworkMulticast
+  
+
+#if defined (RF24NetworkMulticast)
    /**
    * Send a multicast message to multiple nodes at once
    * Allows messages to be rapidly broadcast through the network
@@ -337,8 +339,10 @@ public:
    */
 
   bool multicastRelay;
-
+  
 #endif
+
+bool is_valid_address( uint16_t node );
 uint16_t addressOfPipe( uint16_t node,uint8_t pipeNo );
 
 protected:

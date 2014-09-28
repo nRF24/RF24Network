@@ -7,8 +7,8 @@
  version 2 as published by the Free Software Foundation.
  */
 
-#ifndef __RF24_CONFIG_H__
-#define __RF24_CONFIG_H__
+#ifndef __RF24NETWORK_CONFIG_H__
+#define __RF24NETWORK_CONFIG_H__
 
 
 /********** USER CONFIG **************/
@@ -21,6 +21,10 @@
 
 /*************************************/
 
+#endif
+
+#ifndef __RF24_CONFIG_H__
+#define __RF24_CONFIG_H__
 // Stuff that is normally provided by Arduino
 #ifndef ARDUINO
   #include <stdint.h>

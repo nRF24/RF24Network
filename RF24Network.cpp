@@ -80,12 +80,12 @@ void RF24Network::begin(uint8_t _channel, uint16_t _node_address )
     radio.openReadingPipe(i,pipe_address(_node_address,i));	
   }
   #if defined (RF24NetworkMulticast)
-    uint8_t count = 0;
-	while(_node_address){
-		_node_address/=8;
-		count++;
-	}
-	multicast_level = count;	
+  uint8_t count = 0; 
+  while(_node_address) {
+    _node_address/=8;
+    count++;
+  }
+  multicast_level = count;
   #endif
   radio.startListening();
 
@@ -140,7 +140,7 @@ uint8_t RF24Network::update(void)
 						//header.from_node = node_address;
 						write(header.to_node,USER_TX_TO_PHYSICAL_ADDRESS);
 						//write(header.to_node,USER_TX_TO_PHYSICAL_ADDRESS);
-						//printf("fwd addr resp to 0%o , this node: 0%o\n", requester,node_address);
+						//printf("fwd addr resp to 0%o , this node: 0%o \n", requester,node_address);
 						continue;
 					}
 				}
@@ -152,9 +152,20 @@ uint8_t RF24Network::update(void)
 					//printf("fwd addr req\n");
 					continue;
 				}
-			enqueue();
-
-	  
+				
+			// This ensures that all address requests are only placed at the front of the queue	
+		    if( header.type == NETWORK_REQ_ADDRESS ){
+			    
+				if(available()){ 
+					//printf("Dropped address request\n");
+					return returnVal;
+				}else{
+					enqueue();
+					return returnVal;
+				}				
+			}
+			enqueue();		
+			
 	  }else{	  
 	  dynLen = radio.getDynamicPayloadSize();
 	  if(!dynLen){continue;}
@@ -171,7 +182,8 @@ uint8_t RF24Network::update(void)
 				if(header.type == NETWORK_POLL ){
 					header.to_node = header.from_node;
 					header.from_node = node_address;
-					delay(2);
+					
+					delay(node_address%5);
 					write(header.to_node,USER_TX_TO_PHYSICAL_ADDRESS);
 					//write(header.to_node,USER_TX_TO_PHYSICAL_ADDRESS);
 					//Serial.println("send poll");
@@ -745,7 +757,7 @@ uint8_t RF24Network::pipe_to_descendant( uint16_t node )
 
 /******************************************************************/
 
-bool is_valid_address( uint16_t node )
+bool RF24Network::is_valid_address( uint16_t node )
 {
   bool result = true;
 

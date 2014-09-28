@@ -385,7 +385,7 @@ public:
 	
    #endif
    uint16_t addressOfPipe( uint16_t node,uint8_t pipeNo );
-   
+   bool is_valid_address( uint16_t node );
 private:
 
   bool write(uint16_t, uint8_t directTo);
@@ -394,6 +394,7 @@ private:
 
   bool is_direct_child( uint16_t node );
   bool is_descendant( uint16_t node );
+  
   uint16_t direct_child_route_to( uint16_t node );
   //uint8_t pipe_to_descendant( uint16_t node );
   void setup_address(void);
