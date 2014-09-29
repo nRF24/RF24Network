@@ -36,7 +36,7 @@
 #define NETWORK_ACK_REQUEST 128
 #define NETWORK_ACK 129
 		/**System-Sub Types (0-255)*/
-		#define NETWORK_REQ_STREAM 11;
+		//#define NETWORK_REQ_STREAM 11;
 #define NETWORK_POLL 130
 
 /** System retained types */
@@ -54,8 +54,11 @@
 #define USER_TX_TO_LOGICAL_ADDRESS 3
 #define USER_TX_MULTICAST 4
 
+/** System defines */
 #define MAX_FRAME_SIZE 32
 #define MAX_PAYLOAD_SIZE 1500
+
+
 
 class RF24;
 
