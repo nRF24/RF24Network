@@ -32,26 +32,27 @@
 #define MIN_USER_DEFINED_HEADER_TYPE 0
 #define MAX_USER_DEFINED_HEADER_TYPE 127
 
-/** System Discard Types */
+
 #define NETWORK_ACK_REQUEST 128
 #define NETWORK_ACK 129
+#define NETWORK_REQ_ADDRESS 151
+#define NETWORK_ADDR_RESPONSE 152
+
 		/**System-Sub Types (0-255)*/
 		//#define NETWORK_REQ_STREAM 11;
 #define NETWORK_POLL 130
 
-/** System retained types */
 #define NETWORK_FIRST_FRAGMENT 148
 #define NETWORK_MORE_FRAGMENTS 149
 #define NETWORK_LAST_FRAGMENT 150
-/* System retained - response messages */
-#define NETWORK_REQ_ADDRESS 151
-#define NETWORK_ADDR_RESPONSE 152
+
+
 
 /** Defines for handling written payloads */
 #define TX_NORMAL 0
 #define TX_ROUTED 1
-#define USER_TX_TO_PHYSICAL_ADDRESS 2
-#define USER_TX_TO_LOGICAL_ADDRESS 3
+#define USER_TX_TO_PHYSICAL_ADDRESS 2  //no network ACK
+#define USER_TX_TO_LOGICAL_ADDRESS 3   // network ACK
 #define USER_TX_MULTICAST 4
 
 /** System defines */
@@ -407,7 +408,7 @@ private:
 	uint16_t send_node; 
 	uint8_t send_pipe;
 	bool multicast;
-  }conversion;
+  };
   
   bool logicalToPhysicalAddress(logicalToPhysicalStruct *conversionInfo);
   

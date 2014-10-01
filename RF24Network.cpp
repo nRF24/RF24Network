@@ -470,7 +470,6 @@ bool RF24Network::_write(RF24NetworkHeader& header,const void* message, size_t l
 bool RF24Network::write(uint16_t to_node, uint8_t directTo)  // Direct To: 0 = First Payload, standard routing, 1=routed payload, 2=directRoute to host, 3=directRoute to Route
 {
   bool ok = false;
-  bool multicast = 0; // Radio ACK requested = 0
   //const uint16_t fromAddress = frame_buffer[0] | (frame_buffer[1] << 8);
   
   // Throw it away if it's not a valid address
@@ -478,9 +477,7 @@ bool RF24Network::write(uint16_t to_node, uint8_t directTo)  // Direct To: 0 = F
     return false;  
   
   //Load info into our conversion structure, and get the converted address info
-  conversion.send_node = to_node;
-  conversion.send_pipe = directTo;
-  conversion.multicast = multicast;
+  logicalToPhysicalStruct conversion = { to_node,directTo,0};
   logicalToPhysicalAddress(&conversion);
 
   IF_SERIAL_DEBUG(printf_P(PSTR("%lu: MAC Sending to 0%o via 0%o on pipe %x\n\r"),millis(),to_node,conversion.send_node,conversion.send_pipe));
@@ -491,7 +488,7 @@ bool RF24Network::write(uint16_t to_node, uint8_t directTo)  // Direct To: 0 = F
   
   if(!ok){	IF_SERIAL_DEBUG_ROUTING( printf_P(PSTR("%lu: MAC Send fail to 0%o via 0%o on pipe %x\n\r"),millis(),to_node,conversion.send_node,conversion.send_pipe);); }
  
-	if( directTo == TX_ROUTED && ok && conversion.send_node == to_node && frame_buffer[6] != NETWORK_ACK ){			
+	if( directTo == TX_ROUTED && ok && conversion.send_node == to_node && frame_buffer[6] != NETWORK_ACK && frame_buffer[6] != NETWORK_REQ_ADDRESS && frame_buffer[6] != NETWORK_ADDR_RESPONSE){			
 			
 			RF24NetworkHeader& header = * reinterpret_cast<RF24NetworkHeader*>(frame_buffer);
 			header.type = NETWORK_ACK;				    // Set the payload type to NETWORK_ACK			
@@ -499,12 +496,13 @@ bool RF24Network::write(uint16_t to_node, uint8_t directTo)  // Direct To: 0 = F
 			
 			dynLen=8;		
 
-			conversion.send_node=header.from_node;
-			conversion.send_pipe = TX_ROUTED;			
+			//conversion.send_node=header.from_node;
+			//conversion.send_pipe = TX_ROUTED;
+			conversion = { header.from_node,TX_ROUTED,0};
 			logicalToPhysicalAddress(&conversion);
 			
 			//Write the data using the resulting physical address
-			write_to_pipe(conversion.send_node, conversion.send_pipe, multicast);
+			write_to_pipe(conversion.send_node, conversion.send_pipe, conversion.multicast);
 			
 			dynLen=0;
 			IF_SERIAL_DEBUG_ROUTING( printf_P(PSTR("%lu MAC: Route OK to 0%o ACK sent to 0%o\n"),millis(),to_node,header.to_node); );
@@ -517,7 +515,7 @@ bool RF24Network::write(uint16_t to_node, uint8_t directTo)  // Direct To: 0 = F
   radio.startListening();
 #endif
 
-	if( ok && (conversion.send_node != to_node) && (directTo==0 || directTo == 3 )){
+	if( ok && conversion.send_node != to_node && (directTo==0 || directTo == 3 )){
 		uint32_t reply_time = millis(); 
 		while( update() != NETWORK_ACK){
 			if(millis() - reply_time > routeTimeout){  
@@ -592,12 +590,11 @@ bool RF24Network::logicalToPhysicalAddress(logicalToPhysicalStruct *conversionIn
 bool RF24Network::write_to_pipe( uint16_t node, uint8_t pipe, bool multicast )
 {
   bool ok = false;
- 
+
   uint64_t out_pipe = pipe_address( node, pipe );
 
 #if !defined (DUAL_HEAD_RADIO)
  // Open the correct pipe for writing.
-
   // First, stop listening so we can talk
   radio.stopListening();
   radio.openWritingPipe(out_pipe);  
@@ -760,7 +757,6 @@ bool RF24Network::is_valid_address( uint16_t node )
     {
       result = false;
       IF_SERIAL_DEBUG_MINIMAL(printf_P(PSTR("*** WARNING *** Invalid address 0%o\n\r"),node););
-	  printf_P(PSTR("*** WARNING *** Invalid address 0%o\n\r"),node);
       break;
     }
     node >>= 3;
