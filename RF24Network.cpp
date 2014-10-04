@@ -127,7 +127,7 @@ uint8_t RF24Network::update(void)
 			if(res == NETWORK_ACK){	// If received a routing payload, (Network ACK) discard it, and indicate what it was.
 				IF_SERIAL_DEBUG_ROUTING( printf_P(PSTR("MAC: Network ACK Rcvd \n")); );
 				returnVal = NETWORK_ACK;				
-				continue;
+				return NETWORK_ACK;
 			}								     // Add it to the buffer of frames for us
 		    	if(header.type == NETWORK_ADDR_RESPONSE ){	
 				    uint16_t requester = frame_buffer[8];// | frame_buffer[9] << 8;
@@ -136,6 +136,8 @@ uint8_t RF24Network::update(void)
 					if(requester != node_address){
 						header.to_node = requester;
 						//header.from_node = node_address;
+						write(header.to_node,USER_TX_TO_PHYSICAL_ADDRESS);
+						write(header.to_node,USER_TX_TO_PHYSICAL_ADDRESS);
 						write(header.to_node,USER_TX_TO_PHYSICAL_ADDRESS);
 						//write(header.to_node,USER_TX_TO_PHYSICAL_ADDRESS);
 						//printf("fwd addr resp to 0%o , this node: 0%o \n", requester,node_address);
@@ -159,8 +161,8 @@ uint8_t RF24Network::update(void)
 					return returnVal;
 				}else{
 					enqueue();
-					return returnVal;
-				}				
+					return NETWORK_REQ_ADDRESS;
+				}		
 			}
 			enqueue();		
 			
@@ -488,16 +490,12 @@ bool RF24Network::write(uint16_t to_node, uint8_t directTo)  // Direct To: 0 = F
   
   if(!ok){	IF_SERIAL_DEBUG_ROUTING( printf_P(PSTR("%lu: MAC Send fail to 0%o via 0%o on pipe %x\n\r"),millis(),to_node,conversion.send_node,conversion.send_pipe);); }
  
-	if( directTo == TX_ROUTED && ok && conversion.send_node == to_node && frame_buffer[6] != NETWORK_ACK && frame_buffer[6] != NETWORK_REQ_ADDRESS && frame_buffer[6] != NETWORK_ADDR_RESPONSE){			
+	if( directTo == TX_ROUTED && ok && conversion.send_node == to_node && frame_buffer[6] != NETWORK_ACK && frame_buffer[6] != NETWORK_REQ_ADDRESS){
 			
 			RF24NetworkHeader& header = * reinterpret_cast<RF24NetworkHeader*>(frame_buffer);
 			header.type = NETWORK_ACK;				    // Set the payload type to NETWORK_ACK			
-			header.to_node = header.from_node;          // Change the 'to' address to the 'from' address
-			
-			dynLen=8;		
-
-			//conversion.send_node=header.from_node;
-			//conversion.send_pipe = TX_ROUTED;
+			header.to_node = header.from_node;          // Change the 'to' address to the 'from' address			
+			dynLen=8;
 			conversion = { header.from_node,TX_ROUTED,0};
 			logicalToPhysicalAddress(&conversion);
 			
@@ -515,7 +513,7 @@ bool RF24Network::write(uint16_t to_node, uint8_t directTo)  // Direct To: 0 = F
   radio.startListening();
 #endif
 
-	if( ok && conversion.send_node != to_node && (directTo==0 || directTo == 3 )){
+	if( ok && conversion.send_node != to_node && (directTo==0 || directTo==3) && frame_buffer[6] != NETWORK_REQ_ADDRESS){
 		uint32_t reply_time = millis(); 
 		while( update() != NETWORK_ACK){
 			if(millis() - reply_time > routeTimeout){  
@@ -710,8 +708,7 @@ uint16_t RF24Network::addressOfPipe( uint16_t node, uint8_t pipeNo )
 		m>>=1;     //Shift to the right
 		i++;       //Count the # of increments
 	}
-	
-	return node | (pipeNo << i);	
+    return node | (pipeNo << i);	
 }
 
 /******************************************************************/
