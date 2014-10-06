@@ -106,6 +106,10 @@ uint8_t RF24Network::update(void)
   while ( radio.isValid() && radio.available())//&pipe_num) )
   {
 
+  
+      dynLen = radio.getDynamicPayloadSize();
+	  if(!dynLen){delay(5);continue;}
+	  
       // Dump the payloads until we've gotten everything
       // Fetch the payload, and see if this was the last one.
       radio.read( frame_buffer, sizeof(frame_buffer) );
@@ -124,51 +128,35 @@ uint8_t RF24Network::update(void)
 	  uint8_t res = header.type;
       // Is this for us?
       if ( header.to_node == node_address   ){
-			if(res == NETWORK_ACK){	// If received a routing payload, (Network ACK) discard it, and indicate what it was.
-				IF_SERIAL_DEBUG_ROUTING( printf_P(PSTR("MAC: Network ACK Rcvd \n")); );
-				returnVal = NETWORK_ACK;				
-				return NETWORK_ACK;
-			}								     // Add it to the buffer of frames for us
-		    	if(header.type == NETWORK_ADDR_RESPONSE ){	
-				    uint16_t requester = frame_buffer[8];// | frame_buffer[9] << 8;
-					requester |= frame_buffer[9] << 8;
-					
-					if(requester != node_address){
-						header.to_node = requester;
-						//header.from_node = node_address;
-						write(header.to_node,USER_TX_TO_PHYSICAL_ADDRESS);
-						write(header.to_node,USER_TX_TO_PHYSICAL_ADDRESS);
-						write(header.to_node,USER_TX_TO_PHYSICAL_ADDRESS);
-						//write(header.to_node,USER_TX_TO_PHYSICAL_ADDRESS);
-						//printf("fwd addr resp to 0%o , this node: 0%o \n", requester,node_address);
-						continue;
-					}
-				}
-				if(header.type == NETWORK_REQ_ADDRESS && node_address){
-					//RF24NetworkHeader reqHeader = header;
-					header.from_node = node_address;
-					header.to_node = 0;
-					write(header.to_node,TX_NORMAL);
-					//printf("fwd addr req\n");
+			
+			if(res == NETWORK_ACK || (res == NETWORK_REQ_ADDRESS && !node_address) || res == NETWORK_ADDR_CONFIRM ){	
+				IF_SERIAL_DEBUG_ROUTING( printf_P(PSTR("MAC: System payload rcvd %d\n"),res); );
+				return res;
+			}
+		    if(header.type == NETWORK_ADDR_RESPONSE ){	
+			    uint16_t requester = frame_buffer[8];// | frame_buffer[9] << 8;
+				requester |= frame_buffer[9] << 8;				
+				if(requester != node_address){
+					header.to_node = requester;
+					write(header.to_node,USER_TX_TO_PHYSICAL_ADDRESS);
+					delay(50);
+					write(header.to_node,USER_TX_TO_PHYSICAL_ADDRESS);
+					//printf("Fwd add response to 0%o\n",requester);
 					continue;
 				}
-				
-			// This ensures that all address requests are only placed at the front of the queue	
-		    if( header.type == NETWORK_REQ_ADDRESS ){
-			    
-				if(available()){ 
-					//printf("Dropped address request\n");
-					return returnVal;
-				}else{
-					enqueue();
-					return NETWORK_REQ_ADDRESS;
-				}		
 			}
+			if(header.type == NETWORK_REQ_ADDRESS && node_address){
+				//printf("Fwd add req to 0\n");
+				header.from_node = node_address;
+				header.to_node = 0;
+				write(header.to_node,TX_NORMAL);
+				continue;
+			}
+			
 			enqueue();		
 			
 	  }else{	  
-	  dynLen = radio.getDynamicPayloadSize();
-	  if(!dynLen){continue;}
+	  
 	  #if defined	(RF24NetworkMulticast)		
 			if( header.to_node == 0100){
 				if(header.id != lastMultiMessageID){
@@ -178,13 +166,11 @@ uint8_t RF24Network::update(void)
 					}
 
 				if(header.type == NETWORK_POLL ){
+				    //Serial.println("Send poll");
 					header.to_node = header.from_node;
-					header.from_node = node_address;
-					
-					delay(node_address%5);
+					header.from_node = node_address;			
+					delay((node_address%5)*5);
 					write(header.to_node,USER_TX_TO_PHYSICAL_ADDRESS);
-					//write(header.to_node,USER_TX_TO_PHYSICAL_ADDRESS);
-					//Serial.println("send poll");
 					continue;
 				}
 				
@@ -194,7 +180,7 @@ uint8_t RF24Network::update(void)
 				else{				
 					IF_SERIAL_DEBUG_ROUTING( printf_P(PSTR("MAC: Drop duplicate multicast frame %d from 0%o\n"),header.id,header.from_node); );
 				}				
-			}else{
+			}else{				
 				write(header.to_node,1);	//Send it on, indicate it is a routed payload
 			}
 		#else
@@ -495,14 +481,14 @@ bool RF24Network::write(uint16_t to_node, uint8_t directTo)  // Direct To: 0 = F
 			RF24NetworkHeader& header = * reinterpret_cast<RF24NetworkHeader*>(frame_buffer);
 			header.type = NETWORK_ACK;				    // Set the payload type to NETWORK_ACK			
 			header.to_node = header.from_node;          // Change the 'to' address to the 'from' address			
-			dynLen=8;
+			//dynLen=8;
 			conversion = { header.from_node,TX_ROUTED,0};
 			logicalToPhysicalAddress(&conversion);
 			
 			//Write the data using the resulting physical address
 			write_to_pipe(conversion.send_node, conversion.send_pipe, conversion.multicast);
 			
-			dynLen=0;
+			//dynLen=0;
 			IF_SERIAL_DEBUG_ROUTING( printf_P(PSTR("%lu MAC: Route OK to 0%o ACK sent to 0%o\n"),millis(),to_node,header.to_node); );
 	}
 	
@@ -597,7 +583,8 @@ bool RF24Network::write_to_pipe( uint16_t node, uint8_t pipe, bool multicast )
   radio.stopListening();
   radio.openWritingPipe(out_pipe);  
   size_t wLen = dynLen ? dynLen: frame_size;
-  radio.writeFast(frame_buffer, wLen,multicast);  
+  radio.writeFast(&frame_buffer, wLen,multicast);
+  dynLen=0;  
   ok = radio.txStandBy(txTimeout);    
   
 

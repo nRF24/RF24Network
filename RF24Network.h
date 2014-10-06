@@ -37,6 +37,7 @@
 #define NETWORK_ACK 129
 #define NETWORK_REQ_ADDRESS 151
 #define NETWORK_ADDR_RESPONSE 152
+#define NETWORK_ADDR_CONFIRM 153
 
 		/**System-Sub Types (0-255)*/
 		//#define NETWORK_REQ_STREAM 11;
@@ -390,6 +391,7 @@ public:
    #endif
    uint16_t addressOfPipe( uint16_t node,uint8_t pipeNo );
    bool is_valid_address( uint16_t node );
+   
 private:
 
   bool write(uint16_t, uint8_t directTo);
@@ -423,7 +425,8 @@ private:
   uint16_t node_address; /**< Logical node address of this unit, 1 .. UINT_MAX */
   const static int frame_size = 32; /**< How large is each frame over the air */
   const static unsigned int max_frame_payload_size = MAX_FRAME_SIZE-sizeof(RF24NetworkHeader);
-  uint8_t frame_buffer[frame_size]; /**< Space to put the frame that will be sent/received over the air */
+
+  
   #if defined RF24TINY
 	uint8_t frame_queue[3*frame_size]; /**< Space for a small set of frames that need to be delivered to the app layer */
   #else
@@ -431,10 +434,13 @@ private:
   #endif
   uint8_t* next_frame; /**< Pointer into the @p frame_queue where we should place the next received frame */
   
+  
   uint16_t parent_node; /**< Our parent's node address */
   uint8_t parent_pipe; /**< The pipe our parent uses to listen to us */
   uint16_t node_mask; /**< The bits which contain signfificant node address information */
-  
+
+public:
+  uint8_t frame_buffer[frame_size]; /**< Space to put the frame that will be sent/received over the air */  
 
 };
 

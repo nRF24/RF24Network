@@ -132,10 +132,10 @@ uint8_t RF24Network::update(void) {
 
     // Is this for us?
     if ( header.to_node == node_address ) {
-      if (header.type == NETWORK_ACK) {
-        IF_SERIAL_DEBUG_ROUTING(printf_P(PSTR("RT: Network ACK Rcvd\n")););
-        returnVal = NETWORK_ACK;
-        continue;
+      
+	  if (header.type == NETWORK_ACK || (header.type == NETWORK_REQ_ADDRESS && !node_address) || header.type == NETWORK_ADDR_CONFIRM ) {
+        IF_SERIAL_DEBUG_ROUTING(printf_P(PSTR("RT: System payload rcvd %d\n"),res););
+        return header.type;
       }
 		    	if(header.type == NETWORK_ADDR_RESPONSE ){	
 				    uint16_t requester = frame_buffer[8];// | frame_buffer[9] << 8;
@@ -143,32 +143,23 @@ uint8_t RF24Network::update(void) {
 					
 					if(requester != node_address){
 						header.to_node = requester;
-						//header.from_node = node_address;
 						memcpy(frame_buffer,&header,sizeof(RF24NetworkHeader));
+						write(header.to_node,USER_TX_TO_PHYSICAL_ADDRESS);
+						delay(50);
 						write(header.to_node,USER_TX_TO_PHYSICAL_ADDRESS);
 						//printf("fwd addr resp to 0%o , this node: 0%o\n", requester,node_address);
 						continue;
 					}
 				}
 				if(header.type == NETWORK_REQ_ADDRESS && node_address){
-					//RF24NetworkHeader reqHeader = header;
+				    // printf("Fwd add req to 0\n");
 					header.from_node = node_address;
 					header.to_node = 0;
 					memcpy(frame_buffer,&header,sizeof(RF24NetworkHeader));
 					write(header.to_node,TX_NORMAL);
-					//printf("fwd addr req\n");
 					continue;
 				}
-			// This ensures that all address requests are only placed at the front of the queue	
-		    if( header.type == NETWORK_REQ_ADDRESS ){
-			    if(available()){ 
-					printf("Dropped address request\n");
-					return returnVal;
-				}else{
-					enqueue(frame);
-					return returnVal;
-				}				
-			}
+
       enqueue(frame);
 
       if (radio.rxFifoFull()) {

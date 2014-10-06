@@ -63,6 +63,7 @@
 /* System retained - response messages */
 #define NETWORK_REQ_ADDRESS 151
 #define NETWORK_ADDR_RESPONSE 152
+#define NETWORK_ADDR_CONFIRM 153
 
 /** Defines for handling written payloads */
 #define TX_NORMAL 0
@@ -345,6 +346,7 @@ public:
 bool is_valid_address( uint16_t node );
 uint16_t addressOfPipe( uint16_t node,uint8_t pipeNo );
 
+
 protected:
   //void open_pipes(void);
   //uint16_t find_node( uint16_t current_node, uint16_t target_node );
@@ -377,7 +379,6 @@ private:
   uint16_t node_address; /**< Logical node address of this unit, 1 .. UINT_MAX */
   uint8_t frame_size; /**< How large is each frame over the air */
   const static unsigned int max_frame_payload_size = MAX_FRAME_SIZE-sizeof(RF24NetworkHeader);
-  uint8_t frame_buffer[MAX_FRAME_SIZE]; /**< Space to put the frame that will be sent/received over the air */
   std::queue<RF24NetworkFrame> frame_queue;
   std::map<std::pair<uint16_t, uint16_t>, RF24NetworkFrame> frameFragmentsCache;
 
@@ -388,6 +389,9 @@ private:
   bool noListen; //FIXME
   uint32_t lastWriteTime; //FIXME
 
+public:
+uint8_t frame_buffer[MAX_FRAME_SIZE]; /**< Space to put the frame that will be sent/received over the air */
+  
 };
 
 /**
