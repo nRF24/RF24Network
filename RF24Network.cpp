@@ -133,6 +133,10 @@ uint8_t RF24Network::update(void)
 				IF_SERIAL_DEBUG_ROUTING( printf_P(PSTR("MAC: System payload rcvd %d\n"),res); );
 				return res;
 			}
+			if(res == NETWORK_PING){
+			   returnVal = NETWORK_PING;
+			   continue;
+			}
 		    if(header.type == NETWORK_ADDR_RESPONSE ){	
 			    uint16_t requester = frame_buffer[8];// | frame_buffer[9] << 8;
 				requester |= frame_buffer[9] << 8;				
@@ -323,7 +327,8 @@ bool RF24Network::write(RF24NetworkHeader& header,const void* message, size_t le
 }
 /******************************************************************/
 bool RF24Network::write(RF24NetworkHeader& header,const void* message, size_t len, uint16_t writeDirect){
-
+    dynLen=sizeof(RF24NetworkHeader)+len;
+	dynLen=min(dynLen,MAX_FRAME_SIZE);
 #if defined (DISABLE_FRAGMENTATION)
 	return _write(header,message,len,writeDirect);
 #else  
@@ -476,7 +481,7 @@ bool RF24Network::write(uint16_t to_node, uint8_t directTo)  // Direct To: 0 = F
   
   if(!ok){	IF_SERIAL_DEBUG_ROUTING( printf_P(PSTR("%lu: MAC Send fail to 0%o via 0%o on pipe %x\n\r"),millis(),to_node,conversion.send_node,conversion.send_pipe);); }
  
-	if( directTo == TX_ROUTED && ok && conversion.send_node == to_node && frame_buffer[6] != NETWORK_ACK && frame_buffer[6] != NETWORK_REQ_ADDRESS){
+	if( directTo == TX_ROUTED && ok && conversion.send_node == to_node && frame_buffer[6] > 64 && frame_buffer[6] < 192){
 			
 			RF24NetworkHeader& header = * reinterpret_cast<RF24NetworkHeader*>(frame_buffer);
 			header.type = NETWORK_ACK;				    // Set the payload type to NETWORK_ACK			
@@ -491,7 +496,7 @@ bool RF24Network::write(uint16_t to_node, uint8_t directTo)  // Direct To: 0 = F
 			//dynLen=0;
 			IF_SERIAL_DEBUG_ROUTING( printf_P(PSTR("%lu MAC: Route OK to 0%o ACK sent to 0%o\n"),millis(),to_node,header.to_node); );
 	}
-	
+  dynLen=0;  	
  // if(!ok){ printf_P(PSTR("%lu: MAC No Ack from 0%o via 0%o on pipe %x\n\r"),millis(),to_node,send_node,send_pipe); }
  
 #if !defined (DUAL_HEAD_RADIO)
@@ -499,7 +504,7 @@ bool RF24Network::write(uint16_t to_node, uint8_t directTo)  // Direct To: 0 = F
   radio.startListening();
 #endif
 
-	if( ok && conversion.send_node != to_node && (directTo==0 || directTo==3) && frame_buffer[6] != NETWORK_REQ_ADDRESS){
+	if( ok && conversion.send_node != to_node && (directTo==0 || directTo==3) && frame_buffer[6] > 64 && frame_buffer[6] < 192){
 		uint32_t reply_time = millis(); 
 		while( update() != NETWORK_ACK){
 			if(millis() - reply_time > routeTimeout){  
@@ -584,7 +589,7 @@ bool RF24Network::write_to_pipe( uint16_t node, uint8_t pipe, bool multicast )
   radio.openWritingPipe(out_pipe);  
   size_t wLen = dynLen ? dynLen: frame_size;
   radio.writeFast(&frame_buffer, wLen,multicast);
-  dynLen=0;  
+
   ok = radio.txStandBy(txTimeout);    
   
 

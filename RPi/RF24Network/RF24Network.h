@@ -48,22 +48,30 @@
 #define MIN_USER_DEFINED_HEADER_TYPE 0
 #define MAX_USER_DEFINED_HEADER_TYPE 127
 
-/* System Discard Types */
-#define NETWORK_ACK_REQUEST 128
-#define NETWORK_ACK 129
-#define NETWORK_POLL 130
 
-/*System-Sub Types (0-255)*/
-#define NETWORK_REQ_STREAM 11;
+/** 
+ * Network Response Types  
+ * The network will determine whether to automatically acknowledge payloads based on their type 
+ * For User types (1-127) 1-64 will NOT be acknowledged
+ * For System types (128-255) 192 through 255 will NOT be acknowledged
+ */
+// ACK Response Types
+#define NETWORK_ADDR_RESPONSE 128
+#define NETWORK_ADDR_CONFIRM 129
+#define NETWORK_PING 130
 
-/* System retained types */
 #define NETWORK_FIRST_FRAGMENT 148
 #define NETWORK_MORE_FRAGMENTS 149
 #define NETWORK_LAST_FRAGMENT 150
-/* System retained - response messages */
-#define NETWORK_REQ_ADDRESS 151
-#define NETWORK_ADDR_RESPONSE 152
-#define NETWORK_ADDR_CONFIRM 153
+// NO ACK Response Types
+#define NETWORK_ACK_REQUEST 192
+#define NETWORK_ACK 193
+#define NETWORK_POLL 194
+#define NETWORK_REQ_ADDRESS 195
+
+
+/*System-Sub Types (0-255)*/
+//#define NETWORK_REQ_STREAM 11;
 
 /** Defines for handling written payloads */
 #define TX_NORMAL 0

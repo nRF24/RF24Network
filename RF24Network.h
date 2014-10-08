@@ -32,20 +32,28 @@
 #define MIN_USER_DEFINED_HEADER_TYPE 0
 #define MAX_USER_DEFINED_HEADER_TYPE 127
 
-
-#define NETWORK_ACK_REQUEST 128
-#define NETWORK_ACK 129
-#define NETWORK_REQ_ADDRESS 151
-#define NETWORK_ADDR_RESPONSE 152
-#define NETWORK_ADDR_CONFIRM 153
-
-		/**System-Sub Types (0-255)*/
-		//#define NETWORK_REQ_STREAM 11;
-#define NETWORK_POLL 130
+/** 
+ * Network Response Types  
+ * The network will determine whether to automatically acknowledge payloads based on their type 
+ * For User types (1-127) 1-64 will NOT be acknowledged
+ * For System types (128-255) 192 through 255 will NOT be acknowledged
+ */
+// ACK Response Types
+#define NETWORK_ADDR_RESPONSE 128
+#define NETWORK_ADDR_CONFIRM 129
+#define NETWORK_PING 130
 
 #define NETWORK_FIRST_FRAGMENT 148
 #define NETWORK_MORE_FRAGMENTS 149
 #define NETWORK_LAST_FRAGMENT 150
+
+// NO ACK Response Types
+#define NETWORK_ACK_REQUEST 192
+#define NETWORK_ACK 193
+#define NETWORK_POLL 194
+#define NETWORK_REQ_ADDRESS 195
+
+
 
 
 
@@ -56,10 +64,10 @@
 #define USER_TX_TO_LOGICAL_ADDRESS 3   // network ACK
 #define USER_TX_MULTICAST 4
 
+
 /** System defines */
 #define MAX_FRAME_SIZE 32
 #define MAX_PAYLOAD_SIZE 1500
-
 
 
 class RF24;
@@ -74,6 +82,12 @@ struct RF24NetworkHeader
   uint16_t from_node; /**< Logical address where the message was generated */
   uint16_t to_node; /**< Logical address where the message is going */
   uint16_t id; /**< Sequential message ID, incremented every message */
+  /**
+   * Message Types:
+   * User message types 1 through 64 will NOT be acknowledged by the network. Message types 65 through 127 will receive a network ACK. <br>
+   * System message types 192 through 255 will NOT be acknowledged by the network. Message types 128 through 192 will receive a network ACK.
+   * When requesting a response from another node, for example, a network ACK is not required, and will add extra traffic to the network.
+   */
   unsigned char type; /**< Type of the packet.  0-127 are user-defined types, 128-255 are reserved for system */
   unsigned char reserved; /**< Reserved for future use */
 
@@ -125,6 +139,7 @@ struct RF24NetworkHeader
  * Frame structure for each message
  *
  * The frame put over the air consists of a header and a message payload
+ * @note Frames are handled internally for fragmented payloads. Use RF24NetworkHeader
  */
 
 
@@ -209,7 +224,7 @@ public:
    */
   void begin(uint8_t _channel, uint16_t _node_address );
   
-  void failures(uint32_t *_fails, uint32_t *_ok);
+  
   /**
    * Main layer loop
    *
@@ -262,7 +277,61 @@ public:
    * @return Whether the message was successfully received
    */
   bool write(RF24NetworkHeader& header,const void* message, size_t len);
-  bool write(RF24NetworkHeader& header,const void* message, size_t len, uint16_t writeDirect);
+  
+  /**@}*/
+  /**
+   * @name Advanced Operation
+   *
+   *  For advanced configuration of the network
+   */
+  /**@{*/
+
+  /**
+   * Construct the network in dual head mode using two radio modules.
+   * @note Not working on RPi. Radios will share MISO, MOSI and SCK pins, but require separate CE,CS pins.
+   * @code
+   * 	RF24 radio(7,8);
+   * 	RF24 radio1(4,5);
+   * 	RF24Network(radio.radio1);
+   * @endcode
+   * @param _radio The underlying radio driver instance
+   * @param _radio1 The second underlying radio driver instance
+   */
+
+  RF24Network( RF24& _radio, RF24& _radio1);
+
+  /**
+   * @note: Optimization:This value is automatically assigned based on the node address
+   * to reduce errors and increase throughput of the network.
+   *
+   * Sets the timeout period for individual payloads in milliseconds at staggered intervals.
+   * Payloads will be retried automatically until success or timeout
+   * Set to 0 to use the normal auto retry period defined by radio.setRetries()
+   *
+   */
+
+  uint32_t txTimeout; /**< Network timeout value */
+  
+  /**
+   * This only affects payloads that are routed by one or more nodes.
+   * This specifies how long to wait for an ack from across the network.
+   * Radios routing directly to their parent or children nodes do not
+   * utilize this value.
+   */
+  
+   uint16_t routeTimeout; /**< Timeout for routed payloads */
+  
+  /**
+   * Return the number of failures and successes for all transmitted payloads, routed or sent directly  
+   * @code  
+   * bool fails, success;  
+   * network.failures(&fails,&success);  
+   * @endcode  
+   *
+   */
+  void failures(uint32_t *_fails, uint32_t *_ok);
+  
+   #if defined (RF24NetworkMulticast)
   
   /**
    * Send a multicast message to multiple nodes at once
@@ -278,8 +347,38 @@ public:
    */
    
    bool multicast(RF24NetworkHeader& header,const void* message, size_t len, uint8_t level);
-  
-/**
+   
+	/**
+	* By default, multicast addresses are divided into levels. Nodes 1-5 share a multicast address,
+	* nodes n1-n5 share a multicast address, and nodes n11-n55 share a multicast address. This option
+	* is used to override the defaults, and create custom multicast groups that all share a single
+	* address.  
+	* The level should be specified in decimal format 1-6
+	* @param level Levels 1 to 6 are available. All nodes at the same level will receive the same
+	* messages if in range. Messages will be routed in order of level, low to high by default.
+	*/
+	
+	void multicastLevel(uint8_t level);
+	
+	/**
+	* Enabling this will allow this node to automatically forward received multicast frames to the next highest
+	* multicast level. Duplicate frames are filtered out, so multiple forwarding nodes at the same level should
+	* not interfere
+	*/
+	
+	bool multicastRelay;
+    
+	
+   #endif
+   
+   /**
+   * Writes a direct payload. This allows routing or sending messages outside of the usual routing paths.
+   * The same as write, but a physical address is specified as the last option.
+   * The payload will be written to the physical address, and routed as necessary by the recipient
+   */
+   bool write(RF24NetworkHeader& header,const void* message, size_t len, uint16_t writeDirect);
+
+   /**
    * Sleep this node - Still Under Development
    * @note NEW - Nodes can now be slept while the radio is not actively transmitting. This must be manually enabled by uncommenting
    * the #define ENABLE_SLEEP_MODE in RF24Network_config.h
@@ -321,75 +420,16 @@ public:
    * @return This node's parent address, or -1 if this is the base
    */
   uint16_t parent() const;
-
-  /**@}*/
-  /**
-   * @name Advanced Operation
-   *
-   *  For advanced configuration of the network
-   */
-  /**@{*/
-
-  /**
-   * Construct the network in dual head mode using two radio modules.
-   * @note Radios will share MISO, MOSI and SCK pins, but require separate CE,CS pins.
-   * @code
-   * 	RF24 radio(7,8);
-   * 	RF24 radio1(4,5);
-   * 	RF24Network(radio.radio1);
-   * @endcode
-   * @param _radio The underlying radio driver instance
-   * @param _radio1 The second underlying radio driver instance
-   */
-
-  RF24Network( RF24& _radio, RF24& _radio1);
-
-  /**
-   * @note: Optimization:This value is automatically assigned based on the node address
-   * to reduce errors and increase throughput of the network.
-   *
-   * Sets the timeout period for individual payloads in milliseconds at staggered intervals.
-   * Payloads will be retried automatically until success or timeout
-   * Set to 0 to use the normal auto retry period defined by radio.setRetries()
-   *
-   */
-
-  uint32_t txTimeout;
   
-  /**
-   * @note: Optimization: This new value defaults to 200 milliseconds.
-   * This only affects payloads that are routed by one or more nodes.
-   * This specifies how long to wait for an ack from across the network.
-   * Radios routing directly to their parent or children nodes do not
-   * utilize this value.
+   /**
+   * Provided a node address and a pipe number, will return the RF24Network address of that child pipe for that node
    */
-  
-   uint16_t routeTimeout;
-  
-   #if defined (RF24NetworkMulticast)
-	/**
-	* By default, multicast addresses are divided into levels. Nodes 1-5 share a multicast address,
-	* nodes n1-n5 share a multicast address, and nodes n11-n55 share a multicast address. This option
-	* is used to override the defaults, and create custom multicast groups that all share a single
-	* address.  
-	* The level should be specified in decimal format 1-6
-	* @param level Levels 1 to 6 are available. All nodes at the same level will receive the same
-	* messages if in range. Messages will be routed in order of level, low to high by default.
-	*/
-	
-	void multicastLevel(uint8_t level);
-	
-	/**
-	* Enabling this will allow this node to automatically forward received multicast frames to the next highest
-	* multicast level. Duplicate frames are filtered out, so multiple forwarding nodes at the same level should
-	* not interfere
-	*/
-	
-	bool multicastRelay;
-    
-	
-   #endif
    uint16_t addressOfPipe( uint16_t node,uint8_t pipeNo );
+   
+   /**
+    * @note Addresses are specified in octal: 011, 034
+    * @return True if a supplied address is valid
+	*/
    bool is_valid_address( uint16_t node );
    
 private:

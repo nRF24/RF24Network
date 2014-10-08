@@ -46,6 +46,7 @@ void RF24Network::begin(uint8_t _channel, uint16_t _node_address ) {
   node_address = _node_address;
 
   if ( ! radio.isValid() ) {
+    printf("invalid radio\n");
     return;
   }
   radio.stopListening();
@@ -121,7 +122,7 @@ uint8_t RF24Network::update(void) {
     }
 
     // Throw it away if it's not a valid address
-    if ( !is_valid_address(header.to_node) ) {
+    if ( !is_valid_address(header.to_node) ){
       continue;
     }
 
@@ -134,9 +135,13 @@ uint8_t RF24Network::update(void) {
     if ( header.to_node == node_address ) {
       
 	  if (header.type == NETWORK_ACK || (header.type == NETWORK_REQ_ADDRESS && !node_address) || header.type == NETWORK_ADDR_CONFIRM ) {
-        IF_SERIAL_DEBUG_ROUTING(printf_P(PSTR("RT: System payload rcvd %d\n"),res););
+        IF_SERIAL_DEBUG_ROUTING(printf_P(PSTR("RT: System payload rcvd %d\n"),header.type););
         return header.type;
       }
+	  if(header.type == NETWORK_PING){
+		returnVal = NETWORK_PING;
+	    continue;
+	  }	  
 		    	if(header.type == NETWORK_ADDR_RESPONSE ){	
 				    uint16_t requester = frame_buffer[8];// | frame_buffer[9] << 8;
 					requester |= frame_buffer[9] << 8;
@@ -614,7 +619,7 @@ bool RF24Network::write(uint16_t to_node, uint8_t directTo) {
   #endif
 
 
-  if ( directTo == 1 && ok && conversion.send_node == to_node && frame_buffer[6] != NETWORK_ACK ) {
+  if ( directTo == 1 && ok && conversion.send_node == to_node && frame_buffer[6] > 64 && frame_buffer[6] < 192 ) {
 
     //RF24NetworkHeader& header = * reinterpret_cast<RF24NetworkHeader*>(frame_buffer);
 	frame_buffer[6] = NETWORK_ACK;				    // Set the payload type to NETWORK_ACK			
@@ -629,21 +634,21 @@ bool RF24Network::write(uint16_t to_node, uint8_t directTo) {
     //Write the data using the resulting physical address
     write_to_pipe(conversion.send_node, conversion.send_pipe, multicast);
 
-    IF_SERIAL_DEBUG_ROUTING(printf("RT Route OK to 0%o ACK sent to 0%o\n",to_node,header.to_node););
+    IF_SERIAL_DEBUG_ROUTING(printf("RT Route OK to 0%o ACK sent to 0%o\n",to_node,conversion.send_node););
   }
 
   //if (!noListen ) {
     radio.startListening();
   //}
 
-  if ( ok && (conversion.send_node != to_node) && (directTo==0 || directTo == 3 )) {
+  if ( ok && (conversion.send_node != to_node) && (directTo==0 || directTo == 3 ) && frame_buffer[6] > 64 && frame_buffer[6] < 192) {
 
     uint32_t reply_time = millis();
     //Wait for NETWORK_ACK
     while( update() != NETWORK_ACK) {
       if (millis() - reply_time > routeTimeout) {
         ok = 0;
-        IF_SERIAL_DEBUG_ROUTING(printf_P(PSTR("%u: RT Network ACK fail from 0%o via 0%o on pipe %x\n\r"),millis(),logicalAddress,send_node,send_pipe););
+        IF_SERIAL_DEBUG_ROUTING(printf_P(PSTR("%u: RT Network ACK fail from 0%o via 0%o on pipe %x\n\r"),millis(),to_node,conversion.send_node,conversion.send_pipe););
         break;
       }
     }
