@@ -52,10 +52,7 @@
 #define NETWORK_ACK 193
 #define NETWORK_POLL 194
 #define NETWORK_REQ_ADDRESS 195
-
-
-
-
+#define NETWORK_ADDR_LOOKUP 196
 
 /** Defines for handling written payloads */
 #define TX_NORMAL 0
@@ -84,11 +81,11 @@ struct RF24NetworkHeader
   uint16_t id; /**< Sequential message ID, incremented every message */
   /**
    * Message Types:
-   * User message types 1 through 64 will NOT be acknowledged by the network. Message types 65 through 127 will receive a network ACK. <br>
-   * System message types 192 through 255 will NOT be acknowledged by the network. Message types 128 through 192 will receive a network ACK.
-   * When requesting a response from another node, for example, a network ACK is not required, and will add extra traffic to the network.
+   * User message types 1 through 64 will NOT be acknowledged by the network, while message types 65 through 127 will receive a network ACK.  
+   * System message types 192 through 255 will NOT be acknowledged by the network. Message types 128 through 192 will receive a network ACK. <br>
+   * When requesting a response from another node, for example, a network ACK is not required, and will add extra traffic to the network. <br><br>
    */
-  unsigned char type; /**< Type of the packet.  0-127 are user-defined types, 128-255 are reserved for system */
+  unsigned char type; /**< <b>Type of the packet. </b> 0-127 are user-defined types, 128-255 are reserved for system */
   unsigned char reserved; /**< Reserved for future use */
 
   static uint16_t next_id; /**< The message ID of the next message to be sent */
@@ -564,11 +561,11 @@ public:
  * @section Features Features
  *
  * Whats new?  
- *  @note Fragmentation Support: (Sept 2014) - Raspberry Pi now supports fragmentation for very long messages, send as normal. Arduino, ATTiny will handle routing of fragmented messages, but cannot receive them properly  
- *  @warning The latest updates to add fragmentation will require updating RF24Network and RF24 libraries on ALL devices 
- *  
+ *  @note Network Message Types Change: (Oct 8, 2014) Requires re-installation on all nodes <br>
+ *  New functionality: User message types 1 through 64 will not receive a network ack
  *
  * The layer provides:
+ * @li <b>New</b> (2014): Fragmentation/Re-assembly (RPi & Due only - Send only with Arduino)
  * @li <b>New</b> (2014): Network ACKs: Efficient acknowledgement of network-wide transmissions, via dynamic radio acks and network protocol acks.
  * @li <b>New</b> (2014): Updated addressing standard for optimal radio transmission.
  * @li <b>New</b> (2014): Extended timeouts and staggered timeout intervals. The new txTimeout variable allows fully automated extended timeout periods via auto-retry/auto-reUse of payloads.

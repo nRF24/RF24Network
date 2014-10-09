@@ -68,7 +68,7 @@
 #define NETWORK_ACK 193
 #define NETWORK_POLL 194
 #define NETWORK_REQ_ADDRESS 195
-
+#define NETWORK_ADDR_LOOKUP 196
 
 /*System-Sub Types (0-255)*/
 //#define NETWORK_REQ_STREAM 11;

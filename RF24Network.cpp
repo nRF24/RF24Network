@@ -129,7 +129,7 @@ uint8_t RF24Network::update(void)
       // Is this for us?
       if ( header.to_node == node_address   ){
 			
-			if(res == NETWORK_ACK || (res == NETWORK_REQ_ADDRESS && !node_address) || res == NETWORK_ADDR_CONFIRM ){	
+			if( res == NETWORK_ADDR_LOOKUP || res == NETWORK_ACK || (res == NETWORK_REQ_ADDRESS && !node_address) || res == NETWORK_ADDR_CONFIRM ){	
 				IF_SERIAL_DEBUG_ROUTING( printf_P(PSTR("MAC: System payload rcvd %d\n"),res); );
 				return res;
 			}

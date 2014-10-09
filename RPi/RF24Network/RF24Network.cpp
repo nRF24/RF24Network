@@ -46,7 +46,6 @@ void RF24Network::begin(uint8_t _channel, uint16_t _node_address ) {
   node_address = _node_address;
 
   if ( ! radio.isValid() ) {
-    printf("invalid radio\n");
     return;
   }
   radio.stopListening();
@@ -122,7 +121,7 @@ uint8_t RF24Network::update(void) {
     }
 
     // Throw it away if it's not a valid address
-    if ( !is_valid_address(header.to_node) ){
+    if ( !is_valid_address(header.to_node) ) {
       continue;
     }
 
@@ -134,7 +133,7 @@ uint8_t RF24Network::update(void) {
     // Is this for us?
     if ( header.to_node == node_address ) {
       
-	  if (header.type == NETWORK_ACK || (header.type == NETWORK_REQ_ADDRESS && !node_address) || header.type == NETWORK_ADDR_CONFIRM ) {
+	  if ( header.type == NETWORK_ADDR_LOOKUP || header.type == NETWORK_ACK || (header.type == NETWORK_REQ_ADDRESS && !node_address) || header.type == NETWORK_ADDR_CONFIRM ) {
         IF_SERIAL_DEBUG_ROUTING(printf_P(PSTR("RT: System payload rcvd %d\n"),header.type););
         return header.type;
       }
