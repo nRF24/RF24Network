@@ -53,6 +53,7 @@
 #define NETWORK_POLL 194
 #define NETWORK_REQ_ADDRESS 195
 #define NETWORK_ADDR_LOOKUP 196
+#define NETWORK_ADDR_RELEASE 197
 
 /** Defines for handling written payloads */
 #define TX_NORMAL 0

@@ -129,10 +129,6 @@ uint8_t RF24Network::update(void)
       // Is this for us?
       if ( header.to_node == node_address   ){
 			
-			if( res == NETWORK_ADDR_LOOKUP || res == NETWORK_ACK || (res == NETWORK_REQ_ADDRESS && !node_address) || res == NETWORK_ADDR_CONFIRM ){	
-				IF_SERIAL_DEBUG_ROUTING( printf_P(PSTR("MAC: System payload rcvd %d\n"),res); );
-				return res;
-			}
 			if(res == NETWORK_PING){
 			   returnVal = NETWORK_PING;
 			   continue;
@@ -157,6 +153,10 @@ uint8_t RF24Network::update(void)
 				continue;
 			}
 			
+			if( res >127 ){	
+				IF_SERIAL_DEBUG_ROUTING( printf_P(PSTR("MAC: System payload rcvd %d\n"),res); );
+				return res;
+			}			
 			enqueue();		
 			
 	  }else{	  
@@ -193,23 +193,6 @@ uint8_t RF24Network::update(void)
 		#endif
 	  }
 	  
-	  
-      // NOT NEEDED anymore.  Now all reading pipes are open to start.
-#if 0
-      // If this was for us, from one of our children, but on our listening
-      // pipe, it could mean that we are not listening to them.  If so, open up
-      // and listen to their talking pipe
-
-      if ( header.to_node == node_address && pipe_num == 0 && is_descendant(header.from_node) )
-      {
-	uint8_t pipe = pipe_to_descendant(header.from_node);
-	radio.openReadingPipe(pipe,pipe_address(node_address,pipe));
-
-	// Also need to open pipe 1 so the system can get the full 5-byte address of the pipe.
-	radio.openReadingPipe(1,pipe_address(node_address,1));
-      }
-#endif
-    //}
   }
   return returnVal;
 }
