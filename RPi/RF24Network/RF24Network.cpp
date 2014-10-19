@@ -132,12 +132,11 @@ uint8_t RF24Network::update(void) {
 
     // Is this for us?
     if ( header.to_node == node_address ) {
-      
 	  if(header.type == NETWORK_PING){
 		returnVal = NETWORK_PING;
 	    continue;
 	  }	  
-		    	if(header.type == NETWORK_ADDR_RESPONSE ){	
+		    	if(header.type == NETWORK_ADDR_RESPONSE ){
 				    uint16_t requester = frame_buffer[8];// | frame_buffer[9] << 8;
 					requester |= frame_buffer[9] << 8;
 					
@@ -161,17 +160,18 @@ uint8_t RF24Network::update(void) {
 				}
 
 				if(header.type>127){
-					IF_SERIAL_DEBUG_ROUTING(printf_P(PSTR("RT: System payload rcvd %d\n"),header.type););
-					return header.type;
+					IF_SERIAL_DEBUG_ROUTING(printf_P(PSTR("%lu RT: System payload rcvd %d\n"),millis(),header.type););
+					if( (header.type < 148 || header.type > 150) && header.type != NETWORK_MORE_FRAGMENTS_NACK){
+						return header.type;
+					}
 				}
-      enqueue(frame);
+	  enqueue(frame);
 
       if (radio.rxFifoFull()) {
         printf(" fifo full\n");
       }
 
     } else { //Frame if not for us
-
       #if defined (RF24NetworkMulticast)
         if ( header.to_node == 0100) {
 
@@ -216,7 +216,7 @@ bool RF24Network::enqueue(RF24NetworkFrame frame) {
 
   // This is sent to itself
   if (frame.header.from_node == node_address) {
-    bool isFragment = ( frame.header.type == NETWORK_FIRST_FRAGMENT || frame.header.type == NETWORK_MORE_FRAGMENTS || frame.header.type == NETWORK_LAST_FRAGMENT );
+    bool isFragment = ( frame.header.type == NETWORK_FIRST_FRAGMENT || frame.header.type == NETWORK_MORE_FRAGMENTS || frame.header.type == NETWORK_LAST_FRAGMENT || frame.header.type == NETWORK_MORE_FRAGMENTS_NACK);
     if (isFragment) {
       printf("Cannot enqueue multi-payload frames to self\n");
       return false;
@@ -225,7 +225,7 @@ bool RF24Network::enqueue(RF24NetworkFrame frame) {
     return true;
   }
 
-  if ((frame.header.reserved > 1 && (frame.header.type == NETWORK_MORE_FRAGMENTS || frame.header.type== NETWORK_FIRST_FRAGMENT)) ) {
+  if ((frame.header.reserved > 1 && (frame.header.type == NETWORK_MORE_FRAGMENTS || frame.header.type== NETWORK_FIRST_FRAGMENT || frame.header.type == NETWORK_MORE_FRAGMENTS_NACK)) ) {
     //The received frame contains the a fragmented payload
 
     //Set the more fragments flag to indicate a fragmented frame
@@ -238,7 +238,7 @@ bool RF24Network::enqueue(RF24NetworkFrame frame) {
   } else if ( frame.header.type == NETWORK_LAST_FRAGMENT) {
     //The last fragment flag indicates that we received the last fragment
     //Workaround/Hack: In this case the header.reserved does not count the number of fragments but is a copy of the type flags specified by the user application.
-
+    
     IF_SERIAL_DEBUG_FRAGMENTATION(printf("%u: FRG Last fragment with size %i Bytes and fragmentID '%i' received.\n\r",millis(),frame.message_size,frame.header.reserved););
     //Append payload
     appendFragmentToFrame(frame);
@@ -246,11 +246,15 @@ bool RF24Network::enqueue(RF24NetworkFrame frame) {
     IF_SERIAL_DEBUG(printf_P(PSTR("%u: NET Enqueue assembled frame @%x "),millis(),frame_queue.size()));
 
     //Push the assembled frame in the frame_queue and remove it from cache
+	RF24NetworkFrame *f = &(frameFragmentsCache[ std::make_pair(frame.header.from_node,frame.header.id) ]);
+	
     // If total_fragments == 0, we are finished
-    if ( frame.header.to_node == node_address || (!frame.header.reserved && frameFragmentsCache.count(std::make_pair(frame.header.from_node,frame.header.id)) ) ) {
-      frame_queue.push( frameFragmentsCache[ std::make_pair(frame.header.from_node,frame.header.id) ] );
+    if ( frame.header.to_node == node_address && f->message_size > 0){//|| (!frame.header.reserved && frameFragmentsCache.count(std::make_pair(frame.header.from_node,frame.header.id)) ) ) {
+      frame_queue.push( frameFragmentsCache[ std::make_pair(frame.header.from_node,frame.header.id) ] );	  
+	  
     } else {
       IF_SERIAL_DEBUG_MINIMAL( printf("%u: NET Dropped frame missing %d fragments\n",millis(),frame.total_fragments ););
+	  
     }
 
     frameFragmentsCache.erase( std::make_pair(frame.header.from_node,frame.header.id) );
@@ -290,7 +294,7 @@ void RF24Network::appendFragmentToFrame(RF24NetworkFrame frame) {
   if (frameFragmentsCache.count(std::make_pair(frame.header.from_node,frame.header.id)) == 0 ) {
     // This is the first of many fragments.
 
-    if (frame.header.type == NETWORK_FIRST_FRAGMENT || ( frame.header.type != NETWORK_MORE_FRAGMENTS && frame.header.type != NETWORK_LAST_FRAGMENT)) {
+    if (frame.header.type == NETWORK_FIRST_FRAGMENT || ( frame.header.type != NETWORK_MORE_FRAGMENTS_NACK && frame.header.type != NETWORK_MORE_FRAGMENTS && frame.header.type != NETWORK_LAST_FRAGMENT)) {
       // Decrement the stored total_fragments counter
       frame.header.reserved = frame.header.reserved-1;
       // Cache the fragment
@@ -336,7 +340,6 @@ void RF24Network::appendFragmentToFrame(RF24NetworkFrame frame) {
     f->message_size += frame.message_size;  //Increment message size
     f->header = frame.header; //Update header
     f->header.reserved--;  //Update Total fragments
-
   }
 }
 
@@ -380,7 +383,6 @@ size_t RF24Network::read(RF24NetworkHeader& header,void* message, size_t maxlen)
 
     // How much buffer size should we actually copy?
     bufsize = std::min(frame.message_size,maxlen);
-
     memcpy(&header,&(frame.header),sizeof(RF24NetworkHeader));
     memcpy(message,frame.message_buffer,bufsize);
 
@@ -490,7 +492,7 @@ bool RF24Network::write(RF24NetworkHeader& header,const void* message, size_t le
       if (msgCount == 0) {
         fragmentHeader.type = NETWORK_FIRST_FRAGMENT;
       }else{
-        fragmentHeader.type = NETWORK_MORE_FRAGMENTS; //Set the more fragments flag to indicate a fragmented frame
+        fragmentHeader.type = NETWORK_MORE_FRAGMENTS_NACK; //Set the more fragments flag to indicate a fragmented frame
       }
     }
 
@@ -502,7 +504,7 @@ bool RF24Network::write(RF24NetworkHeader& header,const void* message, size_t le
 	//uint8_t msg[32];
 	
     //Try to send the payload chunk with the copied header
-    bool ok = _write(fragmentHeader,((char *)message)+offset,fragmentLen,writeDirect);
+	bool ok = _write(fragmentHeader,((char *)message)+offset,fragmentLen,writeDirect);
 
 	if(!ok){ 	delay(100); ok = _write(fragmentHeader,((char *)message)+offset,fragmentLen,writeDirect);
 		if(!ok){ delay(150); ok = _write(fragmentHeader,((char *)message)+offset,fragmentLen,writeDirect);

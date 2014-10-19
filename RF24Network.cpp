@@ -154,9 +154,10 @@ uint8_t RF24Network::update(void)
 			}
 			
 			if( res >127 ){	
-				IF_SERIAL_DEBUG_ROUTING( printf_P(PSTR("MAC: System payload rcvd %d\n"),res); );
+				IF_SERIAL_DEBUG_ROUTING( printf_P(PSTR("%lu MAC: System payload rcvd %d\n"),millis(),res); );
 				return res;
-			}			
+			}
+			
 			enqueue();		
 			
 	  }else{	  

@@ -57,7 +57,7 @@
  */
 // ACK Response Types
 #define NETWORK_ADDR_RESPONSE 128
-#define NETWORK_ADDR_CONFIRM 129
+//#define NETWORK_ADDR_CONFIRM 129
 #define NETWORK_PING 130
 
 #define NETWORK_FIRST_FRAGMENT 148
@@ -68,8 +68,9 @@
 #define NETWORK_ACK 193
 #define NETWORK_POLL 194
 #define NETWORK_REQ_ADDRESS 195
-#define NETWORK_ADDR_LOOKUP 196
-#define NETWORK_ADDR_RELEASE 197
+//#define NETWORK_ADDR_LOOKUP 196
+//#define NETWORK_ADDR_RELEASE 197
+#define NETWORK_MORE_FRAGMENTS_NACK 200
 
 /*System-Sub Types (0-255)*/
 //#define NETWORK_REQ_STREAM 11;
@@ -354,7 +355,6 @@ public:
 
 bool is_valid_address( uint16_t node );
 uint16_t addressOfPipe( uint16_t node,uint8_t pipeNo );
-
 
 protected:
   //void open_pipes(void);
