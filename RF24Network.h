@@ -106,7 +106,7 @@ public:
    * This function must be called regularly to keep the layer going.  This is where all
    * the action happens!
    */
-  void update(void);
+  bool update(void);
 
   /**
    * Test whether there is a message available for this node
