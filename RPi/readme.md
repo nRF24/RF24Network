@@ -38,7 +38,7 @@ C.  Change to the new RF24 directory
 D. Build the library, and run an example file:  
 
     sudo make install
-    cd examples  
+    cd examples_RPi  
     make
     sudo ./gettingstarted  
   
