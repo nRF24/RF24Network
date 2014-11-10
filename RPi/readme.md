@@ -29,12 +29,10 @@ A. Make a directory to contain the RF24 and possibly RF24Network lib and enter i
 
 B.  Clone the RF24 Repo  
 
-    git clone https://github.com/tmrh20/RF24.git rtemp  
+    git clone https://github.com/tmrh20/RF24.git RF24  
 
-C.  Copy the RPi library folder to the current directory, and delete the rest  
+C.  Change to the new RF24 directory  
 
-    mv rtemp/RPi/RF24 ./  
-    rm -r rtemp  
     cd RF24  
 
 D. Build the library, and run an example file:  
