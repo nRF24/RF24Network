@@ -471,7 +471,10 @@ bool RF24Network::write(uint16_t to_node, uint8_t directTo)  // Direct To: 0 = F
 			header.type = NETWORK_ACK;				    // Set the payload type to NETWORK_ACK			
 			header.to_node = header.from_node;          // Change the 'to' address to the 'from' address			
 			//dynLen=8;
-			conversion = { header.from_node,TX_ROUTED,0};
+			//conversion={header.from_node,TX_ROUTED,0};
+			conversion.send_node = header.from_node;
+			conversion.send_pipe = TX_ROUTED;
+			conversion.multicast = 0;
 			logicalToPhysicalAddress(&conversion);
 			
 			//Write the data using the resulting physical address
