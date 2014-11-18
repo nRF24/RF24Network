@@ -21,13 +21,17 @@
 /********** USER CONFIG **************/
 
 //#define DUAL_HEAD_RADIO
+
+
+#if !defined (__ARDUINO_X86__)
 //#define ENABLE_SLEEP_MODE
+#endif
 
 /*************************************/
 
 
   // Define _BV for non-Arduino platforms and for Arduino DUE
-#if defined (ARDUINO) && !defined (__arm__)
+#if defined (ARDUINO) && !defined (__arm__) && !defined (__ARDUINO_X86__)
 	#if !defined(__AVR_ATtiny25__) && !defined(__AVR_ATtiny45__) && !defined(__AVR_ATtiny85__) && !defined(__AVR_ATtiny24__) && !defined(__AVR_ATtiny44__) && !defined(__AVR_ATtiny84__)
 		#include <SPI.h>
 	#endif
@@ -38,13 +42,13 @@
   #include <string.h>
 
 
- #if defined(__arm__) || defined (CORE_TEENSY)
+ #if defined(__arm__) || defined (CORE_TEENSY) || defined (__ARDUINO_X86__)
    #include <SPI.h>
  #endif
 
  #if !defined(CORE_TEENSY)
    #define _BV(x) (1<<(x))
-   #if !defined(__arm__)
+   #if !defined(__arm__) && !defined (__ARDUINO_X86__)
      extern HardwareSPI SPI;
    #endif
  #endif
@@ -62,6 +66,12 @@
 	#define printf_P(...)
     #endif
   #endif
+  
+#if defined (__ARDUINO_X86__)
+	#define printf_P printf
+	#define sprintf_P sprintf
+	#define _BV(bit) (1<<(bit))
+#endif
 
 // Avoid spurious warnings
 // Arduino DUE is arm and uses traditional PROGMEM constructs
@@ -76,7 +86,7 @@
 
 // Progmem is Arduino-specific
 // Arduino DUE is arm and does not include avr/pgmspace
-#if defined(ARDUINO) && ! defined(__arm__)
+#if defined(ARDUINO) && ! defined(__arm__)  && !defined (__ARDUINO_X86__)
 	#include <avr/pgmspace.h>
 	#define PRIPSTR "%S"
 #else
