@@ -189,7 +189,7 @@ size_t RF24Network::read(RF24NetworkHeader& header,void* message, size_t maxlen)
   {
     // Move the pointer back one in the queue
     next_frame -= frame_size;
-    uint8_t* frame = next_frame;
+    uint8_t* frame = frame_queue;
 
     memcpy(&header,frame,sizeof(RF24NetworkHeader));
 
@@ -200,12 +200,21 @@ size_t RF24Network::read(RF24NetworkHeader& header,void* message, size_t maxlen)
 
       // Copy the next available frame from the queue into the provided buffer
       memcpy(message,frame+sizeof(RF24NetworkHeader),bufsize);
+      
+      //move all otherframes to start
+      MoveFrames();
     }
-
+	
     IF_SERIAL_DEBUG(printf_P(PSTR("%lu: NET Received %s\n\r"),millis(),header.toString()));
   }
 
   return bufsize;
+}
+
+/******************************************************************/
+
+void RF24Network::MoveFrames(void){
+	memmove(frame_queue,frame_queue+frame_size,sizeof(frame_queue) - frame_size);
 }
 
 /******************************************************************/
