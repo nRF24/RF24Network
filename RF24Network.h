@@ -68,7 +68,7 @@
 
 /** System defines */
 #define MAX_FRAME_SIZE 32
-#define MAX_PAYLOAD_SIZE 1500
+#define MAX_PAYLOAD_SIZE 128
 
 
 class RF24;
