@@ -42,6 +42,7 @@
 #define NETWORK_ADDR_RESPONSE 128
 //#define NETWORK_ADDR_CONFIRM 129
 #define NETWORK_PING 130
+#define EXTERNAL_DATA_TYPE 131
 
 #define NETWORK_FIRST_FRAGMENT 148
 #define NETWORK_MORE_FRAGMENTS 149
@@ -55,7 +56,7 @@
 //#define NETWORK_ADDR_LOOKUP 196
 //#define NETWORK_ADDR_RELEASE 197
 
-#define NETWORK_MORE_FRAGMENTS_NACK 200
+#define NETWORK_MORE_FRAGMENTS_NACK 112
 
 /** Defines for handling written payloads */
 #define TX_NORMAL 0
@@ -250,7 +251,8 @@ public:
    *
    * @param[out] header The header (envelope) of the next message
    */
-  void peek(RF24NetworkHeader& header);
+  size_t peek(RF24NetworkHeader& header);
+  uint8_t peekData();
 
   /**
    * Read a message
@@ -436,7 +438,7 @@ private:
 
   bool write(uint16_t, uint8_t directTo);
   bool write_to_pipe( uint16_t node, uint8_t pipe, bool multicast );
-  bool enqueue(void);
+  uint8_t enqueue(RF24NetworkFrame frame);
 
   bool is_direct_child( uint16_t node );
   bool is_descendant( uint16_t node );
@@ -463,16 +465,19 @@ private:
   uint8_t multicast_level;  
 #endif
   uint16_t node_address; /**< Logical node address of this unit, 1 .. UINT_MAX */
-  const static int frame_size = 32; /**< How large is each frame over the air */
+  //const static int frame_size = 32; /**< How large is each frame over the air */
+  uint8_t frame_size;
   const static unsigned int max_frame_payload_size = MAX_FRAME_SIZE-sizeof(RF24NetworkHeader);
 
   
   #if defined RF24TINY
-	uint8_t frame_queue[3*frame_size]; /**< Space for a small set of frames that need to be delivered to the app layer */
+	uint8_t frame_queue[3*MAX_FRAME_SIZE]; /**< Space for a small set of frames that need to be delivered to the app layer */
   #else
-  uint8_t frame_queue[5*frame_size]; /**< Space for a small set of frames that need to be delivered to the app layer */
+  uint8_t frame_queue[3*MAX_FRAME_SIZE]; /**< Space for a small set of frames that need to be delivered to the app layer */
   #endif
   uint8_t* next_frame; /**< Pointer into the @p frame_queue where we should place the next received frame */
+  //uint8_t frag_queue[MAX_PAYLOAD_SIZE + 11];
+  RF24NetworkFrame frag_queue;
   
   
   uint16_t parent_node; /**< Our parent's node address */
@@ -480,7 +485,8 @@ private:
   uint16_t node_mask; /**< The bits which contain signfificant node address information */
 
 public:
-  uint8_t frame_buffer[frame_size]; /**< Space to put the frame that will be sent/received over the air */  
+  RF24NetworkFrame *frag_ptr;
+  uint8_t frame_buffer[MAX_FRAME_SIZE]; /**< Space to put the frame that will be sent/received over the air */  
 
 };
 

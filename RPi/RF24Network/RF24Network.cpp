@@ -386,8 +386,9 @@ size_t RF24Network::read(RF24NetworkHeader& header,void* message, size_t maxlen)
     memcpy(&header,&(frame.header),sizeof(RF24NetworkHeader));
     memcpy(message,frame.message_buffer,bufsize);
 
-    IF_SERIAL_DEBUG_FRAGMENTATION(printf("%u: FRG message size %i\n",millis(),frame.message_size););
-    IF_SERIAL_DEBUG_FRAGMENTATION(printf("%u: FRG message ",millis()); const char* charPtr = reinterpret_cast<const char*>(message); for (size_t i = 0; i < bufsize; i++) { printf("%02X ", charPtr[i]); }; printf("\n\r"));
+    IF_SERIAL_DEBUG(printf("%u: FRG message size %i\n",millis(),frame.message_size););
+    IF_SERIAL_DEBUG(printf("%u: FRG message ",millis()); const char* charPtr = reinterpret_cast<const char*>(message); for (size_t i = 0; i < bufsize; i++) { printf("%02X ", charPtr[i]); }; printf("\n\r"));	
+	
     IF_SERIAL_DEBUG(printf_P(PSTR("%u: NET read %s\n\r"),millis(),header.toString()));
 
     frame_queue.pop();
@@ -492,7 +493,7 @@ bool RF24Network::write(RF24NetworkHeader& header,const void* message, size_t le
       if (msgCount == 0) {
         fragmentHeader.type = NETWORK_FIRST_FRAGMENT;
       }else{
-        fragmentHeader.type = NETWORK_MORE_FRAGMENTS_NACK; //Set the more fragments flag to indicate a fragmented frame
+        fragmentHeader.type = NETWORK_MORE_FRAGMENTS; //Set the more fragments flag to indicate a fragmented frame
       }
     }
 
@@ -502,16 +503,19 @@ bool RF24Network::write(RF24NetworkHeader& header,const void* message, size_t le
     IF_SERIAL_DEBUG_FRAGMENTATION(printf("%u: FRG try to transmit fragmented payload of size %i Bytes with fragmentID '%i'\n\r",millis(),fragmentLen,fragment_id););
 
 	//uint8_t msg[32];
-	
+	//delay(5);
     //Try to send the payload chunk with the copied header
+	frame_size = sizeof(RF24NetworkHeader)+fragmentLen;
 	bool ok = _write(fragmentHeader,((char *)message)+offset,fragmentLen,writeDirect);
-
-	if(!ok){ 	delay(100); ok = _write(fragmentHeader,((char *)message)+offset,fragmentLen,writeDirect);
-		if(!ok){ delay(150); ok = _write(fragmentHeader,((char *)message)+offset,fragmentLen,writeDirect);
-		}		
-	}
+    //header.id++;
+	uint8_t counter = 0;
+	/*while(!ok){
+	  ok = _write(fragmentHeader,((char *)message)+offset,fragmentLen,writeDirect);
+	  counter++;
+	  if(counter >= 3){ break; }	  
+	}*/
     //if (!noListen) {      
-      delayMicroseconds(50);
+      //delayMicroseconds(50);
     //}
 
     if (!ok) {
@@ -533,9 +537,10 @@ bool RF24Network::write(RF24NetworkHeader& header,const void* message, size_t le
   // Now, continue listening
   //radio.startListening();
 
+ // int frag_delay = uint8_t(len/48);
+ // delay( std::min(frag_delay,20));
   int frag_delay = uint8_t(len/48);
   delay( std::min(frag_delay,20));
-
   //Return true if all the chuncks where sent successfuly
   //else return false
   IF_SERIAL_DEBUG(printf("%u: NET total message fragments sent %i. txSuccess ",millis(),msgCount); printf("%s\n\r", txSuccess ? "YES" : "NO"););
