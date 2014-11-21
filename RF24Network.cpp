@@ -136,6 +136,7 @@ uint8_t RF24Network::update(void)
 			   returnVal = NETWORK_PING;
 			   continue;
 			}
+			
 		    if(header.type == NETWORK_ADDR_RESPONSE ){	
 			    uint16_t requester = frame_buffer[8];// | frame_buffer[9] << 8;
 				requester |= frame_buffer[9] << 8;				
@@ -156,9 +157,12 @@ uint8_t RF24Network::update(void)
 				continue;
 			}
 			
-			if( res >127 && ( res <NETWORK_FIRST_FRAGMENT && res > NETWORK_LAST_FRAGMENT && res != NETWORK_MORE_FRAGMENTS_NACK ) ){	
+			if( res >127 ){	
 				IF_SERIAL_DEBUG_ROUTING( printf_P(PSTR("%lu MAC: System payload rcvd %d\n"),millis(),res); );
-				return res;
+				if( (header.type < 148 || header.type > 150) && header.type != NETWORK_MORE_FRAGMENTS_NACK){
+					printf("Type %d\n",header.type);
+					return res;
+				}				
 			}
 			
 			if( enqueue(frame) == 2 ){ //External data received			
@@ -371,7 +375,7 @@ size_t RF24Network::read(RF24NetworkHeader& header,void* message, size_t maxlen)
     {
 	
 	   memcpy(message,frame->message_buffer,frame->message_size);
-	    IF_SERIAL_DEBUG(printf("%lu: FRG message size %d\n",millis(),frame.message_size););
+	    IF_SERIAL_DEBUG(printf("%lu: FRG message size %d\n",millis(),frame->message_size););
     //IF_SERIAL_DEBUG(printf("%u: FRG message ",millis()); const char* charPtr = reinterpret_cast<const char*>(message); for (size_t i = 0; i < frame.message_size; i++) { printf("%02X ", charPtr[i]); }; printf("\n\r"));	
 	size_t len = frame->message_size;
 	IF_SERIAL_DEBUG(printf_P(PSTR("%lu: NET r message "),millis());const uint8_t* charPtr = reinterpret_cast<const uint8_t*>(message);while(len--){ printf("%02x ",charPtr[len]);} printf_P(PSTR("\n\r") ) );
@@ -731,7 +735,7 @@ const char* RF24NetworkHeader::toString(void) const
 {
   static char buffer[45];
   //snprintf_P(buffer,sizeof(buffer),PSTR("id %04x from 0%o to 0%o type %c"),id,from_node,to_node,type);
-  sprintf_P(buffer,PSTR("id %04x from 0%o to 0%o type %c"),id,from_node,to_node,type);
+  sprintf_P(buffer,PSTR("id %d from 0%o to 0%o type %d"),id,from_node,to_node,type);
   return buffer;
 }
 
