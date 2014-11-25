@@ -159,7 +159,7 @@ uint8_t RF24Network::update(void) {
 					continue;
 				}
 
-				if(header.type>127){
+				if(header.type>127 ){
 					IF_SERIAL_DEBUG_ROUTING(printf_P(PSTR("%lu RT: System payload rcvd %d\n"),millis(),header.type););
 					if( (header.type < 148 || header.type > 150) && header.type != NETWORK_MORE_FRAGMENTS_NACK){
 						return header.type;
@@ -407,7 +407,7 @@ bool RF24Network::multicast(RF24NetworkHeader& header,const void* message, size_
   header.from_node = node_address;
 
   // Build the full frame to send
-  memcpy(frame_buffer,&header,sizeof(RF24NetworkHeader));
+  /*memcpy(frame_buffer,&header,sizeof(RF24NetworkHeader));
   if (len)
     memcpy(frame_buffer + sizeof(RF24NetworkHeader),message,std::min(frame_size-sizeof(RF24NetworkHeader),len));
 
@@ -418,7 +418,9 @@ bool RF24Network::multicast(RF24NetworkHeader& header,const void* message, size_
   }  
     
 	return write(levelToAddress(level),USER_TX_MULTICAST);
+	*/
 	
+	return write(header, message, len, levelToAddress(level));
 }
 #endif  //RF24NetworkMulticast
 
@@ -496,7 +498,7 @@ bool RF24Network::write(RF24NetworkHeader& header,const void* message, size_t le
         fragmentHeader.type = NETWORK_MORE_FRAGMENTS; //Set the more fragments flag to indicate a fragmented frame
       }
     }
-
+    printf("type %d to %o\n",fragmentHeader.type,fragmentHeader.to_node);
     size_t offset = msgCount*max_frame_payload_size;
     size_t fragmentLen = std::min(len-offset,max_frame_payload_size);
 
@@ -507,6 +509,8 @@ bool RF24Network::write(RF24NetworkHeader& header,const void* message, size_t le
     //Try to send the payload chunk with the copied header
 	frame_size = sizeof(RF24NetworkHeader)+fragmentLen;
 	bool ok = _write(fragmentHeader,((char *)message)+offset,fragmentLen,writeDirect);
+	
+	if(writeDirect != 070){ delay(2); printf("delay M\n");} //Delay 5ms between sending multicast payloads
     //header.id++;
 	uint8_t counter = 0;
 	/*while(!ok){
@@ -573,6 +577,7 @@ bool RF24Network::_write(RF24NetworkHeader& header,const void* message, size_t l
   // If the user is trying to send it to himself
   if ( header.to_node == node_address ) {
     // Build the frame to send
+	
     RF24NetworkFrame frame = RF24NetworkFrame(header,message,std::min(MAX_FRAME_SIZE-sizeof(RF24NetworkHeader),len));
     // Just queue it in the received queue
     return enqueue(frame);
