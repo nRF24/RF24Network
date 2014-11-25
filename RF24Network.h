@@ -66,11 +66,6 @@
 #define USER_TX_MULTICAST 4
 
 
-/** System defines */
-#define MAX_FRAME_SIZE 32
-#define MAX_PAYLOAD_SIZE 128
-
-
 class RF24;
 
 /**
@@ -122,7 +117,6 @@ struct RF24NetworkHeader
    */
   //RF24NetworkHeader(uint16_t _to, unsigned char _type = 0): to_node(_to), id(next_id++), type(_type&0x7f) {}
   RF24NetworkHeader(uint16_t _to, unsigned char _type = 0): to_node(_to), id(next_id++), type(_type) {}
-  
   /**
    * Create debugging string
    *
@@ -148,37 +142,50 @@ struct RF24NetworkHeader
 {
   RF24NetworkHeader header; /**< Header which is sent with each message */
   size_t message_size; /**< The size in bytes of the payload length */
-  uint8_t message_buffer[MAX_PAYLOAD_SIZE]; /**< Vector to put the frame payload that will be sent/received over the air */
   uint8_t total_fragments; /**<Total number of expected fragments */
+  uint8_t *message_buffer;
+  //uint8_t message_buffer[MAX_PAYLOAD_SIZE]; /**< Vector to put the frame payload that will be sent/received over the air */
+  
   /**
    * Default constructor
    *
    * Simply constructs a blank frame
    */
+  //RF24NetworkFrame() {}
+  
   RF24NetworkFrame() {}
-
   /**
    * Send constructor
    *
    * Use this constructor to create a frame with header and payload and then send a message
    */
-  RF24NetworkFrame(uint16_t _to, unsigned char _type = 0, const void* _message = NULL, size_t _len = 0) :
-                  header(RF24NetworkHeader(_to,_type)), message_size(_len), total_fragments(0) {
-    if (_message && _len) {
-      memcpy(message_buffer,_message,_len);
-    }
+  RF24NetworkFrame(RF24NetworkHeader &_header, uint16_t _message_size, uint8_t _total_fragments):
+                  header(_header), message_size(_message_size), total_fragments(_total_fragments){		  
   }
+  
+  /**
+   * Send constructor
+   *
+   * Use this constructor to create a frame with header only
+   */  
+  RF24NetworkFrame(uint16_t _to, unsigned char _type = 0, size_t _len = 0) :
+                  header(RF24NetworkHeader(_to,_type)), message_size(_len), total_fragments(0) {
+    //if (_message && _len) {
+    //  memcpy(message_buffer,_message,_len);
+    //}
+  }
+  
 
   /**
    * Send constructor
    *
    * Use this constructor to create a frame with header and payload and then send a message
    */
-  RF24NetworkFrame(RF24NetworkHeader& _header, const void* _message = NULL, size_t _len = 0) :
+  RF24NetworkFrame(RF24NetworkHeader& _header, size_t _len = 0) :
                   header(_header), message_size(_len), total_fragments(0) {
-    if (_message && _len) {
-      memcpy(message_buffer,_message,_len);
-    }
+    //if (_message && _len) {
+    //  memcpy(message_buffer,_message,_len);
+    //}
   }
 
   /**
@@ -470,23 +477,41 @@ private:
   const static unsigned int max_frame_payload_size = MAX_FRAME_SIZE-sizeof(RF24NetworkHeader);
 
   
-  #if defined RF24TINY
-	uint8_t frame_queue[3*MAX_FRAME_SIZE]; /**< Space for a small set of frames that need to be delivered to the app layer */
+  #if defined(__AVR_ATtiny25__) || defined(__AVR_ATtiny45__) || defined(__AVR_ATtiny85__) || defined(__AVR_ATtiny24__) || defined(__AVR_ATtiny44__) || defined(__AVR_ATtiny84__)
+	#if defined (DISABLE_FRAGMENTATION)
+		uint8_t frame_queue[2*(MAX_FRAME_SIZE+3)]; /**< Space for a small set of frames that need to be delivered to the app layer */
+	#else
+		uint8_t frame_queue[3*(MAX_FRAME_SIZE+3)]; /**< Space for a small set of frames that need to be delivered to the app layer */
+	#endif
   #else
-  uint8_t frame_queue[3*MAX_FRAME_SIZE]; /**< Space for a small set of frames that need to be delivered to the app layer */
+	#if defined (DISABLE_FRAGMENTATION)
+    uint8_t frame_queue[3*(MAX_FRAME_SIZE+3)]; /**< Space for a small set of frames that need to be delivered to the app layer */
+	#else
+	uint8_t frame_queue[MAX_PAYLOAD_SIZE+MAX_FRAME_SIZE+11]; /**< Space for a small set of frames that need to be delivered to the app layer */
+	#endif
   #endif
   uint8_t* next_frame; /**< Pointer into the @p frame_queue where we should place the next received frame */
   //uint8_t frag_queue[MAX_PAYLOAD_SIZE + 11];
-  RF24NetworkFrame frag_queue;
-  
+  //RF24NetworkFrame frag_queue;
   
   uint16_t parent_node; /**< Our parent's node address */
   uint8_t parent_pipe; /**< The pipe our parent uses to listen to us */
   uint16_t node_mask; /**< The bits which contain signfificant node address information */
-
+  static uint32_t nFails;
+  static uint32_t nOK;
+  
+  #if !defined ( DISABLE_FRAGMENTATION )
+  RF24NetworkFrame frag_queue;
+  uint8_t frag_queue_message_buffer[MAX_PAYLOAD_SIZE+11]; //frame size + 1 
+  uint8_t frame_buffer[MAX_FRAME_SIZE]; /**< Space to put the frame that will be sent/received over the air */ 
+  #endif
+  
 public:
-  RF24NetworkFrame *frag_ptr;
-  uint8_t frame_buffer[MAX_FRAME_SIZE]; /**< Space to put the frame that will be sent/received over the air */  
+
+  #if !defined ( DISABLE_FRAGMENTATION )
+  RF24NetworkFrame* frag_ptr;
+  #endif
+   
 
 };
 

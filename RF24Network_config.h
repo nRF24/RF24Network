@@ -23,7 +23,12 @@
 //#define DUAL_HEAD_RADIO
 //#define ENABLE_SLEEP_MODE
 #define RF24NetworkMulticast
-//#define DISABLE_FRAGMENTATION // Saves a bit of space by disabling fragmentation
+//#define DISABLE_FRAGMENTATION // Saves a bit of memory space by disabling fragmentation
+
+/** System defines */
+#define MAX_FRAME_SIZE 32   //Size of individual radio frames
+#define MAX_PAYLOAD_SIZE 128  //Size of fragmented network frames Note: With RF24ethernet, assign in multiples of 24. General minimum is 96 (a 32-byte ping from windows is 74 bytes, (Ethernet Header is 42))
+
 
 //#define SERIAL_DEBUG
 //#define SERIAL_DEBUG_MINIMAL
