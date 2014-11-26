@@ -173,8 +173,9 @@ uint8_t RF24Network::update(void)
 			if( enqueue(frame) == 2 ){ //External data received			
 				#if defined (SERIAL_DEBUG_MINIMAL)
 				//Serial.println("ret ext");
-				return EXTERNAL_DATA_TYPE;
 				#endif
+				return EXTERNAL_DATA_TYPE;
+				
 			}
 			
 	  }else{	  
@@ -489,7 +490,7 @@ bool RF24Network::write(RF24NetworkHeader& header,const void* message, size_t le
   uint8_t fragment_id = 1 + ((len - 1) / max_frame_payload_size);  //the number of fragments to send = ceil(len/max_frame_payload_size)
   uint8_t msgCount = 0;
 
-  IF_SERIAL_DEBUG_FRAGMENTATION(printf("%u: FRG Total message fragments %i\n\r",millis(),fragment_id););
+  IF_SERIAL_DEBUG_FRAGMENTATION(printf("%lu: FRG Total message fragments %d\n\r",millis(),fragment_id););
   
   while (fragment_id > 0) {
 
@@ -511,7 +512,7 @@ bool RF24Network::write(RF24NetworkHeader& header,const void* message, size_t le
     size_t offset = msgCount*max_frame_payload_size;
     size_t fragmentLen = min(len-offset,max_frame_payload_size);
 
-    IF_SERIAL_DEBUG_FRAGMENTATION(printf("%u: FRG try to transmit fragmented payload of size %i Bytes with fragmentID '%i'\n\r",millis(),fragmentLen,fragment_id););
+   // IF_SERIAL_DEBUG_FRAGMENTATION(printf("%lu: FRG try to transmit fragmented payload of size %d Bytes with fragmentID '%d'\n\r",millis(),fragmentLen,fragment_id););
 
     //Try to send the payload chunk with the copied header
 	//printf("frz %d\n",frame_size);
@@ -532,13 +533,13 @@ bool RF24Network::write(RF24NetworkHeader& header,const void* message, size_t le
     //}
 
     if (!ok) {
-        IF_SERIAL_DEBUG_FRAGMENTATION(printf("%u: FRG message transmission with fragmentID '%i' failed. Abort.\n\r",millis(),fragment_id););
+        IF_SERIAL_DEBUG_FRAGMENTATION(printf("%lu: FRG message transmission with fragmentID '%d' failed. Abort.\n\r",millis(),fragment_id););
         return false;
         break;
     }
 
     //Message was successful sent
-    IF_SERIAL_DEBUG_FRAGMENTATION(printf("%u: FRG message transmission with fragmentID '%i' sucessfull.\n\r",millis(),fragment_id););
+    IF_SERIAL_DEBUG_FRAGMENTATION(printf("%lu: FRG message transmission with fragmentID '%d' sucessfull.\n\r",millis(),fragment_id););
 
     //Check and modify counters
     fragment_id--;
