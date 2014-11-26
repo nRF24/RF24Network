@@ -136,16 +136,6 @@ public:
    * @return The total number of bytes copied into @p message
    */
   size_t read(RF24NetworkHeader& header, void* message, size_t maxlen);
-
-  /**
-   * Moves the queued messages to the start of the queue.
-   * 
-   * @note This is used as the messages are read.
-   * The function does not wipe the data as the pointer next_frame is used.
-   * Move Frames is created to utilize a normal queue, messages enter from 
-   * the back, exit from the front and the queue moves forward.
-   */
-   void MoveFrames(void);
    
   /**
    * Send a message
