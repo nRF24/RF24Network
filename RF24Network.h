@@ -64,7 +64,7 @@
 #define USER_TX_TO_PHYSICAL_ADDRESS 2  //no network ACK
 #define USER_TX_TO_LOGICAL_ADDRESS 3   // network ACK
 #define USER_TX_MULTICAST 4
-
+#define MAX_FRAME_SIZE 32   //Size of individual radio frames
 
 class RF24;
 
@@ -485,9 +485,9 @@ private:
 	#endif
   #else
 	#if defined (DISABLE_FRAGMENTATION)
-    uint8_t frame_queue[3*(MAX_FRAME_SIZE+3)]; /**< Space for a small set of frames that need to be delivered to the app layer */
+    uint8_t frame_queue[5*(MAX_FRAME_SIZE+11)]; /**< Space for a small set of frames that need to be delivered to the app layer */
 	#else
-	uint8_t frame_queue[MAX_PAYLOAD_SIZE+MAX_FRAME_SIZE+11]; /**< Space for a small set of frames that need to be delivered to the app layer */
+	uint8_t frame_queue[5*(MAX_FRAME_SIZE+11)]; /**< Space for a small set of frames that need to be delivered to the app layer */
 	#endif
   #endif
   uint8_t* next_frame; /**< Pointer into the @p frame_queue where we should place the next received frame */
@@ -594,8 +594,11 @@ public:
  *
  * @section Features Features
  *
- * Whats new?  
- *  @note Network Message Types Change: (Oct 8, 2014) Requires re-installation on all nodes <br>
+ * <b>Whats new? </b><br> 
+ *  New functionality: (Nov 24) Fragmentation & reassembly supported on both RPi and Arduino  <br>
+ *  New functionality: (Nov 24) Partial support for fragmented multicast payloads. (Only working with sending from RPi to Arduino)  <br>
+ *  Note: structure of network frames is changed, these are only used by external applications like RF24Ethernet and RF24toTUN, and for fragmentation  <br>
+ *  Network Message Types Change: (Oct 8, 2014) Requires re-installation on all nodes <br>
  *  New functionality: User message types 1 through 64 will not receive a network ack
  *
  * The layer provides:
@@ -612,10 +615,8 @@ public:
  * @li Ad-hoc Joining.  A node can join a network without any changes to any
  * existing nodes.
  *
- * The layer does not (yet) provide:
- * @li Fragmentation/reassembly.  Ability to send longer messages and put them
- * all back together before exposing them up to the app.
- * @li Dynamic address assignment.
+ * The layer does not provide:
+ * @li Dynamic address assignment. (See RF24Mesh)
  *
  * @section More How to learn more
  *
