@@ -142,7 +142,7 @@ struct RF24NetworkHeader
 {
   RF24NetworkHeader header; /**< Header which is sent with each message */
   size_t message_size; /**< The size in bytes of the payload length */
-  uint8_t total_fragments; /**<Total number of expected fragments */
+  //uint8_t total_fragments; /**<Total number of expected fragments */
   uint8_t *message_buffer;
   //uint8_t message_buffer[MAX_PAYLOAD_SIZE]; /**< Vector to put the frame payload that will be sent/received over the air */
   
@@ -159,8 +159,8 @@ struct RF24NetworkHeader
    *
    * Use this constructor to create a frame with header and payload and then send a message
    */
-  RF24NetworkFrame(RF24NetworkHeader &_header, uint16_t _message_size, uint8_t _total_fragments):
-                  header(_header), message_size(_message_size), total_fragments(_total_fragments){		  
+  RF24NetworkFrame(RF24NetworkHeader &_header, uint16_t _message_size):
+                  header(_header), message_size(_message_size){		  
   }
   
   /**
@@ -169,24 +169,10 @@ struct RF24NetworkHeader
    * Use this constructor to create a frame with header only
    */  
   RF24NetworkFrame(uint16_t _to, unsigned char _type = 0, size_t _len = 0) :
-                  header(RF24NetworkHeader(_to,_type)), message_size(_len), total_fragments(0) {
-    //if (_message && _len) {
-    //  memcpy(message_buffer,_message,_len);
-    //}
+                  header(RF24NetworkHeader(_to,_type)), message_size(_len) {
   }
   
 
-  /**
-   * Send constructor
-   *
-   * Use this constructor to create a frame with header and payload and then send a message
-   */
-  RF24NetworkFrame(RF24NetworkHeader& _header, size_t _len = 0) :
-                  header(_header), message_size(_len), total_fragments(0) {
-    //if (_message && _len) {
-    //  memcpy(message_buffer,_message,_len);
-    //}
-  }
 
   /**
    * Create debugging string
@@ -479,15 +465,15 @@ private:
   
   #if defined(__AVR_ATtiny25__) || defined(__AVR_ATtiny45__) || defined(__AVR_ATtiny85__) || defined(__AVR_ATtiny24__) || defined(__AVR_ATtiny44__) || defined(__AVR_ATtiny84__)
 	#if defined (DISABLE_FRAGMENTATION)
-		uint8_t frame_queue[2*(MAX_FRAME_SIZE+3)]; /**< Space for a small set of frames that need to be delivered to the app layer */
+		uint8_t frame_queue[2*(MAX_FRAME_SIZE+10)]; /**< Space for a small set of frames that need to be delivered to the app layer */
 	#else
-		uint8_t frame_queue[3*(MAX_FRAME_SIZE+3)]; /**< Space for a small set of frames that need to be delivered to the app layer */
+		uint8_t frame_queue[3*(MAX_FRAME_SIZE+10)]; /**< Space for a small set of frames that need to be delivered to the app layer */
 	#endif
   #else
-	#if defined (DISABLE_FRAGMENTATION)
-    uint8_t frame_queue[5*(MAX_FRAME_SIZE+11)]; /**< Space for a small set of frames that need to be delivered to the app layer */
+	#if defined (DISABLE_USER_PAYLOADS)
+    uint8_t frame_queue[1]; /**< Space for a small set of frames that need to be delivered to the app layer */
 	#else
-	uint8_t frame_queue[5*(MAX_FRAME_SIZE+11)]; /**< Space for a small set of frames that need to be delivered to the app layer */
+	uint8_t frame_queue[5*(MAX_FRAME_SIZE+10)]; /**< Space for a small set of frames that need to be delivered to the app layer */
 	#endif
   #endif
   uint8_t* next_frame; /**< Pointer into the @p frame_queue where we should place the next received frame */
