@@ -37,7 +37,7 @@
 
 /** System defines */
 #define MAX_PAYLOAD_SIZE  120 //Size of fragmented network frames Note: With RF24ethernet, assign in multiples of 24. General minimum is 96 (a 32-byte ping from windows is 74 bytes, (Ethernet Header is 42))
-#define DISABLE_USER_PAYLOADS // Disable user payloads. Saves memory when used with RF24Ethernet or software that uses external data.
+//#define DISABLE_USER_PAYLOADS // Disable user payloads. Saves memory when used with RF24Ethernet or software that uses external data.
 
 //#define SERIAL_DEBUG
 //#define SERIAL_DEBUG_MINIMAL
