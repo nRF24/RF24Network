@@ -10,10 +10,20 @@
 #ifndef __RF24NETWORK_CONFIG_H__
 #define __RF24NETWORK_CONFIG_H__
 
-#if ARDUINO < 100
-#include <WProgram.h>
-#else
-#include <Arduino.h>
+#if (defined (__linux) || defined (linux)) && !defined (__ARDUINO_X86__)
+  #define RF24_LINUX
+  #include <stdint.h>
+  #include <stdio.h>
+  #include <string.h>
+  #define _BV(x) (1<<(x))
+#endif
+
+#if !defined (RF24_LINUX)
+  #if ARDUINO < 100
+    #include <WProgram.h>
+  #else
+    #include <Arduino.h>
+  #endif
 #endif
 
 #include <stddef.h>
@@ -21,13 +31,13 @@
 /********** USER CONFIG **************/
 
 //#define DUAL_HEAD_RADIO
-//#define ENABLE_SLEEP_MODE
+//#define ENABLE_SLEEP_MODE  //AVR only
 #define RF24NetworkMulticast
 //#define DISABLE_FRAGMENTATION // Saves a bit of memory space by disabling fragmentation
 
 /** System defines */
 #define MAX_PAYLOAD_SIZE  120 //Size of fragmented network frames Note: With RF24ethernet, assign in multiples of 24. General minimum is 96 (a 32-byte ping from windows is 74 bytes, (Ethernet Header is 42))
-//#define DISABLE_USER_PAYLOADS // Disable user payloads. Saves memory when used with RF24Ethernet or software that uses external data.
+#define DISABLE_USER_PAYLOADS // Disable user payloads. Saves memory when used with RF24Ethernet or software that uses external data.
 
 //#define SERIAL_DEBUG
 //#define SERIAL_DEBUG_MINIMAL
@@ -37,11 +47,16 @@
  
 #endif
 
-#ifndef __RF24_CONFIG_H__
-#define __RF24_CONFIG_H__
 
+
+#ifndef rf24_max
+  #define rf24_max(a,b) (a>b?a:b)
+#endif
+#ifndef rf24_min
+  #define rf24_min(a,b) (a<b?a:b)
+#endif
   // Define _BV for non-Arduino platforms and for Arduino DUE
-#if defined (ARDUINO) && !defined (__arm__)
+/*#if defined (ARDUINO) && !defined (__arm__)
 	#if !defined(__AVR_ATtiny25__) && !defined(__AVR_ATtiny45__) && !defined(__AVR_ATtiny85__) && !defined(__AVR_ATtiny24__) && !defined(__AVR_ATtiny44__) && !defined(__AVR_ATtiny84__)
 		#include <SPI.h>
 	#endif
@@ -64,16 +79,17 @@
  #endif
 
 
-#endif
+#endif*/
 
-
+#ifndef __RF24_CONFIG_H__
+#define __RF24_CONFIG_H__
   
   #if defined (SERIAL_DEBUG)
 	#define IF_SERIAL_DEBUG(x) ({x;})
   #else
 	#define IF_SERIAL_DEBUG(x)
 	#if defined(__AVR_ATtiny84__) || defined(__AVR_ATtiny85__)
-	#define printf_P(...)
+	  #define printf_P(...)
     #endif
   #endif
 
@@ -94,6 +110,9 @@
   #else
     #define IF_SERIAL_DEBUG_ROUTING(x)
   #endif
+  
+  
+
 
 // Avoid spurious warnings
 // Arduino DUE is arm and uses traditional PROGMEM constructs
@@ -112,12 +131,15 @@
 	#include <avr/pgmspace.h>
 	#define PRIPSTR "%S"
 #else
-#if ! defined(ARDUINO) // This doesn't work on Arduino DUE
+#if ! defined(ARDUINO) && !defined (RF24_LINUX) // This doesn't work on Arduino DUE
 	typedef char const char;
 #else // Fill in pgm_read_byte that is used, but missing from DUE
 	#define pgm_read_byte(addr) (*(const unsigned char *)(addr))
 #endif
 
+#if !defined(sprintf_P)
+	#define sprintf_P sprintf
+#endif
 
 #if !defined (CORE_TEENSY)
 	typedef uint16_t prog_uint16_t;
@@ -131,5 +153,6 @@
 	#define PRIPSTR "%s"
 
 #endif
+
 #endif // __RF24_CONFIG_H__
 // vim:ai:cin:sts=2 sw=2 ft=cpp

@@ -19,6 +19,20 @@
 #include <stdint.h>
 #include "RF24Network_config.h"
 
+#if (defined (__linux) || defined (linux)) && !defined (__ARDUINO_X86__)
+  #include <stdint.h>
+  #include <stdio.h>
+  #include <time.h>
+  #include <string.h>
+  #include <sys/time.h>
+  #include <stddef.h>
+  #include <assert.h>
+  #include <map>
+  #include <utility>      // std::pair
+  #include <queue>
+  
+#endif
+
 /**
  * Network Management message types for management of network frames and messages
  * System discard types (128 to 147) Contain no user data, just additional system sub-types sent for informational purposes. (Initially within NETWORK_ACK responses)
@@ -100,9 +114,8 @@ struct RF24NetworkHeader
   /**
    * Send constructor  
    *  
-   * @note Raspberry Pi now supports fragmentation for very long messages, send as normal. Arduino, ATTiny will handle routing of fragmented messages, but cannot receive them properly  
-   * @warning The latest updates to add fragmentation requires updating ALL devices  
-   *  
+   * @note Now supports fragmentation for very long messages, send as normal. Configure fragmentation and max payload size
+   * in RF24Network_config.h
    *  
    * Use this constructor to create a header and then send a message  
    *   
@@ -113,7 +126,7 @@ struct RF24NetworkHeader
    *
    * @param _to The logical node address where the message is going
    * @param _type The type of message which follows.  Only 0-127 are allowed for
-   * user messages.
+   * user messages. Types 1-64 will not receive a network acknowledgement.
    */
   //RF24NetworkHeader(uint16_t _to, unsigned char _type = 0): to_node(_to), id(next_id++), type(_type&0x7f) {}
   RF24NetworkHeader(uint16_t _to, unsigned char _type = 0): to_node(_to), id(next_id++), type(_type) {}
@@ -134,7 +147,7 @@ struct RF24NetworkHeader
  * Frame structure for each message
  *
  * The frame put over the air consists of a header and a message payload
- * @note Frames are handled internally for fragmented payloads. Use RF24NetworkHeader
+ * @note Frames are handled internally for fragmented payloads. Use RF24NetworkHeader except for 'external data' systems.
  */
 
 
@@ -142,10 +155,11 @@ struct RF24NetworkHeader
 {
   RF24NetworkHeader header; /**< Header which is sent with each message */
   size_t message_size; /**< The size in bytes of the payload length */
-  //uint8_t total_fragments; /**<Total number of expected fragments */
-  uint8_t *message_buffer;
-  //uint8_t message_buffer[MAX_PAYLOAD_SIZE]; /**< Vector to put the frame payload that will be sent/received over the air */
-  
+  #if defined (RF24_LINUX)
+    uint8_t message_buffer[MAX_PAYLOAD_SIZE];
+  #else
+    uint8_t *message_buffer; /**< Pointer to the buffer storing the actual message */
+  #endif
   /**
    * Default constructor
    *
@@ -159,10 +173,18 @@ struct RF24NetworkHeader
    *
    * Use this constructor to create a frame with header and payload and then send a message
    */
+#if defined (RF24_LINUX)   
+  RF24NetworkFrame(RF24NetworkHeader& _header, const void* _message = NULL, size_t _len = 0) :
+                  header(_header), message_size(_len) {
+    if (_message && _len) {
+      memcpy(message_buffer,_message,_len);
+    }
+  }
+#else  
   RF24NetworkFrame(RF24NetworkHeader &_header, uint16_t _message_size):
                   header(_header), message_size(_message_size){		  
   }
-  
+#endif  
   /**
    * Send constructor
    *
@@ -245,7 +267,7 @@ public:
    * @param[out] header The header (envelope) of the next message
    */
   size_t peek(RF24NetworkHeader& header);
-  uint8_t peekData();
+//  uint8_t peekData();
 
   /**
    * Read a message
@@ -260,9 +282,8 @@ public:
   /**
    * Send a message
    *
-   * @note Raspberry Pi now supports fragmentation for very long messages, send as normal
-   * Arduino, ATTiny devices need to be updated if used with RPi, and will handle routing
-   * of fragmented messages, but cannot receive them properly
+   * @note RF24Network now supports fragmentation for very long messages, send as normal. Fragmentation
+   * may need to be enabled or configured by editing the RF24Network_config.h file. Default max payload size is 120 bytes.
    * 
    * @param[in,out] header The header (envelope) of this message.  The critical
    * thing to fill in is the @p to_node field so we know where to send the
@@ -296,7 +317,7 @@ public:
   RF24Network( RF24& _radio, RF24& _radio1);
 
   /**
-   * @note: Optimization:This value is automatically assigned based on the node address
+   * @note: This value is automatically assigned based on the node address
    * to reduce errors and increase throughput of the network.
    *
    * Sets the timeout period for individual payloads in milliseconds at staggered intervals.
@@ -310,7 +331,7 @@ public:
   /**
    * This only affects payloads that are routed by one or more nodes.
    * This specifies how long to wait for an ack from across the network.
-   * Radios routing directly to their parent or children nodes do not
+   * Radios sending directly to their parent or children nodes do not
    * utilize this value.
    */
   
@@ -338,7 +359,7 @@ public:
    * @param message Pointer to memory where the message is located
    * @param len The size of the message
    * @param level Multicast level to broadcast to
-   * @return Whether the message was successfully received
+   * @return Whether the message was successfully sent
    */
    
    bool multicast(RF24NetworkHeader& header,const void* message, size_t len, uint8_t level);
@@ -350,7 +371,8 @@ public:
 	* address.  
 	* The level should be specified in decimal format 1-6
 	* @param level Levels 1 to 6 are available. All nodes at the same level will receive the same
-	* messages if in range. Messages will be routed in order of level, low to high by default.
+	* messages if in range. Messages will be routed in order of level, low to high by default, with the
+	* master node (00) at multicast Level 0
 	*/
 	
 	void multicastLevel(uint8_t level);
@@ -358,7 +380,7 @@ public:
 	/**
 	* Enabling this will allow this node to automatically forward received multicast frames to the next highest
 	* multicast level. Duplicate frames are filtered out, so multiple forwarding nodes at the same level should
-	* not interfere
+	* not interfere. Forwarded payloads will also be received.
 	*/
 	
 	bool multicastRelay;
@@ -367,14 +389,14 @@ public:
    #endif
    
    /**
-   * Writes a direct payload. This allows routing or sending messages outside of the usual routing paths.
+   * Writes a direct (unicast) payload. This allows routing or sending messages outside of the usual routing paths.
    * The same as write, but a physical address is specified as the last option.
    * The payload will be written to the physical address, and routed as necessary by the recipient
    */
    bool write(RF24NetworkHeader& header,const void* message, size_t len, uint16_t writeDirect);
 
    /**
-   * Sleep this node - Still Under Development
+   * Sleep this node - For AVR devices only
    * @note NEW - Nodes can now be slept while the radio is not actively transmitting. This must be manually enabled by uncommenting
    * the #define ENABLE_SLEEP_MODE in RF24Network_config.h
    * @note Setting the interruptPin to 255 will disable interrupt wake-ups
@@ -449,6 +471,10 @@ private:
   
   bool logicalToPhysicalAddress(logicalToPhysicalStruct *conversionInfo);
   
+#if defined (RF24_LINUX)  
+  void appendFragmentToFrame(RF24NetworkFrame frame);
+#endif
+  
   RF24& radio; /**< Underlying radio driver, provides link/physical layers */
 #if defined (DUAL_HEAD_RADIO)
   RF24& radio1;
@@ -462,21 +488,27 @@ private:
   uint8_t frame_size;
   const static unsigned int max_frame_payload_size = MAX_FRAME_SIZE-sizeof(RF24NetworkHeader);
 
+  #if defined (RF24_LINUX)
+    std::queue<RF24NetworkFrame> frame_queue;
+    std::map<std::pair<uint16_t, uint16_t>, RF24NetworkFrame> frameFragmentsCache;
   
-  #if defined(__AVR_ATtiny25__) || defined(__AVR_ATtiny45__) || defined(__AVR_ATtiny85__) || defined(__AVR_ATtiny24__) || defined(__AVR_ATtiny44__) || defined(__AVR_ATtiny84__)
+  
+  #elif defined(__AVR_ATtiny25__) || defined(__AVR_ATtiny45__) || defined(__AVR_ATtiny85__) || defined(__AVR_ATtiny24__) || defined(__AVR_ATtiny44__) || defined(__AVR_ATtiny84__)
 	#if defined (DISABLE_FRAGMENTATION)
 		uint8_t frame_queue[2*(MAX_FRAME_SIZE+10)]; /**< Space for a small set of frames that need to be delivered to the app layer */
 	#else
 		uint8_t frame_queue[3*(MAX_FRAME_SIZE+10)]; /**< Space for a small set of frames that need to be delivered to the app layer */
 	#endif
+	uint8_t* next_frame; /**< Pointer into the @p frame_queue where we should place the next received frame */
   #else
 	#if defined (DISABLE_USER_PAYLOADS)
     uint8_t frame_queue[1]; /**< Space for a small set of frames that need to be delivered to the app layer */
 	#else
 	uint8_t frame_queue[5*(MAX_FRAME_SIZE+10)]; /**< Space for a small set of frames that need to be delivered to the app layer */
 	#endif
+	uint8_t* next_frame; /**< Pointer into the @p frame_queue where we should place the next received frame */
   #endif
-  uint8_t* next_frame; /**< Pointer into the @p frame_queue where we should place the next received frame */
+  
   //uint8_t frag_queue[MAX_PAYLOAD_SIZE + 11];
   //RF24NetworkFrame frag_queue;
   
@@ -486,15 +518,15 @@ private:
   static uint32_t nFails;
   static uint32_t nOK;
   
-  #if !defined ( DISABLE_FRAGMENTATION )
-  RF24NetworkFrame frag_queue;
-  uint8_t frag_queue_message_buffer[MAX_PAYLOAD_SIZE+11]; //frame size + 1 
-  uint8_t frame_buffer[MAX_FRAME_SIZE]; /**< Space to put the frame that will be sent/received over the air */ 
+  #if !defined ( DISABLE_FRAGMENTATION ) &&  !defined (RF24_LINUX)
+      RF24NetworkFrame frag_queue;
+      uint8_t frag_queue_message_buffer[MAX_PAYLOAD_SIZE+11]; //frame size + 1 
   #endif
+  uint8_t frame_buffer[MAX_FRAME_SIZE]; /**< Space to put the frame that will be sent/received over the air */ 
   
 public:
 
-  #if !defined ( DISABLE_FRAGMENTATION )
+  #if !defined ( DISABLE_FRAGMENTATION ) &&  !defined (RF24_LINUX)
   RF24NetworkFrame* frag_ptr;
   #endif
    
@@ -588,7 +620,6 @@ public:
  *  New functionality: User message types 1 through 64 will not receive a network ack
  *
  * The layer provides:
- * @li <b>New</b> (2014): Fragmentation/Re-assembly (RPi & Due only - Send only with Arduino)
  * @li <b>New</b> (2014): Network ACKs: Efficient acknowledgement of network-wide transmissions, via dynamic radio acks and network protocol acks.
  * @li <b>New</b> (2014): Updated addressing standard for optimal radio transmission.
  * @li <b>New</b> (2014): Extended timeouts and staggered timeout intervals. The new txTimeout variable allows fully automated extended timeout periods via auto-retry/auto-reUse of payloads.
@@ -731,6 +762,13 @@ public:
  * to form a tree structure. Nodes communicate directly with their parent and children nodes. Any other
  * traffic to or from a node must be routed through the network.
  *
+ * @section Topology Topology of RF24Network
+ *
+ * Anybody who is familiar at all with IP networking should be able to easily understand RF24Network topology. The
+ * master node can be seen as the gateway, with up to 4 directly connected nodes. Each of those nodes creates a
+ * subnet below it, with up to 4 additional child nodes. The numbering scheme can also be related to IP addresses,
+ * for purposes of understanding the topology via subnetting. Nodes can have 5 children if multicast is disabled.
+ * 
  * @section Network Routing
  *
  * Routing of traffic is handled invisibly to the user. If the network is constructed appropriately, nodes
@@ -755,7 +793,11 @@ public:
  * Old Functionality: Node 00 sends to node 011 using auto-ack. Node 00 first sends to 01, 01 acknowledges.
  * Node 01 forwards the payload to 011 using auto-ack. If the payload fails between 01 and 011, node 00 has
  * no way of knowing. The new method uses the same amount of traffic to accomplish more.
- *
+ * 
+ * Acknowledgements can and should be managed by the application or user. If requesting a response from another node,
+ * an acknowledgement is not required, so a user defined type of 0-64 should be used, to prevent the network from
+ * responding with an acknowledgement. If not requesting a response, and wanting to know if the payload was successful
+ * or not, users can utilize header types 65-127.
  * 
  * @section TuningOverview Tuning Overview
  * The RF24 radio modules are generally only capable of either sending or receiving data at any given
