@@ -99,7 +99,12 @@ struct RF24NetworkHeader
    * When requesting a response from another node, for example, a network ACK is not required, and will add extra traffic to the network. <br><br>
    */
   unsigned char type; /**< <b>Type of the packet. </b> 0-127 are user-defined types, 128-255 are reserved for system */
-  unsigned char reserved; /**< Reserved for future use */
+  
+  /**
+  * The reserved byte is used for system purposes. During fragmentation, it carries the fragment_id, and on the last fragment
+  * it carries the header_type.
+  */
+  unsigned char reserved; /**< Reserved for system use */
 
   static uint16_t next_id; /**< The message ID of the next message to be sent */
 
@@ -155,15 +160,20 @@ struct RF24NetworkHeader
 {
   RF24NetworkHeader header; /**< Header which is sent with each message */
   size_t message_size; /**< The size in bytes of the payload length */
+  
+  /**
+  * On Arduino, to simplify things, the message buffer is just a pointer, and can be pointed to any message buffer.
+  * The RPi supports receiving multiple frames at once, from different senders, and frames use a static message buffer size
+  */
   #if defined (RF24_LINUX)
     uint8_t message_buffer[MAX_PAYLOAD_SIZE];
-  #else
+  #else    
     uint8_t *message_buffer; /**< Pointer to the buffer storing the actual message */
   #endif
   /**
    * Default constructor
    *
-   * Simply constructs a blank frame
+   * Simply constructs a blank frame. Frames are generally used internally. See RF24NetworkHeader.
    */
   //RF24NetworkFrame() {}
   
@@ -171,7 +181,7 @@ struct RF24NetworkHeader
   /**
    * Send constructor
    *
-   * Use this constructor to create a frame with header and payload and then send a message
+   * Frames are generally used internally. See RF24NetworkHeader.
    */
 #if defined (RF24_LINUX)   
   RF24NetworkFrame(RF24NetworkHeader& _header, const void* _message = NULL, size_t _len = 0) :
@@ -244,8 +254,9 @@ public:
   /**
    * Main layer loop
    *
-   * This function must be called regularly to keep the layer going.  This is where all
-   * the action happens!
+   * This function must be called regularly to keep the layer going.  This is where payloads are 
+   * re-routed, received, and all the action happens.
+   * @return Returns the type of the last received payload.
    */
   uint8_t update(void);
 
@@ -522,11 +533,18 @@ private:
       RF24NetworkFrame frag_queue;
       uint8_t frag_queue_message_buffer[MAX_PAYLOAD_SIZE+11]; //frame size + 1 
   #endif
-  uint8_t frame_buffer[MAX_FRAME_SIZE]; /**< Space to put the frame that will be sent/received over the air */ 
+  
   
 public:
-
+  uint8_t frame_buffer[MAX_FRAME_SIZE]; /**< Space to put the frame that will be sent/received over the air */ 
+  
   #if !defined ( DISABLE_FRAGMENTATION ) &&  !defined (RF24_LINUX)
+  /**
+  * The frag_ptr is only used with Arduino (not RPi/Linux) and is mainly used for external data systems like RF24Ethernet. When
+  * an EXTERNAL_DATA payload type is received, and returned from network.update(), the frag_ptr will always point to the starting
+  * memory location of the received frame. This is used by external data systems (RF24Ethernet) to immediately copy the received
+  * data to a buffer, without using the user-cache.
+  */
   RF24NetworkFrame* frag_ptr;
   #endif
    
@@ -613,11 +631,11 @@ public:
  * @section Features Features
  *
  * <b>Whats new? </b><br> 
- *  New functionality: (Nov 24) Fragmentation & reassembly supported on both RPi and Arduino  <br>
- *  New functionality: (Nov 24) Partial support for fragmented multicast payloads. (Only working with sending from RPi to Arduino)  <br>
- *  Note: structure of network frames is changed, these are only used by external applications like RF24Ethernet and RF24toTUN, and for fragmentation  <br>
- *  Network Message Types Change: (Oct 8, 2014) Requires re-installation on all nodes <br>
- *  New functionality: User message types 1 through 64 will not receive a network ack
+ *  @li New: (Dec 8) Merge of RPi and Arduino code. Finally moving closer to a stable release.  Report issues at https://github.com/TMRh20/RF24Network/issues
+ *  @li New functionality: (Dec 8) Support for fragmented multicast payloads on both RPi and Arduino
+ *  @li New functionality: (Nov 24) Fragmentation & reassembly supported on both RPi and Arduino  
+ *  @li Note: structure of network frames is changed, these are only used by external applications like RF24Ethernet and RF24toTUN, and for fragmentation
+ *  @li New functionality: User message types 1 through 64 will not receive a network ack
  *
  * The layer provides:
  * @li <b>New</b> (2014): Network ACKs: Efficient acknowledgement of network-wide transmissions, via dynamic radio acks and network protocol acks.
@@ -634,16 +652,18 @@ public:
  *
  * The layer does not provide:
  * @li Dynamic address assignment. (See RF24Mesh)
+ * @li Layer 4 protocols (TCP/IP - See RF24Ethernet and RF24toTUN)
  *
  * @section More How to learn more
  *
  * @li <a href="classRF24Network.html">RF24Network Class Documentation</a>
- * @li <a href="Tuning.html"> Performance and Data Loss: Tuning the Network</a>
+ * @li <a href="Tuning.html"> Topology, Performance and Data Loss: Tuning the Network</a>
  * @li <a href="http://tmrh20.blogspot.com/2014/03/high-speed-data-transfers-and-wireless.html">My Blog: RF24 Optimization Overview</a>
- * @li <a href="http://tmrh20.blogspot.com/2014/03/arduino-radiointercomwireless-audio.html">My Blog: RF24 Wireless Audio</a>
- * @li <a href="http://tmrh20.github.com/RF24/">RF24: Underlying radio driver</a>
- * @li <a href="https://github.com/TMRh20/RF24Network/archive/master.zip">Download Current Package</a>
+ * @li <a href="https://github.com/TMRh20/RF24Network/archive/Development.zip">Download Current Development Package</a>
  * @li <a href="examples.html">Examples Page</a>.  Start with <a href="helloworld_rx_8ino-example.html">helloworld_rx</a> and <a href="helloworld_tx_8ino-example.html">helloworld_tx</a>.
+ * @li <a href="https://github.com/TMRh20/RF24Mesh">RF24Mesh: Dynamic Mesh Layer for RF24Network Dev</a>
+ * @li <a href="https://github.com/TMRh20/RF24Ethernet">RF24Ethernet: TCP/IP over RF24Network</a>
+ * @li <a href="http://tmrh20.blogspot.com/2014/03/arduino-radiointercomwireless-audio.html">My Blog: RF24 Wireless Audio</a>
  * @li <a href="http://maniacbug.github.com/RF24/">RF24: Original Author</a>
  * @section Topology Topology for Mesh Networks using nRF24L01(+)
  *

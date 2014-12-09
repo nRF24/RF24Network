@@ -168,7 +168,6 @@ uint8_t RF24Network::update(void)
       
 	  // Is this for us?
       if ( header.to_node == node_address   ){
-			
 			if(res == NETWORK_PING){
 			   returnVal = NETWORK_PING;
 			   continue;
@@ -179,6 +178,7 @@ uint8_t RF24Network::update(void)
 				requester |= frame_buffer[9] << 8;				
 				if(requester != node_address){
 					header.to_node = requester;
+					memcpy(frame_buffer,&header,sizeof(RF24NetworkHeader));
 					write(header.to_node,USER_TX_TO_PHYSICAL_ADDRESS);
 					delay(50);
 					write(header.to_node,USER_TX_TO_PHYSICAL_ADDRESS);
@@ -190,6 +190,7 @@ uint8_t RF24Network::update(void)
 				//printf("Fwd add req to 0\n");
 				header.from_node = node_address;
 				header.to_node = 0;
+				memcpy(frame_buffer,&header,sizeof(RF24NetworkHeader));
 				write(header.to_node,TX_NORMAL);
 				continue;
 			}
@@ -214,7 +215,7 @@ uint8_t RF24Network::update(void)
 			#endif
 			
 	  }else{	  
-	  
+
 	  #if defined	(RF24NetworkMulticast)		
 			if( header.to_node == 0100){
 				if(header.id != lastMultiMessageID || (header.type>=NETWORK_FIRST_FRAGMENT && header.type<=NETWORK_LAST_FRAGMENT)){
@@ -228,6 +229,7 @@ uint8_t RF24Network::update(void)
 					header.to_node = header.from_node;
 					header.from_node = node_address;			
 					delay((node_address%5)*5);
+					memcpy(frame_buffer,&header,sizeof(RF24NetworkHeader));
 					write(header.to_node,USER_TX_TO_PHYSICAL_ADDRESS);
 					continue;
 				  }
