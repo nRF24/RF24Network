@@ -26,7 +26,7 @@
   #include "RF24Network.h"
 #endif
 
-#if defined (ENABLE_SLEEP_MODE) && !defined (RF24_LINUX)
+#if defined (ENABLE_SLEEP_MODE) && !defined (RF24_LINUX) && !defined (__ARDUINO_X86__)
 	#include <avr/sleep.h>
 	#include <avr/power.h>
 	volatile byte sleep_cycles_remaining;
