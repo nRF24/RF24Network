@@ -247,9 +247,6 @@ bool RF24Network::write(uint16_t to_node)
   if ( !is_valid_address(to_node) )
     return false;
 
-  // First, stop listening so we can talk.
-  //radio.stopListening();
-
   // Where do we send this?  By default, to our parent
   uint16_t send_node = parent_node;
   // On which pipe
@@ -332,7 +329,7 @@ const char* RF24NetworkHeader::toString(void) const
 {
   static char buffer[45];
   //snprintf_P(buffer,sizeof(buffer),PSTR("id %04x from 0%o to 0%o type %c"),id,from_node,to_node,type);
-  sprintf_P(buffer,PSTR("id %04x from 0%o to 0%o type %c"),id,from_node,to_node,type);
+  sprintf_P(buffer,PSTR("id %04x from 0%o to 0%o type %d"),id,from_node,to_node,(int)type);
   return buffer;
 }
 
