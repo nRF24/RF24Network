@@ -136,7 +136,7 @@ public:
    * @return The total number of bytes copied into @p message
    */
   size_t read(RF24NetworkHeader& header, void* message, size_t maxlen);
-
+   
   /**
    * Send a message
    *

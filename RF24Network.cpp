@@ -10,7 +10,7 @@
 #include "RF24.h"
 #include "RF24Network.h"
 
-#if defined (ENABLE_SLEEP_MODE)
+#if defined (ENABLE_SLEEP_MODE)  && !defined (__ARDUINO_X86__)
 	#include <avr/sleep.h>
 	#include <avr/power.h>
 	volatile byte sleep_cycles_remaining;
@@ -200,8 +200,9 @@ size_t RF24Network::read(RF24NetworkHeader& header,void* message, size_t maxlen)
 
       // Copy the next available frame from the queue into the provided buffer
       memcpy(message,frame+sizeof(RF24NetworkHeader),bufsize);
+      
     }
-
+	
     IF_SERIAL_DEBUG(printf_P(PSTR("%lu: NET Received %s\n\r"),millis(),header.toString()));
   }
 
@@ -473,9 +474,9 @@ uint64_t pipe_address( uint16_t node, uint8_t pipe )
 /************************ Sleep Mode ******************************************/
 
 
-#if defined ENABLE_SLEEP_MODE
+#if defined ENABLE_SLEEP_MODE 
 
-#if !defined(__arm__)
+#if !defined(__arm__) && !defined (__ARDUINO_X86__)
 
 void wakeUp(){
   sleep_disable();
