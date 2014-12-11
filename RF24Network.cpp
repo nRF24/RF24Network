@@ -136,9 +136,7 @@ uint8_t RF24Network::update(void)
 	  radio.read( frame_buffer, frame_size );
 	  
       // Read the beginning of the frame as the header
-      //RF24NetworkHeader& header = *(RF24NetworkHeader*)(frame_buffer);
-	  RF24NetworkHeader header;
-      memcpy(&header,frame_buffer,sizeof(RF24NetworkHeader));
+      RF24NetworkHeader *header = (RF24NetworkHeader*)(&frame_buffer);
 	  
 	  #if defined (RF24_LINUX)
 	    IF_SERIAL_DEBUG(printf_P("%u: MAC Received on %u %s\n\r",millis(),pipe_num,header.toString()));
@@ -152,53 +150,51 @@ uint8_t RF24Network::update(void)
       #endif
 	  
       // Throw it away if it's not a valid address
-      if ( !is_valid_address(header.to_node) ){
+      if ( !is_valid_address(header->to_node) ){
 		continue;
 	  }
 	  
 	  
 	  #if defined (RF24_LINUX)
-	    RF24NetworkFrame frame = RF24NetworkFrame(header,frame_buffer+sizeof(RF24NetworkHeader),frame_size-sizeof(RF24NetworkHeader));  
+	    RF24NetworkFrame frame = RF24NetworkFrame(*header,frame_buffer+sizeof(RF24NetworkHeader),frame_size-sizeof(RF24NetworkHeader));  
 	  #else
-	    RF24NetworkFrame frame(header,frame_size-sizeof(RF24NetworkHeader));
+	    RF24NetworkFrame frame(*header,frame_size-sizeof(RF24NetworkHeader));
 	    frame.message_buffer = frame_buffer+sizeof(RF24NetworkHeader);
 	  #endif
 	  
-	  uint8_t res = header.type;
+	  uint8_t res = header->type;
       
 	  // Is this for us?
-      if ( header.to_node == node_address   ){
+      if ( header->to_node == node_address   ){
 			if(res == NETWORK_PING){
 			   returnVal = NETWORK_PING;
 			   continue;
 			}
 
-		    if(header.type == NETWORK_ADDR_RESPONSE ){	
+		    if(header->type == NETWORK_ADDR_RESPONSE ){	
 			    uint16_t requester = frame_buffer[8];// | frame_buffer[9] << 8;
 				requester |= frame_buffer[9] << 8;				
 				if(requester != node_address){
-					header.to_node = requester;
-					memcpy(frame_buffer,&header,sizeof(RF24NetworkHeader));
-					write(header.to_node,USER_TX_TO_PHYSICAL_ADDRESS);
+					header->to_node = requester;
+					write(header->to_node,USER_TX_TO_PHYSICAL_ADDRESS);
 					delay(50);
-					write(header.to_node,USER_TX_TO_PHYSICAL_ADDRESS);
+					write(header->to_node,USER_TX_TO_PHYSICAL_ADDRESS);
 					//printf("Fwd add response to 0%o\n",requester);
 					continue;
 				}
 			}
-			if(header.type == NETWORK_REQ_ADDRESS && node_address){
+			if(header->type == NETWORK_REQ_ADDRESS && node_address){
 				//printf("Fwd add req to 0\n");
-				header.from_node = node_address;
-				header.to_node = 0;
-				memcpy(frame_buffer,&header,sizeof(RF24NetworkHeader));
-				write(header.to_node,TX_NORMAL);
+				header->from_node = node_address;
+				header->to_node = 0;
+				write(header->to_node,TX_NORMAL);
 				continue;
 			}
 			
 			if( res >127 ){	
 				IF_SERIAL_DEBUG_ROUTING( printf_P(PSTR("%lu MAC: System payload rcvd %d\n"),millis(),res); );
-				if( (header.type < 148 || header.type > 150) && header.type != NETWORK_MORE_FRAGMENTS_NACK){
-					//printf("Type %d\n",header.type);
+				if( (header->type < 148 || header->type > 150) && header->type != NETWORK_MORE_FRAGMENTS_NACK){
+					//printf("Type %d\n",header->type);
 					return res;
 				}				
 			}
@@ -217,20 +213,19 @@ uint8_t RF24Network::update(void)
 	  }else{	  
 
 	  #if defined	(RF24NetworkMulticast)		
-			if( header.to_node == 0100){
-				if(header.id != lastMultiMessageID || (header.type>=NETWORK_FIRST_FRAGMENT && header.type<=NETWORK_LAST_FRAGMENT)){
+			if( header->to_node == 0100){
+				if(header->id != lastMultiMessageID || (header->type>=NETWORK_FIRST_FRAGMENT && header->type<=NETWORK_LAST_FRAGMENT)){
 					if(multicastRelay){					
-						IF_SERIAL_DEBUG_ROUTING( printf_P(PSTR("MAC: FWD multicast frame from 0%o to level %d\n"),header.from_node,multicast_level+1); );
+						IF_SERIAL_DEBUG_ROUTING( printf_P(PSTR("MAC: FWD multicast frame from 0%o to level %d\n"),header->from_node,multicast_level+1); );
 						write(levelToAddress(multicast_level)<<3,4);
 					}
 
-				  if(header.type == NETWORK_POLL ){
+				  if(header->type == NETWORK_POLL ){
 				    //Serial.println("Send poll");
-					header.to_node = header.from_node;
-					header.from_node = node_address;			
+					header->to_node = header->from_node;
+					header->from_node = node_address;			
 					delay((node_address%5)*5);
-					memcpy(frame_buffer,&header,sizeof(RF24NetworkHeader));
-					write(header.to_node,USER_TX_TO_PHYSICAL_ADDRESS);
+					write(header->to_node,USER_TX_TO_PHYSICAL_ADDRESS);
 					continue;
 				  }
 				#if defined (RF24_Linux)
@@ -241,17 +236,17 @@ uint8_t RF24Network::update(void)
 					return EXTERNAL_DATA_TYPE;
 				  }
 				#endif
-				lastMultiMessageID = header.id;
+				lastMultiMessageID = header->id;
 				}
 				else{				
-					IF_SERIAL_DEBUG_ROUTING( printf_P(PSTR("MAC: Drop duplicate multicast frame %d from 0%o\n"),header.id,header.from_node); );
+					IF_SERIAL_DEBUG_ROUTING( printf_P(PSTR("MAC: Drop duplicate multicast frame %d from 0%o\n"),header->id,header->from_node); );
 				}				
 			}else{			
-				write(header.to_node,1);	//Send it on, indicate it is a routed payload
+				write(header->to_node,1);	//Send it on, indicate it is a routed payload
 			}
 		#else
 		//if(radio.available()){printf("------FLUSHED DATA --------------");}	
-		write(header.to_node,1);	//Send it on, indicate it is a routed payload
+		write(header->to_node,1);	//Send it on, indicate it is a routed payload
 		#endif
 	  }
 	  

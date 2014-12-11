@@ -33,12 +33,23 @@
 //#define DUAL_HEAD_RADIO
 //#define ENABLE_SLEEP_MODE  //AVR only
 #define RF24NetworkMulticast
-//#define DISABLE_FRAGMENTATION // Saves a bit of memory space by disabling fragmentation
+
+/** Saves memory by disabling fragmentation */
+//#define DISABLE_FRAGMENTATION 
 
 /** System defines */
-#define MAX_PAYLOAD_SIZE  120 //Size of fragmented network frames Note: With RF24ethernet, assign in multiples of 24. General minimum is 96 (a 32-byte ping from windows is 74 bytes, (Ethernet Header is 42))
-//#define DISABLE_USER_PAYLOADS // Disable user payloads. Saves memory when used with RF24Ethernet or software that uses external data.
 
+/** Size of fragmented network frames Note: With RF24ethernet, assign in multiples of 24. General minimum is 96 (a 32-byte ping from windows is 74 bytes, (Ethernet Header is 42))*/
+#define MAX_PAYLOAD_SIZE  120 
+
+/** The number of 32-byte payloads RF24Network will automatically buffer for network.read().
+* If using fragmentation, this value multiplied by 42 must be larger than the MAX_PAYLOAD_SIZE defined above */
+#define NUM_USER_PAYLOADS 5
+
+/** Disable user payloads. Saves memory when used with RF24Ethernet or software that uses external data.*/
+//#define DISABLE_USER_PAYLOADS 
+
+/** Debug Options */
 //#define SERIAL_DEBUG
 //#define SERIAL_DEBUG_MINIMAL
 //#define SERIAL_DEBUG_ROUTING

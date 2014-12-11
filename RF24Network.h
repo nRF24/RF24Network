@@ -504,19 +504,22 @@ private:
     std::map<std::pair<uint16_t, uint16_t>, RF24NetworkFrame> frameFragmentsCache;
   
   
-  #elif defined(__AVR_ATtiny25__) || defined(__AVR_ATtiny45__) || defined(__AVR_ATtiny85__) || defined(__AVR_ATtiny24__) || defined(__AVR_ATtiny44__) || defined(__AVR_ATtiny84__)
-	#if defined (DISABLE_FRAGMENTATION)
-		uint8_t frame_queue[2*(MAX_FRAME_SIZE+10)]; /**< Space for a small set of frames that need to be delivered to the app layer */
-	#else
-		uint8_t frame_queue[3*(MAX_FRAME_SIZE+10)]; /**< Space for a small set of frames that need to be delivered to the app layer */
-	#endif
-	uint8_t* next_frame; /**< Pointer into the @p frame_queue where we should place the next received frame */
   #else
+    #if  defined(__AVR_ATtiny25__) || defined(__AVR_ATtiny45__) || defined(__AVR_ATtiny85__) || defined(__AVR_ATtiny24__) || defined(__AVR_ATtiny44__) || defined(__AVR_ATtiny84__)
+	  #if !defined (NUM_USER_PAYLOADS)
+		#define NUM_USER_PAYLOADS 3
+	  #endif
+    #endif
+	#if !defined (NUM_USER_PAYLOADS)
+	  #define NUM_USER_PAYLOADS 5
+	#endif
+	  
 	#if defined (DISABLE_USER_PAYLOADS)
     uint8_t frame_queue[1]; /**< Space for a small set of frames that need to be delivered to the app layer */
 	#else
-	uint8_t frame_queue[5*(MAX_FRAME_SIZE+10)]; /**< Space for a small set of frames that need to be delivered to the app layer */
+	uint8_t frame_queue[NUM_USER_PAYLOADS * (MAX_FRAME_SIZE + 10)]; /**< Space for a small set of frames that need to be delivered to the app layer */
 	#endif
+	
 	uint8_t* next_frame; /**< Pointer into the @p frame_queue where we should place the next received frame */
   #endif
   
