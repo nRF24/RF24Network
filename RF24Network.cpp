@@ -139,7 +139,7 @@ uint8_t RF24Network::update(void)
       RF24NetworkHeader *header = (RF24NetworkHeader*)(&frame_buffer);
 	  
 	  #if defined (RF24_LINUX)
-	    IF_SERIAL_DEBUG(printf_P("%u: MAC Received on %u %s\n\r",millis(),pipe_num,header.toString()));
+	    IF_SERIAL_DEBUG(printf_P("%u: MAC Received on %u %s\n\r",millis(),pipe_num,header->toString()));
         if (frame_size) {
           IF_SERIAL_DEBUG_FRAGMENTATION(printf("%u: FRG Rcv frame size %i\n",millis(),frame_size););
           IF_SERIAL_DEBUG_FRAGMENTATION(printf("%u: FRG Rcv frame ",millis()); const char* charPtr = reinterpret_cast<const char*>(frame_buffer); for (size_t i = 0; i < frame_size; i++) { printf("%02X ", charPtr[i]); }; printf("\n\r"));
@@ -215,11 +215,6 @@ uint8_t RF24Network::update(void)
 	  #if defined	(RF24NetworkMulticast)		
 			if( header->to_node == 0100){
 				if(header->id != lastMultiMessageID || (header->type>=NETWORK_FIRST_FRAGMENT && header->type<=NETWORK_LAST_FRAGMENT)){
-					if(multicastRelay){					
-						IF_SERIAL_DEBUG_ROUTING( printf_P(PSTR("MAC: FWD multicast frame from 0%o to level %d\n"),header->from_node,multicast_level+1); );
-						write(levelToAddress(multicast_level)<<3,4);
-					}
-
 				  if(header->type == NETWORK_POLL ){
 				    //Serial.println("Send poll");
 					header->to_node = header->from_node;
@@ -227,6 +222,10 @@ uint8_t RF24Network::update(void)
 					delay((node_address%5)*5);
 					write(header->to_node,USER_TX_TO_PHYSICAL_ADDRESS);
 					continue;
+				  }else
+				  if(multicastRelay){					
+					IF_SERIAL_DEBUG_ROUTING( printf_P(PSTR("MAC: FWD multicast frame from 0%o to level %d\n"),header->from_node,multicast_level+1); );
+					write(levelToAddress(multicast_level)<<3,4);
 				  }
 				#if defined (RF24_Linux)
 					enqueue(frame);
