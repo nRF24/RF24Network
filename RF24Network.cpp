@@ -295,7 +295,7 @@ uint8_t RF24Network::enqueue(RF24NetworkFrame frame) {
 	RF24NetworkFrame *f = &(frameFragmentsCache[ std::make_pair(frame.header.from_node,frame.header.id) ]);
 	
     // If total_fragments == 0, we are finished
-    if ( frame.header.to_node == node_address && f->message_size > 0){//|| (!frame.header.reserved && frameFragmentsCache.count(std::make_pair(frame.header.from_node,frame.header.id)) ) ) {
+    if ( f->message_size > 0){//|| (!frame.header.reserved && frameFragmentsCache.count(std::make_pair(frame.header.from_node,frame.header.id)) ) ) {
       frame_queue.push( frameFragmentsCache[ std::make_pair(frame.header.from_node,frame.header.id) ] );	  
 	  
     } else {
