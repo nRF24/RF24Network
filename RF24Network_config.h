@@ -28,7 +28,9 @@
 
 #include <stddef.h>
 
-/********** USER CONFIG **************/
+#if !defined(__AVR_ATtiny85__) && !defined(__AVR_ATtiny84__)
+
+/********** USER CONFIG - non ATTiny **************/
 
 //#define DUAL_HEAD_RADIO
 //#define ENABLE_SLEEP_MODE  //AVR only
@@ -56,9 +58,19 @@
 //#define SERIAL_DEBUG_FRAGMENTATION
 /*************************************/
  
+#else // Different set of defaults for ATTiny - fragmentation is disabled and user payloads are set to 3 max
+/********** USER CONFIG - ATTiny **************/
+//#define DUAL_HEAD_RADIO
+//#define ENABLE_SLEEP_MODE  //AVR only
+#define RF24NetworkMulticast
+#define DISABLE_FRAGMENTATION 
+//#define MAX_PAYLOAD_SIZE  96 
+#define NUM_USER_PAYLOADS 3
+//#define DISABLE_USER_PAYLOADS 
 #endif
+/*************************************/
 
-
+#endif
 
 #ifndef rf24_max
   #define rf24_max(a,b) (a>b?a:b)

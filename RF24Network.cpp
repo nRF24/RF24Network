@@ -212,7 +212,8 @@ uint8_t RF24Network::update(void)
 			
 	  }else{	  
 
-	  #if defined	(RF24NetworkMulticast)		
+	  #if defined	(RF24NetworkMulticast)	
+
 			if( header->to_node == 0100){
 				if(header->id != lastMultiMessageID || (header->type>=NETWORK_FIRST_FRAGMENT && header->type<=NETWORK_LAST_FRAGMENT)){
 				  if(header->type == NETWORK_POLL ){
@@ -680,7 +681,7 @@ bool RF24Network::write(RF24NetworkHeader& header,const void* message, size_t le
 
   //Check payload size
   if (len > MAX_PAYLOAD_SIZE) {
-    IF_SERIAL_DEBUG(printf("%u: NET write message failed. Given 'len' is bigger than the MAX Payload size %i\n\r",millis(),MAX_PAYLOAD_SIZE););
+    IF_SERIAL_DEBUG(printf("%u: NET write message failed. Given 'len' %d is bigger than the MAX Payload size %i\n\r",millis(),len,MAX_PAYLOAD_SIZE););
     return false;
   }
 	
