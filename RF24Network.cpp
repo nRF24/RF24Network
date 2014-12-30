@@ -675,6 +675,8 @@ bool RF24Network::write(RF24NetworkHeader& header,const void* message, size_t le
 bool RF24Network::write(RF24NetworkHeader& header,const void* message, size_t len, uint16_t writeDirect){
     frame_size=sizeof(RF24NetworkHeader)+len;
 	frame_size=rf24_min(frame_size,MAX_FRAME_SIZE);
+	
+	delayMicroseconds(200);
 #if defined (DISABLE_FRAGMENTATION)
 	return _write(header,message,len,writeDirect);
 #else  
