@@ -327,7 +327,7 @@ bool RF24Network::appendFragmentToFrame(RF24NetworkFrame frame) {
   
   // Maximum of 10 frames in the cache
   if(frameFragmentsCache.size() >= 15){ 
-	printf("Clearing frame from cache\n");
+	//printf("Clearing frame from cache\n");
 	frameFragmentsCache.erase(frameFragmentsCache.begin()); }
   
   // This is the first of 2 or more fragments.
