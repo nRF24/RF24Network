@@ -215,7 +215,7 @@ uint8_t RF24Network::update(void)
 	  #if defined	(RF24NetworkMulticast)	
 
 			if( header->to_node == 0100){
-				if(header->id != lastMultiMessageID || (header->type>=NETWORK_FIRST_FRAGMENT && header->type<=NETWORK_LAST_FRAGMENT)){
+				//if(header->id != lastMultiMessageID || (header->type>=NETWORK_FIRST_FRAGMENT && header->type<=NETWORK_LAST_FRAGMENT)){
 				  if(header->type == NETWORK_POLL ){
 				    //Serial.println("Send poll");
 					header->to_node = header->from_node;
@@ -225,9 +225,14 @@ uint8_t RF24Network::update(void)
 					continue;
 				  }else
 				  if(multicastRelay){					
-					IF_SERIAL_DEBUG_ROUTING( printf_P(PSTR("MAC: FWD multicast frame from 0%o to level %d\n"),header->from_node,multicast_level+1); );
+					IF_SERIAL_DEBUG_ROUTING( printf_P(PSTR("%u MAC: FWD multicast frame from 0%o to level %u\n"),millis(),header->from_node,multicast_level+1); );
 					write(levelToAddress(multicast_level)<<3,4);
+					//delay(1);
+					//write(levelToAddress(multicast_level)<<3,4);
+					//delay(1);
+					//write(levelToAddress(multicast_level)<<3,4);
 				  }
+				//if(header->id != lastMultiMessageID || (header->type>=NETWORK_FIRST_FRAGMENT && header->type<=NETWORK_LAST_FRAGMENT)){
 				#if defined (RF24_Linux)
 					enqueue(frame);
 				#else
@@ -236,11 +241,11 @@ uint8_t RF24Network::update(void)
 					return EXTERNAL_DATA_TYPE;
 				  }
 				#endif
-				lastMultiMessageID = header->id;
-				}
-				else{				
-					IF_SERIAL_DEBUG_ROUTING( printf_P(PSTR("MAC: Drop duplicate multicast frame %d from 0%o\n"),header->id,header->from_node); );
-				}				
+				//lastMultiMessageID = header->id;
+				//}
+				//else{				
+				//	IF_SERIAL_DEBUG_ROUTING( printf_P(PSTR("MAC: Drop duplicate multicast frame %d from 0%o\n"),header->id,header->from_node); );
+				//}				
 			}else{			
 				write(header->to_node,1);	//Send it on, indicate it is a routed payload
 			}
@@ -260,55 +265,38 @@ uint8_t RF24Network::update(void)
 
 uint8_t RF24Network::enqueue(RF24NetworkFrame frame) {
   bool result = false;
-
+  
+  bool isFragment = ( frame.header.type == NETWORK_FIRST_FRAGMENT || frame.header.type == NETWORK_MORE_FRAGMENTS || frame.header.type == NETWORK_LAST_FRAGMENT || frame.header.type == NETWORK_MORE_FRAGMENTS_NACK);
+  
   // This is sent to itself
-  if (frame.header.from_node == node_address) {
-    bool isFragment = ( frame.header.type == NETWORK_FIRST_FRAGMENT || frame.header.type == NETWORK_MORE_FRAGMENTS || frame.header.type == NETWORK_LAST_FRAGMENT || frame.header.type == NETWORK_MORE_FRAGMENTS_NACK);
+  if (frame.header.from_node == node_address) {    
     if (isFragment) {
       printf("Cannot enqueue multi-payload frames to self\n");
-      return false;
-    }
+      result = false;
+    }else{
     frame_queue.push(frame);
-    return true;
-  }
-
-  if ((frame.header.reserved > 1 && (frame.header.type == NETWORK_MORE_FRAGMENTS || frame.header.type== NETWORK_FIRST_FRAGMENT || frame.header.type == NETWORK_MORE_FRAGMENTS_NACK)) ) {
+    result = true;
+	}
+  }else  
+  if (isFragment)
+  {
     //The received frame contains the a fragmented payload
-
     //Set the more fragments flag to indicate a fragmented frame
-    IF_SERIAL_DEBUG_FRAGMENTATION(printf("%u: FRG fragmented payload of size %i Bytes with fragmentID '%i' received.\n\r",millis(),frame.message_size,frame.header.reserved););
-
+    IF_SERIAL_DEBUG_FRAGMENTATION(printf("%u: FRG Payload type %d of size %i Bytes with fragmentID '%i' received.\n\r",millis(),frame.header.type,frame.message_size,frame.header.reserved););
     //Append payload
-    appendFragmentToFrame(frame);
-    result = true;
+    result = appendFragmentToFrame(frame);
+   
+    //The header.reserved contains the actual header.type on the last fragment 
+    if ( result && frame.header.type == NETWORK_LAST_FRAGMENT) {
+      
+	  IF_SERIAL_DEBUG_FRAGMENTATION(printf("%u: FRG Last fragment received. ",millis() ););
+      IF_SERIAL_DEBUG(printf_P(PSTR("%u: NET Enqueue assembled frame @%x "),millis(),frame_queue.size()));
 
-  } else if ( frame.header.type == NETWORK_LAST_FRAGMENT) {
-    //The last fragment flag indicates that we received the last fragment
-    //Workaround/Hack: In this case the header.reserved does not count the number of fragments but is a copy of the type flags specified by the user application.
-    
-    IF_SERIAL_DEBUG_FRAGMENTATION(printf("%u: FRG Last fragment with size %i Bytes and fragmentID '%i' received.\n\r",millis(),frame.message_size,frame.header.reserved););
-    //Append payload
-    appendFragmentToFrame(frame);
+      frame_queue.push( frameFragmentsCache[ std::make_pair(frame.header.from_node,frame.header.id) ] );
+      frameFragmentsCache.erase( std::make_pair(frame.header.from_node,frame.header.id) );
+	}
 
-    IF_SERIAL_DEBUG(printf_P(PSTR("%u: NET Enqueue assembled frame @%x "),millis(),frame_queue.size()));
-
-    //Push the assembled frame in the frame_queue and remove it from cache
-	RF24NetworkFrame *f = &(frameFragmentsCache[ std::make_pair(frame.header.from_node,frame.header.id) ]);
-	
-    // If total_fragments == 0, we are finished
-    if ( f->message_size > 0){//|| (!frame.header.reserved && frameFragmentsCache.count(std::make_pair(frame.header.from_node,frame.header.id)) ) ) {
-      frame_queue.push( frameFragmentsCache[ std::make_pair(frame.header.from_node,frame.header.id) ] );	  
-	  
-    } else {
-      IF_SERIAL_DEBUG_MINIMAL( printf("%u: NET Dropped frame missing fragments\n",millis() ););
-	  
-    }
-
-    frameFragmentsCache.erase( std::make_pair(frame.header.from_node,frame.header.id) );
-
-    result = true;
-
-  } else{//  if (frame.header.type <= MAX_USER_DEFINED_HEADER_TYPE) {
+  }else{//  if (frame.header.type <= MAX_USER_DEFINED_HEADER_TYPE) {
     //This is not a fragmented payload but a whole frame.
 
     IF_SERIAL_DEBUG(printf_P(PSTR("%u: NET Enqueue @%x "),millis(),frame_queue.size()));
@@ -324,7 +312,7 @@ uint8_t RF24Network::enqueue(RF24NetworkFrame frame) {
   }*/
 
   if (result) {
-    IF_SERIAL_DEBUG(printf("ok\n\r"));
+    //IF_SERIAL_DEBUG(printf("ok\n\r"));
   } else {
     IF_SERIAL_DEBUG(printf("failed\n\r"));
   }
@@ -334,59 +322,65 @@ uint8_t RF24Network::enqueue(RF24NetworkFrame frame) {
 
 /******************************************************************/
 
-void RF24Network::appendFragmentToFrame(RF24NetworkFrame frame) {
+bool RF24Network::appendFragmentToFrame(RF24NetworkFrame frame) {
 
   
-  if(frameFragmentsCache.size() >= 7){ frameFragmentsCache.erase(frameFragmentsCache.begin()); }
-  if (frameFragmentsCache.count(std::make_pair(frame.header.from_node,frame.header.id)) == 0 ) {
-    // This is the first of many fragments.
+  // Maximum of 10 frames in the cache
+  if(frameFragmentsCache.size() >= 15){ 
+	printf("Clearing frame from cache\n");
+	frameFragmentsCache.erase(frameFragmentsCache.begin()); }
+  
+  // This is the first of 2 or more fragments.
+  if (frame.header.type == NETWORK_FIRST_FRAGMENT){
+    if( frame.header.reserved <= MAX_PAYLOAD_SIZE && frameFragmentsCache.count(std::make_pair(frame.header.from_node,frame.header.id)) == 0 ){
+	  frameFragmentsCache[ std::make_pair(frame.header.from_node,frame.header.id) ] = frame;
+	  return true;
+	}
+	return false;
+  }
+  
+  if ( frame.header.type == NETWORK_MORE_FRAGMENTS || frame.header.type == NETWORK_MORE_FRAGMENTS_NACK ){
+	
+	RF24NetworkFrame *f = &(frameFragmentsCache[ std::make_pair(frame.header.from_node,frame.header.id) ]);
 
-    if (frame.header.type == NETWORK_FIRST_FRAGMENT || ( frame.header.type != NETWORK_MORE_FRAGMENTS_NACK && frame.header.type != NETWORK_MORE_FRAGMENTS && frame.header.type != NETWORK_LAST_FRAGMENT)) {
-      // Decrement the stored total_fragments counter
-      frame.header.reserved = frame.header.reserved-1;
+	if( f->header.reserved -1 == frame.header.reserved && f->header.id == frame.header.id){	
       // Cache the fragment
-      frameFragmentsCache[ std::make_pair(frame.header.from_node,frame.header.id) ] = frame;
+      memcpy(f->message_buffer+f->message_size, frame.message_buffer, frame.message_size);
+	  f->message_size += frame.message_size;  //Increment message size
+      f->header = frame.header; //Update header
+	  return true;
+	  
     } else {
-        IF_SERIAL_DEBUG_MINIMAL(printf("%u: FRG Dropping all fragments for frame with header id:%d, missing first fragment(s).\n",millis(),frame.header.id););
+        IF_SERIAL_DEBUG_MINIMAL(printf("%u: FRG Dropping fragment for frame with header id:%d, out of order fragment(s).\n",millis(),frame.header.id););
+		return false;
     }
 
   } else {
-    //We have at least received one fragments.
-    //Append payload
+    //We have received the last fragment
 
+	if(frameFragmentsCache.count(std::make_pair(frame.header.from_node,frame.header.id)) == 0){
+		return false;
+	}
+	
+	//Create pointer to the cached frame
     RF24NetworkFrame *f = &(frameFragmentsCache[ std::make_pair(frame.header.from_node,frame.header.id) ]);
 
-    if (frame.header.type == NETWORK_LAST_FRAGMENT) {
-      //Workaround/Hack: The user application specified header.type is sent with the last fragment in the reserved field
-      frame.header.type = frame.header.reserved;
-      frame.header.reserved = 1;
-    }
-
     //Error checking for missed fragments and payload size
-    if (frame.header.reserved != f->header.reserved) {
-        if (frame.header.reserved > f->header.reserved) {
-            IF_SERIAL_DEBUG_MINIMAL(printf("%u: FRG Duplicate or out of sequence frame %d, expected %d. Cleared.\n",millis(),frame.header.reserved,f->header.reserved););
+    if ( f->header.reserved-1 != 1 || f->header.id != frame.header.id) {
+        IF_SERIAL_DEBUG_MINIMAL(printf("%u: FRG Duplicate or out of sequence frame %d, expected %d. Cleared.\n",millis(),frame.header.reserved,f->header.reserved););
             //frameFragmentsCache.erase( std::make_pair(frame.header.from_node,frame.header.id) );
-        } else {
-            frameFragmentsCache.erase( std::make_pair(frame.header.from_node,frame.header.id) );
-            IF_SERIAL_DEBUG_MINIMAL(printf("%u: FRG Out of sequence frame %d, expected %d. Cleared.\n",millis(),frame.header.reserved,f->header.reserved););
-        }
-        return;
+        return false;
     }
 
-    //Check if the total payload exceeds the MAX_PAYLOAD_SIZE.
-    //If so, drop the assembled frame.
-    if (frame.message_size + f->message_size > MAX_PAYLOAD_SIZE) {
-        frameFragmentsCache.erase( std::make_pair(frame.header.from_node,frame.header.id) );
-        IF_SERIAL_DEBUG_MINIMAL(printf("%u: FRM Payload of %d exceeds MAX_PAYLOAD_SIZE %d Bytes. Frame dropped\n",millis(),frame.message_size + f->message_size,MAX_PAYLOAD_SIZE););
-        return;
-    }
-
+	//The user specified header.type is sent with the last fragment in the reserved field
+    frame.header.type = frame.header.reserved;
+    frame.header.reserved = 1;
+	
     //Append the received fragment to the cached frame
     memcpy(f->message_buffer+f->message_size, frame.message_buffer, frame.message_size);
     f->message_size += frame.message_size;  //Increment message size
     f->header = frame.header; //Update header
-    f->header.reserved--;  //Update Total fragments
+	return true;
   }
 }
 
@@ -422,9 +416,12 @@ uint8_t RF24Network::enqueue(RF24NetworkFrame frame)
 			frag_queue.header.reserved = 0;
 			return 0;
 		}
+		
+		if(frag_queue.header.id != frame.header.id){
 #if defined (SERIAL_DEBUG_FRAGMENTATION)
-		printf(PSTR("queue first, total frags %d\n"),frame.header.reserved);
-#endif
+		Serial.print(F("queue first, total frags "));
+		Serial.println(frame.header.reserved);
+#endif  
 		memcpy(&frag_queue,&frame,10);
 		memcpy(frag_queue.message_buffer,frame_buffer+sizeof(RF24NetworkHeader),frame.message_size);
 #if defined (SERIAL_DEBUG_FRAGMENTATION_L2)		
@@ -436,11 +433,15 @@ uint8_t RF24Network::enqueue(RF24NetworkFrame frame)
 	    frag_queue.message_size = frame.message_size;
 		frag_queue.header.reserved = frag_queue.header.reserved - 1;
 		return true;
+		}
+		return false;
 	}else
 	if(frame.header.type == NETWORK_MORE_FRAGMENTS || frame.header.type == NETWORK_MORE_FRAGMENTS_NACK){
-	    if(frame.header.reserved != frag_queue.header.reserved){
+	    if(frame.header.reserved != frag_queue.header.reserved || frame.header.id != frag_queue.header.id ){
 #if defined (SERIAL_DEBUG_FRAGMENTATION) || defined (SERIAL_DEBUG_MINIMAL)
-		printf(PSTR("1 Dropped out of order frame %d expected %d\n"),frame.header.reserved,frag_queue.header.reserved);
+		Serial.print(F("1 Drop frag ")); Serial.print(frame.header.reserved);
+		Serial.print(F(" header id ")); Serial.print(frame.header.id);
+		Serial.print(F(" expected ")); Serial.println(frag_queue.header.reserved);
 #endif
 			frag_queue.header.reserved = 0;
 			return 0;
@@ -454,7 +455,9 @@ uint8_t RF24Network::enqueue(RF24NetworkFrame frame)
 		
 		if(frag_queue.header.reserved != 1 || frag_queue.header.id != frame.header.id){
 			#if defined (SERIAL_DEBUG_FRAGMENTATION) || defined (SERIAL_DEBUG_MINIMAL)
-			printf(PSTR("2 Dropped out of order frame frag %d header id %d expected last (1) \n"),frame.header.reserved,frame.header.id);
+			Serial.print(F("2 Drop frag ")); Serial.print(frame.header.reserved);
+			Serial.print(F(" header id ")); Serial.print(frame.header.id);
+			Serial.println(F(" expected last (1)"));
 			#endif
 			frag_queue.header.reserved = 0;
 			return 0;

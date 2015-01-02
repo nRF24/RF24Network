@@ -245,8 +245,13 @@ public:
    *
    * @warning Be sure to 'begin' the radio first.
    *
+   * Begin on channel 90 with address 0 (master node)
+   * @code
+   * network.begin(90,0);
+   * @endcode
    * @param _channel The RF channel to operate on
    * @param _node_address The logical address of this node
+   *
    */
   void begin(uint8_t _channel, uint16_t _node_address );
   
@@ -278,11 +283,22 @@ public:
    * @param[out] header The header (envelope) of the next message
    */
   size_t peek(RF24NetworkHeader& header);
-//  uint8_t peekData();
 
   /**
    * Read a message
    *
+   * @code
+   * while ( network.available() )  {
+   *   RF24NetworkHeader header;
+   *   uint32_t time;
+   *   network.peek(header);
+   *   if(header.type == 'T'){
+   *     network.read(header,&time,sizeof(time));
+   *     Serial.print("Got time: ");
+   *     Serial.println(time);
+   *   }
+   * }
+   * @endcode
    * @param[out] header The header (envelope) of this message
    * @param[out] message Pointer to memory where the message should be placed
    * @param maxlen The largest message size which can be held in @p message
@@ -296,6 +312,12 @@ public:
    * @note RF24Network now supports fragmentation for very long messages, send as normal. Fragmentation
    * may need to be enabled or configured by editing the RF24Network_config.h file. Default max payload size is 120 bytes.
    * 
+   * @code
+   * uint32_t time = millis();
+   * uint16_t to = 00; // Send to master
+   * RF24NetworkHeader header(to, 'T'); // Send header type 'T'
+   * network.write(header,&time,sizeof(time));
+   * @endcode
    * @param[in,out] header The header (envelope) of this message.  The critical
    * thing to fill in is the @p to_node field so we know where to send the
    * message.  It is then updated with the details of the actual header sent.
@@ -483,7 +505,7 @@ private:
   bool logicalToPhysicalAddress(logicalToPhysicalStruct *conversionInfo);
   
 #if defined (RF24_LINUX)  
-  void appendFragmentToFrame(RF24NetworkFrame frame);
+  bool appendFragmentToFrame(RF24NetworkFrame frame);
 #endif
   
   RF24& radio; /**< Underlying radio driver, provides link/physical layers */
@@ -660,12 +682,16 @@ public:
  * @section More How to learn more
  *
  * @li <a href="classRF24Network.html">RF24Network Class Documentation</a>
- * @li <a href="Tuning.html"> Topology, Performance and Data Loss: Tuning the Network</a>
- * @li <a href="http://tmrh20.blogspot.com/2014/03/high-speed-data-transfers-and-wireless.html">My Blog: RF24 Optimization Overview</a>
+ * @li <a href="AdvancedConfig.html"> Advanced Configuration Options</a>
+ * @li <a href="Addressing.html"> Addressing format</a>
+ * @li <a href="Tuning.html"> Topology and Overview</a>
  * @li <a href="https://github.com/TMRh20/RF24Network/archive/Development.zip">Download Current Development Package</a>
  * @li <a href="examples.html">Examples Page</a>.  Start with <a href="helloworld_rx_8ino-example.html">helloworld_rx</a> and <a href="helloworld_tx_8ino-example.html">helloworld_tx</a>.
+ *
+ * <b> Additional Information & Add-ons </b>  
  * @li <a href="https://github.com/TMRh20/RF24Mesh">RF24Mesh: Dynamic Mesh Layer for RF24Network Dev</a>
  * @li <a href="https://github.com/TMRh20/RF24Ethernet">RF24Ethernet: TCP/IP over RF24Network</a>
+ * @li <a href="http://tmrh20.blogspot.com/2014/03/high-speed-data-transfers-and-wireless.html">My Blog: RF24 Optimization Overview</a>
  * @li <a href="http://tmrh20.blogspot.com/2014/03/arduino-radiointercomwireless-audio.html">My Blog: RF24 Wireless Audio</a>
  * @li <a href="http://maniacbug.github.com/RF24/">RF24: Original Author</a>
  * @section Topology Topology for Mesh Networks using nRF24L01(+)
@@ -729,42 +755,78 @@ public:
  * to enable sleep mode.
  *
  *
- * @page Zigbee Comparison to ZigBee
+ * @page Addressing Addressing Format: Understanding Addressing and Topology
+ * An overview of addressing in RF24Network
  *
- * This network layer is influenced by the design of ZigBee, but does not implement it
- * directly.
+ * @section Overview Overview
+ * The nrf24 radio modules typically use a 40-bit address format, requiring 5-bytes of storage space per address, and allowing a wide
+ * array of addresses to be utilized. In addition, the radios are limited to direct communication with 6 other nodes while using the 
+ * Enhanced-Shock-Burst (ESB) functionality of the radios.  
  *
- * @section Advantage Which is better?
+ * RF24Network uses a simple method of data compression to store the addresses using only 2 bytes, in a format designed to represent the
+ * network topology in an intuitive way.
+ * See the <a href="Tuning.html"> Topology and Overview</a> page for more info regarding topology.
  *
- * ZigBee is a much more robust, feature-rich set of protocols, with many different vendors
- * providing compatible chips.
- *
- * RF24Network is cheap.  While ZigBee radios are well over $20, nRF24L01 modules can be found
- * for under $2.  My personal favorite is
- * <a href="http://www.mdfly.com/index.php?main_page=product_info&products_id=82">MDFly RF-IS2401</a>.
- *
- * @section Contrast Similiarities & Differences
- *
- * Here are some comparisons between RF24Network and ZigBee.
- *
- * @li Both networks support Star and Tree topologies.  Only Zigbee supports a true mesh.
- * @li In ZigBee networks, only leaf nodes can sleep
- * @li ZigBee nodes are configured using AT commands, or a separate Windows application.
- * RF24 nodes are configured by recompiliing the firmware or writing to EEPROM.
- *
- * @section NodeNames Node Naming
- *
- * @li Leaf node: A node at the outer edge of the network with no children.  ZigBee calls it
- * an End Device node.
- * @li Relay node: A node which has both parents and children, and relays messages from one
- * to the other.  ZigBee calls it a Router.
- * @li Base node.  The top of the tree node with no parents, only children.  Typically this node
- * will bridge to another kind of network like Ethernet.  ZigBee calls it a Co-ordinator node.
- *
+ * @section Octal_Binary Decimal, Octal and Binary formats
  * 
+ * Say we want to designate a logical address to a node, using a tree topology as defined by the manufacturer.
+ * In the simplest format, we could assign the first node the address of 1, the second 2 and so on.  
+ * Since a single node can only connect to 6 other nodes (1 parent and 5 children) subnets need to be created if using more than 6 nodes.<br>
+ * In this case the children of node 1 could simply be designated as 11,21,31,41, and 51<br>
+ * Children of node 2 could be designated as 12,22,32,42, and 52  
+ * 
+ * The above example is exactly how RF24Network manages the addresses, but they are represented in Octal format.
+ * 
+ * <b>Decimal, Octal and Binary</b>  
+ * <table> 
+ * <tr bgcolor="#a3b4d7" >
+ * <td> Decimal </td> <td> Binary </td><td> Decimal </td> <td> Binary </td><td> Decimal </td> <td> Binary </td>
+ * </tr><tr>
+ * <td> 1 </td> <td> 00000001 </td><td> 11 </td> <td> 00001011 </td><td> 111 </td> <td> 01101111 </td>
+ * </tr><tr bgcolor="#a3b4d7" >
+ * <td> Octal </td> <td> Binary </td><td> Octal </td> <td> Binary </td><td> Octal </td> <td> Binary </td>
+ * </tr><tr>
+ * <td> 1 </td> <td> 00000001 </td><td> 011 </td> <td> 00001001 </td><td> 0111 </td> <td> 1001001 </td>
+ * </tr>
+ * </table>
+ *
+ *  
+ * Since the numbers 0-7 can be represented in exactly three bits, each digit is represented by exactly 3 bits when viewed in octal format.  
+ * This allows a very simple method of managing addresses via masking and bit shifting.  
+ *   
+ * @section DisplayAddresses Displaying Addresses
+ *
+ * When using Arduino devices, octal addresses can be printed in the following manner:
+ * @code
+ * uint16_t address = 0111; 
+ * Serial.println(address,OCT);
+ * @endcode
+ *
+ * Printf can also be used, if enabled, or if using linux/RPi
+ * @code
+ * uint16_t address = 0111;
+ * printf("0%o\n",address);
+ * @endcode
+ *
+ * See http://www.cplusplus.com/doc/hex/ for more information<br>
+ * See the <a href="Tuning.html"> Topology and Overview</a> page for more info regarding topology.  
+ *
+ * @page AdvancedConfig Advanced Configuration
+ *
+ * RF24Network offers many features, some of which can be configured by editing the RF24Network_config.h file
+ *
+ * | Configuration Option | Description |
+ * |----------------------|-------------|
+ * |<b> #define RF24NetworkMulticast </b> | This option allows nodes to send and receive multicast payloads. Nodes with multicast enabled can also be configured to relay multicast payloads on to further multicast levels. See multicastRelay |
+ * | <b> #define DISABLE_FRAGMENTATION </b> | Fragmentation is enabled by default, and uses an additional 120 bytes of memory. |
+ * | <b> #define MAX_PAYLOAD_SIZE 120 </b> | The maximum size of payloads defaults to 120 bytes. If used with RF24toTUN and two Raspberry Pi, set this to 1514 (TAP) or 1500 (TUN) |
+ * | <b> #define NUM_USER_PAYLOADS 5 </b> | This is the number of 32-byte payloads the network layer will cache for the user. If using fragmentation, this number * 32 must be larger than MAX_PAYLOAD_SIZE |
+ * | <b> #define DISABLE_USER_PAYLOADS </b> | This option will disable user-caching of payloads entirely. Use with RF24Ethernet to reduce memory usage. (TCP/IP is an external data type, and not cached) |
+ * | <b> #define ENABLE_SLEEP_MODE </b> | Uncomment this option to enable sleep mode for AVR devices. (ATTiny,Uno, etc) |
+ * | <b> #define DUAL_HEAD_RADIO </b> | Uncomment this option to enable use of dual radios |
  *
  *
- * @page Tuning Performance and Data Loss: Tuning the Network
+ ** @page Tuning Performance and Data Loss: Tuning the Network
  * Tips and examples for tuning the network and general operation.
  *
  *  <img src="tmrh20/topologyImage.jpg" alt="Topology" height="75%" width="75%">
@@ -878,19 +940,19 @@ public:
  * a: Master node configured with extended timeouts of .5 seconds, and increased retry delay:
  *   @code
  * 		radio.setRetries(11,15);
- * 		network.txTimeout(500);
+ * 		network.txTimeout = 500;
  * 	 @endcode
  * b: Second leaf node configured with a similar timeout period and retry delay:
  * @code
  * 		radio.setRetries(8,15);
- * 		network.txTimeout(553);
+ * 		network.txTimeout = 553;
  * @endcode
  * c: First and third leaf nodes configured with default timeout periods or slightly increased timout periods.
  *
  * @section DualHead Dual Headed Operation
  *
  * The library now supports a dual radio configuration to further enhance network performance, while reducing errors on
- * busy networks. Master nodes or relay nodes with a large number of child nodes can benefit greatly from a dual headed
+ * busy networks. Master nodes or relay nodes with a large number of child nodes can benefit somewhat from a dual headed
  * configuration, since one radio is used for receiving, and the other entirely for transmission.
  *
  * To configure a dual headed node:
@@ -912,6 +974,41 @@ public:
  *
  *
  * Any node can be configured in dual-head mode.
+ *
+ *
+ * @page Zigbee Comparison to ZigBee
+ *
+ * This network layer is influenced by the design of ZigBee, but does not implement it
+ * directly.
+ *
+ * @section Advantage Which is better?
+ *
+ * ZigBee is a much more robust, feature-rich set of protocols, with many different vendors
+ * providing compatible chips.
+ *
+ * RF24Network is cheap.  While ZigBee radios are well over $20, nRF24L01 modules can be found
+ * for under $2.  My personal favorite is
+ * <a href="http://www.mdfly.com/index.php?main_page=product_info&products_id=82">MDFly RF-IS2401</a>.
+ *
+ * @section Contrast Similiarities & Differences
+ *
+ * Here are some comparisons between RF24Network and ZigBee.
+ *
+ * @li Both networks support Star and Tree topologies.  Only Zigbee supports a true mesh.
+ * @li In ZigBee networks, only leaf nodes can sleep
+ * @li ZigBee nodes are configured using AT commands, or a separate Windows application.
+ * RF24 nodes are configured by recompiliing the firmware or writing to EEPROM.
+ *
+ * @section NodeNames Node Naming
+ *
+ * @li Leaf node: A node at the outer edge of the network with no children.  ZigBee calls it
+ * an End Device node.
+ * @li Relay node: A node which has both parents and children, and relays messages from one
+ * to the other.  ZigBee calls it a Router.
+ * @li Base node.  The top of the tree node with no parents, only children.  Typically this node
+ * will bridge to another kind of network like Ethernet.  ZigBee calls it a Co-ordinator node.
+ *
+ * 
  *
  *
  */
