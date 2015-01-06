@@ -333,7 +333,7 @@ bool RF24Network::appendFragmentToFrame(RF24NetworkFrame frame) {
 	for (std::map<std::pair<uint16_t, uint16_t>, RF24NetworkFrame>::iterator it=frameFragmentsCache.end(); it!=frameFragmentsCache.begin(); it--){	  
 	    if(it->first.second == lastAddress){
 	      frameFragmentsCache.erase(it);
-		  printf("erased %d from 0%o\n",it->first.first,it->first.second);
+		  //printf("erased %d from 0%o\n",it->first.first,it->first.second);
 		  break;
 	    }
 	    lastAddress = it->first.second;
