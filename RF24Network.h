@@ -563,6 +563,13 @@ private:
 public:
   uint8_t frame_buffer[MAX_FRAME_SIZE]; /**< Space to put the frame that will be sent/received over the air */ 
   
+  /**
+  * Variable to determine whether update() will return after the radio buffers have been emptied (DEFAULT), or
+  * whether to return immediately when (most) system types are received. Used with RF24Mesh to catch and handle 
+  * system messages without loading them into the user cache, during mesh.update()
+  */  
+  bool returnSysMsgs;
+  
   #if !defined ( DISABLE_FRAGMENTATION ) &&  !defined (RF24_LINUX)
   /**
   * The frag_ptr is only used with Arduino (not RPi/Linux) and is mainly used for external data systems like RF24Ethernet. When
@@ -836,9 +843,9 @@ public:
  * back to the sender with an acknowledgement (ACK) packet, to indicate success. If the sender does not
  * receive an ACK, the radio automatically engages in a series of timed retries, at set intervals. The 
  * radios use techniques like addressing and numbering of payloads to manage this, but it is all done 
- * automatically, out of sight from the user.
+ * automatically by the nrf chip, out of sight from the user.
  *
- * When working over a radio network, some of these automated techniques can actually hinder data transmission.
+ * When working over a radio network, some of these automated techniques can actually hinder data transmission to a degree.
  * Retrying failed payloads over and over on a radio network can hinder communication for nearby nodes, or 
  * reduce throughput and errors on routing nodes.
  *
@@ -853,32 +860,43 @@ public:
  * master node can be seen as the gateway, with up to 4 directly connected nodes. Each of those nodes creates a
  * subnet below it, with up to 4 additional child nodes. The numbering scheme can also be related to IP addresses,
  * for purposes of understanding the topology via subnetting. Nodes can have 5 children if multicast is disabled.
+ *
+ * Expressing RF24Network addresses in IP format:  
+ *
+ * As an example, we could designate the master node in theory, as Address 10.10.10.10 <br> 
+ * The children nodes of the master would be 10.10.10.1, 10.10.10.2, 10.10.10.3, 10.10.10.4 and 10.10.10.5 <br> 
+ * The children nodes of 10.10.10.1 would be 10.10.1.1, 10.10.2.1, 10.10.3.1, 10.10.4.1 and 10.10.5.1 <br> 
+ *    
+ * In RF24Network, the master is just 00  <br>
+ * Children of master are 01,02,03,04,05  <br>
+ * Children of 01 are 011,021,031,041,051  <br>
  * 
  * @section Network Routing
  *
- * Routing of traffic is handled invisibly to the user. If the network is constructed appropriately, nodes
- * will route traffic automatically as required. Data transmission generally has one of two requirements,
- * either data that fails to transmit can be discarded as new data arrives, or sending can be retried as
- * required until complete success or failure. 
+ * Routing of traffic is handled invisibly to the user, by the network layer. If the network addresses are
+ * assigned in accordance with the physical layout of the network, nodes will route traffic automatically
+ * as required. Users simply constuct a header containing the appropriate destination address, and the network
+ * will forward it through to the correct node. Individual nodes only route individual fragments, so if using
+ * fragmentation, routing nodes do not need it enabled, unless sending or receiving fragmented payloads themselves.
  *
- * The new routing protocol allows this to be managed at the application level as the data requires, with
- * defaults assigned specifically to allow maximum efficiency and throughput from the RF level to the
- * network and application level. If routing data between parent and child nodes (marked by direct links on
- * the topology image above) the network uses built-in acknowledgement and retry functions of the chip to 
- * prevent data loss. When payloads are sent to other nodes, they need to be routed. Routing is managed using
- * a combination of built in ACK requests, and software driven network ACKs. This allows all routing nodes to
- * forward data very quickly, with only the final routing node confirming delivery and sending back an
+ * If routing data between parent and child nodes (marked by direct links on the topology image above) the network
+ * uses built-in acknowledgement and retry functions of the chip to prevent data loss. When payloads are sent to
+ * other nodes, they need to be routed. Routing is managed using a combination of built in ACK requests, and
+ * software driven network ACKs. This allows all routing nodes to forward data very quickly, with only the final
+ * routing node confirming delivery and sending back an
  * acknowledgement.
  *
  * Example: Node 00 sends to node 01. The nodes will use the built in auto-retry and auto-ack functions.<br>
- * Exmaple: Node 00 sends to node 011. Node 00 will send to node 01, and request -no radio ACK-. Node 01 will 
- * forward the message to 011 and request an auto radio ACK. If delivery was successful, node 01 will also
- * forward a message back to node 00, (noACK) indicating success.
+ * Example: Node 00 sends to node 011. Node 00 will send to node 01 as before. Node 01 will forward the message to
+ * 011. If delivery was successful, node 01 will also forward a message back to node 00, (noACK) indicating success.
  *
  * Old Functionality: Node 00 sends to node 011 using auto-ack. Node 00 first sends to 01, 01 acknowledges.
  * Node 01 forwards the payload to 011 using auto-ack. If the payload fails between 01 and 011, node 00 has
- * no way of knowing. The new method uses the same amount of traffic to accomplish more.
+ * no way of knowing. 
  * 
+ * @note When retrying failed payloads that have been routed, there is a chance of duplicate payloads if the network-ack
+ * is not successful. In this case, it is left up to the user to manage retries and filtering of duplicate payloads.
+ *
  * Acknowledgements can and should be managed by the application or user. If requesting a response from another node,
  * an acknowledgement is not required, so a user defined type of 0-64 should be used, to prevent the network from
  * responding with an acknowledgement. If not requesting a response, and wanting to know if the payload was successful

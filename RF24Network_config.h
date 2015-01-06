@@ -18,7 +18,7 @@
   #define _BV(x) (1<<(x))
 #endif
 
-#if !defined (RF24_LINUX)
+#if defined (ARDUINO)
   #if ARDUINO < 100
     #include <WProgram.h>
   #else
@@ -41,8 +41,14 @@
 
 /** System defines */
 
-/** Size of fragmented network frames Note: With RF24ethernet, assign in multiples of 24. General minimum is 96 (a 32-byte ping from windows is 74 bytes, (Ethernet Header is 42))*/
-#define MAX_PAYLOAD_SIZE  120 
+/** Size of fragmented network frames 
+ *
+ * @note: If used with RF24Ethernet, this value should match the uip buffer size (default 120). Different nodes can use different max payload sizes,
+ * but are limited to the smallest of the two when in direct communication. Routing nodes do not need to support fragmentation.
+ * With RF24ethernet, assign in multiples of 24. General minimum is 96 (a 32-byte ping from windows is 74 bytes, (Ethernet Header is 42))
+ * 
+ */
+#define MAX_PAYLOAD_SIZE  120
 
 /** The number of 32-byte payloads RF24Network will automatically buffer for network.read().
 * If using fragmentation, this value multiplied by 42 must be larger than the MAX_PAYLOAD_SIZE defined above */

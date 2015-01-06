@@ -162,12 +162,11 @@ uint8_t RF24Network::update(void)
 	    frame.message_buffer = frame_buffer+sizeof(RF24NetworkHeader);
 	  #endif
 	  
-	  uint8_t res = header->type;
+	  uint8_t returnVal = header->type;
       
 	  // Is this for us?
       if ( header->to_node == node_address   ){
-			if(res == NETWORK_PING){
-			   returnVal = NETWORK_PING;
+			if(header->type == NETWORK_PING){
 			   continue;
 			}
 
@@ -191,11 +190,10 @@ uint8_t RF24Network::update(void)
 				continue;
 			}
 			
-			if( res >127 ){	
+			if( returnSysMsgs && header->type > 127 ){	
 				IF_SERIAL_DEBUG_ROUTING( printf_P(PSTR("%lu MAC: System payload rcvd %d\n"),millis(),res); );
-				if( (header->type < 148 || header->type > 150) && header->type != NETWORK_MORE_FRAGMENTS_NACK && header->type != EXTERNAL_DATA_TYPE){
-					//printf("Type %d\n",header->type);
-					return res;
+				if( (header->type < 148 || header->type > 150) && header->type != NETWORK_MORE_FRAGMENTS_NACK && header->type != EXTERNAL_DATA_TYPE){					
+					return returnVal;
 				}				
 			}
 			
@@ -292,8 +290,8 @@ uint8_t RF24Network::enqueue(RF24NetworkFrame frame) {
 	  IF_SERIAL_DEBUG_FRAGMENTATION(printf("%u: FRG Last fragment received. ",millis() ););
       IF_SERIAL_DEBUG(printf_P(PSTR("%u: NET Enqueue assembled frame @%x "),millis(),frame_queue.size()));
 
-      frame_queue.push( frameFragmentsCache[ std::make_pair(frame.header.from_node,frame.header.id) ] );
-      frameFragmentsCache.erase( std::make_pair(frame.header.from_node,frame.header.id) );
+      frame_queue.push( frameFragmentsCache[ std::make_pair(frame.header.id,frame.header.from_node) ] );
+      frameFragmentsCache.erase( std::make_pair(frame.header.id,frame.header.from_node) );
 	}
 
   }else{//  if (frame.header.type <= MAX_USER_DEFINED_HEADER_TYPE) {
@@ -324,16 +322,25 @@ uint8_t RF24Network::enqueue(RF24NetworkFrame frame) {
 
 bool RF24Network::appendFragmentToFrame(RF24NetworkFrame frame) {
 
-  
-  // Maximum of 10 frames in the cache
-  if(frameFragmentsCache.size() >= 15){ 
-	//printf("Clearing frame from cache\n");
-	frameFragmentsCache.erase(frameFragmentsCache.begin()); }
-  
+    // Init variable to an invalid address so it will never match on the first time
+    uint16_t lastAddress=07;
+
+	
   // This is the first of 2 or more fragments.
   if (frame.header.type == NETWORK_FIRST_FRAGMENT){
-    if( frame.header.reserved <= MAX_PAYLOAD_SIZE && frameFragmentsCache.count(std::make_pair(frame.header.from_node,frame.header.id)) == 0 ){
-	  frameFragmentsCache[ std::make_pair(frame.header.from_node,frame.header.id) ] = frame;
+  
+    // Search for duplicate frames from the same address, delete the older one
+	for (std::map<std::pair<uint16_t, uint16_t>, RF24NetworkFrame>::iterator it=frameFragmentsCache.end(); it!=frameFragmentsCache.begin(); it--){	  
+	    if(it->first.second == lastAddress){
+	      frameFragmentsCache.erase(it);
+		  printf("erased %d from 0%o\n",it->first.first,it->first.second);
+		  break;
+	    }
+	    lastAddress = it->first.second;
+	}
+	
+    if( frame.header.reserved <= MAX_PAYLOAD_SIZE && frameFragmentsCache.count(std::make_pair(frame.header.id,frame.header.from_node)) == 0 ){
+	  frameFragmentsCache[ std::make_pair(frame.header.id,frame.header.from_node) ] = frame;
 	  return true;
 	}
 	return false;
@@ -341,7 +348,7 @@ bool RF24Network::appendFragmentToFrame(RF24NetworkFrame frame) {
   
   if ( frame.header.type == NETWORK_MORE_FRAGMENTS || frame.header.type == NETWORK_MORE_FRAGMENTS_NACK ){
 	
-	RF24NetworkFrame *f = &(frameFragmentsCache[ std::make_pair(frame.header.from_node,frame.header.id) ]);
+	RF24NetworkFrame *f = &(frameFragmentsCache[ std::make_pair(frame.header.id,frame.header.from_node) ]);
 
 	if( f->header.reserved -1 == frame.header.reserved && f->header.id == frame.header.id){	
       // Cache the fragment
@@ -358,17 +365,17 @@ bool RF24Network::appendFragmentToFrame(RF24NetworkFrame frame) {
   } else {
     //We have received the last fragment
 
-	if(frameFragmentsCache.count(std::make_pair(frame.header.from_node,frame.header.id)) == 0){
+	if(frameFragmentsCache.count(std::make_pair(frame.header.id,frame.header.from_node)) == 0){
 		return false;
 	}
 	
 	//Create pointer to the cached frame
-    RF24NetworkFrame *f = &(frameFragmentsCache[ std::make_pair(frame.header.from_node,frame.header.id) ]);
+    RF24NetworkFrame *f = &(frameFragmentsCache[ std::make_pair(frame.header.id,frame.header.from_node) ]);
 
     //Error checking for missed fragments and payload size
     if ( f->header.reserved-1 != 1 || f->header.id != frame.header.id) {
         IF_SERIAL_DEBUG_MINIMAL(printf("%u: FRG Duplicate or out of sequence frame %d, expected %d. Cleared.\n",millis(),frame.header.reserved,f->header.reserved););
-            //frameFragmentsCache.erase( std::make_pair(frame.header.from_node,frame.header.id) );
+            //frameFragmentsCache.erase( std::make_pair(frame.header.id,frame.header.from_node) );
         return false;
     }
 
