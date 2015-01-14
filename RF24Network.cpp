@@ -10,7 +10,7 @@
 #include "RF24.h"
 #include "RF24Network.h"
 
-#if defined (ENABLE_SLEEP_MODE)
+#if defined (ENABLE_SLEEP_MODE)  && !defined (__ARDUINO_X86__)
 	#include <avr/sleep.h>
 	#include <avr/power.h>
 	volatile byte sleep_cycles_remaining;
@@ -475,7 +475,7 @@ uint64_t pipe_address( uint16_t node, uint8_t pipe )
 
 #if defined ENABLE_SLEEP_MODE
 
-#if !defined(__arm__)
+#if !defined(__arm__) && !defined (__ARDUINO_X86__)
 
 void wakeUp(){
   sleep_disable();
