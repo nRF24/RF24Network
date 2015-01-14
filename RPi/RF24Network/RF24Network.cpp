@@ -83,7 +83,7 @@ void RF24Network::update(void)
       const RF24NetworkHeader& header = * reinterpret_cast<RF24NetworkHeader*>(frame_buffer);
 
       IF_SERIAL_DEBUG(printf_P(PSTR("%lu: MAC Received on %u %s\n\r"),millis(),pipe_num,header.toString()));
-      IF_SERIAL_DEBUG(const uint16_t* i = reinterpret_cast<const uint16_t*>(frame_buffer + sizeof(RF24NetworkHeader));printf_P(PSTR("%lu: NET message %04x\n\r"),millis(),*i));
+      IF_SERIAL_DEBUG(printf_P(PSTR("%lu: NET message "),millis());const char* charPtr = reinterpret_cast<const char*>(frame_buffer);int i;for(i=0;i<sizeof(RF24NetworkHeader);i++) printf("%02x ",charPtr[i]);printf_P(PSTR("\n\r")));
 
       // Throw it away if it's not a valid address
       if ( !is_valid_address(header.to_node) ){
@@ -211,7 +211,7 @@ bool RF24Network::write(RF24NetworkHeader& header,const void* message, size_t le
   IF_SERIAL_DEBUG(printf_P(PSTR("%lu: NET Sending %s\n\r"),millis(),header.toString()));
   if (len)
   {
-    IF_SERIAL_DEBUG(const uint16_t* i = reinterpret_cast<const uint16_t*>(message);printf_P(PSTR("%lu: NET message %04x\n\r"),millis(),*i));
+    IF_SERIAL_DEBUG(printf_P(PSTR("%lu: NET message "),millis());const char* charPtr = reinterpret_cast<const char*>(message);int i;for(i=0;i<len;i++) printf("%02x ",charPtr[i]);printf_P(PSTR("\n\r")));
   }
 
 
