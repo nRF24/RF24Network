@@ -48,7 +48,7 @@
  * With RF24ethernet, assign in multiples of 24. General minimum is 96 (a 32-byte ping from windows is 74 bytes, (Ethernet Header is 42))
  * 
  */
-#define MAX_PAYLOAD_SIZE  120
+#define MAX_PAYLOAD_SIZE  144
 
 /** The number of 32-byte payloads RF24Network will automatically buffer for network.read().
 * If using fragmentation, this value multiplied by 42 must be larger than the MAX_PAYLOAD_SIZE defined above */
@@ -62,6 +62,7 @@
 //#define SERIAL_DEBUG_MINIMAL
 //#define SERIAL_DEBUG_ROUTING
 //#define SERIAL_DEBUG_FRAGMENTATION
+//#define SERIAL_DEBUG_FRAGMENTATION_L2
 /*************************************/
  
 #else // Different set of defaults for ATTiny - fragmentation is disabled and user payloads are set to 3 max
@@ -132,6 +133,12 @@
     #define IF_SERIAL_DEBUG_FRAGMENTATION(x) ({x;})
   #else
     #define IF_SERIAL_DEBUG_FRAGMENTATION(x)
+  #endif
+
+  #if defined (SERIAL_DEBUG_FRAGMENTATION_L2)
+    #define IF_SERIAL_DEBUG_FRAGMENTATION_L2(x) ({x;})
+  #else
+    #define IF_SERIAL_DEBUG_FRAGMENTATION_L2(x)
   #endif
   
   #if defined (SERIAL_DEBUG_ROUTING)
