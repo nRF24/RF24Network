@@ -10,6 +10,8 @@
 #ifndef __RF24NETWORK_CONFIG_H__
 #define __RF24NETWORK_CONFIG_H__
 
+#ifdef __cplusplus
+
 #if (defined (__linux) || defined (linux)) && !defined (__ARDUINO_X86__)
   #define RF24_LINUX
   #include <stdint.h>
@@ -27,6 +29,8 @@
 #endif
 
 #include <stddef.h>
+
+#endif //cplusplus: Allows RF24Ethernet(uIP) or other c programs to get access to the RF24Network config variables
 
 #if !defined(__AVR_ATtiny85__) && !defined(__AVR_ATtiny84__)
 
@@ -78,6 +82,8 @@
 /*************************************/
 
 #endif
+
+#ifdef __cplusplus
 
 #ifndef rf24_max
   #define rf24_max(a,b) (a>b?a:b)
@@ -192,3 +198,4 @@
 
 #endif // __RF24_CONFIG_H__
 // vim:ai:cin:sts=2 sw=2 ft=cpp
+#endif //cplusplus
