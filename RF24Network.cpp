@@ -657,10 +657,14 @@ bool RF24Network::write(RF24NetworkHeader& header,const void* message, size_t le
 	delayMicroseconds(200);
 
 #if defined (DISABLE_FRAGMENTATION)
-    frame_size = rf24_min(len,MAX_FRAME_SIZE-sizeof(RF24NetworkHeader)) + sizeof(RF24NetworkHeader);
+    frame_size = rf24_min(len+sizeof(RF24NetworkHeader),MAX_FRAME_SIZE);
 	return _write(header,message,rf24_min(len,max_frame_payload_size),writeDirect);
 #else  
-
+  if(len <= max_frame_payload_size){
+    //Normal Write (Un-Fragmented)
+	frame_size = len + sizeof(RF24NetworkHeader);
+	return _write(header,message,len,writeDirect);
+  }
   //Check payload size
   if (len > MAX_PAYLOAD_SIZE) {
     IF_SERIAL_DEBUG(printf("%u: NET write message failed. Given 'len' %d is bigger than the MAX Payload size %i\n\r",millis(),len,MAX_PAYLOAD_SIZE););
@@ -684,11 +688,8 @@ bool RF24Network::write(RF24NetworkHeader& header,const void* message, size_t le
 	radio.stopListening();
   }  
   uint8_t retriesPerFrag = 0;
-  
-  if(fragment_id == 1){
-    //Normal Write (Un-Fragmented)
-	return _write(header,message,len,writeDirect);
-  }else
+
+
   while (fragment_id > 0) {
 
     //Copy and fill out the header
