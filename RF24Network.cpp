@@ -614,7 +614,7 @@ size_t RF24Network::read(RF24NetworkHeader& header,void* message, size_t maxlen)
     
 	memcpy(&header,frame_queue,8);
 
-	bufsize = (size_t)&frame_queue[8];
+	bufsize = (size_t)frame_queue[8];
 	
     if (maxlen > 0)
     {		
