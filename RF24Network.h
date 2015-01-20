@@ -483,7 +483,7 @@ public:
    bool is_valid_address( uint16_t node );
    
    bool fastFragTransfer;
-   bool fastTransferStarted;
+   //bool isRouted;
    
 private:
 

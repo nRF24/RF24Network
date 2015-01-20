@@ -100,14 +100,7 @@ void RF24Network::begin(uint8_t _channel, uint16_t _node_address )
   while (i--){
     radio.openReadingPipe(i,pipe_address(_node_address,i));	
   }
-  #if defined (RF24NetworkMulticast)
-  uint8_t count = 0; uint16_t addy = _node_address;
-  while(addy) {
-    addy/=8;
-    count++;
-  }
-  multicast_level = count;
-  #endif
+
   radio.startListening();
 
 }
@@ -163,7 +156,7 @@ uint8_t RF24Network::update(void)
 	  #endif
 	  
 	  uint8_t returnVal = header->type;
-
+		//printf("got\n");
 	  // Is this for us?
       if ( header->to_node == node_address   ){
 			
@@ -233,12 +226,17 @@ uint8_t RF24Network::update(void)
 					return EXTERNAL_DATA_TYPE;
 				  }
 				#endif
-			}else{			
+			}else{
+			//printf("route\n");
+				//isRouted=0;
 				write(header->to_node,1);	//Send it on, indicate it is a routed payload
+				//isRouted=0;
 			}
 		#else
+		//isRouted=0;
 		//if(radio.available()){printf("------FLUSHED DATA --------------");}	
 		write(header->to_node,1);	//Send it on, indicate it is a routed payload
+		//isRouted=0;
 		#endif
 	  }
 	  
@@ -678,15 +676,18 @@ bool RF24Network::write(RF24NetworkHeader& header,const void* message, size_t le
   }*/
 
   //Divide the message payload into chunks of max_frame_payload_size
-  uint8_t fragment_id = 1 + ((len - 1) / max_frame_payload_size);  //the number of fragments to send = ceil(len/max_frame_payload_size)
+  uint8_t fragment_id = (len % max_frame_payload_size != 0) + ((len ) / max_frame_payload_size);  //the number of fragments to send = ceil(len/max_frame_payload_size)
+
   uint8_t msgCount = 0;
 
   IF_SERIAL_DEBUG_FRAGMENTATION(printf("%lu: FRG Total message fragments %d\n\r",millis(),fragment_id););
   
-  fastFragTransfer = 1;
+  if(header.to_node != 0100){
+    fastFragTransfer = 1;
+  }
   if(fastFragTransfer){
 	radio.stopListening();
-  }  
+  }
   uint8_t retriesPerFrag = 0;
 
 
@@ -710,6 +711,7 @@ bool RF24Network::write(RF24NetworkHeader& header,const void* message, size_t le
     size_t offset = msgCount*max_frame_payload_size;
 	size_t fragmentLen = rf24_min(len-offset,max_frame_payload_size);
 
+	//delay(3);
     //Try to send the payload chunk with the copied header
     frame_size = sizeof(RF24NetworkHeader)+fragmentLen;
 	bool ok = _write(fragmentHeader,((char *)message)+offset,fragmentLen,writeDirect);
@@ -722,9 +724,10 @@ bool RF24Network::write(RF24NetworkHeader& header,const void* message, size_t le
 	  retriesPerFrag = 0;
 	  fragment_id--;
       msgCount++;
+	  //delayMicroseconds(130);
 	}
 	
-    if(writeDirect != 070){ delay(3); } //Delay 5ms between sending multicast payloads
+    if(writeDirect != 070){ delay(2); } //Delay 5ms between sending multicast payloads
  
 	if (!ok && retriesPerFrag >= 3) {
         IF_SERIAL_DEBUG_FRAGMENTATION(printf("%lu: FRG TX with fragmentID '%d' failed after %d fragments. Abort.\n\r",millis(),fragment_id,msgCount););
@@ -740,7 +743,7 @@ bool RF24Network::write(RF24NetworkHeader& header,const void* message, size_t le
 
     //Check and modify counters	
 	if((msgCount%3) == 0){	
-	  //delay(2);
+	  //delay(3);
 	}
   }
   fastFragTransfer = 0;
@@ -816,6 +819,10 @@ bool RF24Network::write(uint16_t to_node, uint8_t directTo)  // Direct To: 0 = F
   bool ok = false;
   bool isAckType;
   if(frame_buffer[6] > 64 && frame_buffer[6] < 192 ){ ++isAckType; }
+  
+  if( ( (frame_buffer[7] % 2) && frame_buffer[6] == NETWORK_MORE_FRAGMENTS) ){
+	isAckType = 0;
+  }
   
   // Throw it away if it's not a valid address
   if ( !is_valid_address(to_node) )
@@ -956,21 +963,33 @@ bool RF24Network::logicalToPhysicalAddress(logicalToPhysicalStruct *conversionIn
 bool RF24Network::write_to_pipe( uint16_t node, uint8_t pipe, bool multicast )
 {
   bool ok = false;
-
   uint64_t out_pipe = pipe_address( node, pipe );
-
-#if !defined (DUAL_HEAD_RADIO)
- // Open the correct pipe for writing.
+  
+  #if !defined (DUAL_HEAD_RADIO)
+  // Open the correct pipe for writing.
   // First, stop listening so we can talk
+  
+  
   if(!fastFragTransfer){
     radio.stopListening();
   }
-  radio.openWritingPipe(out_pipe);  
-  ok = radio.writeFast(frame_buffer, frame_size,multicast);
+  radio.openWritingPipe(out_pipe);
   
-  if(!fastFragTransfer){
+//  if( (frame_buffer[7] % 2) && frame_buffer[6] == NETWORK_MORE_FRAGMENTS){
+//    ok = true;
+//	radio.startFastWrite(frame_buffer, frame_size,multicast);
+  //}else{
+    ok = radio.writeFast(frame_buffer, frame_size,multicast);
+  //}
+  
+  //if(!fastFragTransfer){
     ok = radio.txStandBy(txTimeout);
-  }
+	//radio.startListening();
+  //}
+//  if(multicast){
+    
+//  }
+  
 #else
   radio1.openWritingPipe(out_pipe);
   radio1.writeFast(frame_buffer, frame_size);
@@ -1037,10 +1056,21 @@ bool RF24Network::is_descendant( uint16_t node )
 void RF24Network::setup_address(void)
 {
   // First, establish the node_mask
-  uint16_t node_mask_check = 0xFFFF;
-  while ( node_address & node_mask_check )
+  uint16_t node_mask_check = 0xFFFF;  
+  #if defined (RF24NetworkMulticast)
+  uint8_t count = 0;
+  #endif
+  
+  while ( node_address & node_mask_check ){
     node_mask_check <<= 3;
-
+  #if defined (RF24NetworkMulticast)
+	  count++;
+  }
+  multicast_level = count;
+  #else
+  }
+  #endif
+  
   node_mask = ~ node_mask_check;
 
   // parent mask is the next level down
@@ -1058,7 +1088,6 @@ void RF24Network::setup_address(void)
     m >>= 3;
   }
   parent_pipe = i;
-
 
   IF_SERIAL_DEBUG( printf_P(PSTR("setup_address node=0%o mask=0%o parent=0%o pipe=0%o\n\r"),node_address,node_mask,parent_node,parent_pipe););
 
@@ -1162,26 +1191,27 @@ uint64_t pipe_address( uint16_t node, uint8_t pipe )
   
   // Translate the address to use our optimally chosen radio address bytes
 	uint8_t count = 1; uint16_t dec = node;
-   #if defined (RF24NetworkMulticast)
-	if(pipe != 0 || !node){
-   #endif
-	while(dec){		
+
+	while(dec){
+	  #if defined (RF24NetworkMulticast)
+	  if(pipe != 0 || !node)
+      #endif
 		out[count]=address_translation[(dec % 8)];		// Convert our decimal values to octal, translate them to address bytes, and set our address
-		dec /= 8;	
-		count++;
+	  
+	  dec /= 8;	
+	  count++;
 	}
+    
+	#if defined (RF24NetworkMulticast)
+	if(pipe != 0 || !node)
+	#endif
+	  out[0] = address_translation[pipe];
+	#if defined (RF24NetworkMulticast)
+	else
+	  out[1] = address_translation[count-1];
+	#endif
+
  		
-	out[0] = address_translation[pipe];		// Set last byte by pipe number
-   #if defined (RF24NetworkMulticast)
-	}else{
-		while(dec){
-			dec/=8;
-			count++;
-		}
-		out[1] = address_translation[count-1];	
-	}
-  
-  #endif
   
   #if defined (RF24_LINUX)
   IF_SERIAL_DEBUG(uint32_t* top = reinterpret_cast<uint32_t*>(out+1);printf_P(PSTR("%u: NET Pipe %i on node 0%o has address %x%x\n\r"),millis(),pipe,node,*top,*out));
