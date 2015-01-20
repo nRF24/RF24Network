@@ -7,8 +7,8 @@
  version 2 as published by the Free Software Foundation.
  */
 
-#ifndef __RF24_CONFIG_H__
-#define __RF24_CONFIG_H__
+#ifndef __RF24NETWORK_CONFIG_H__
+#define __RF24NETWORK_CONFIG_H__
 
 #if defined (ARDUINO)
   #if ARDUINO < 100
@@ -24,9 +24,19 @@
 
 //#define DUAL_HEAD_RADIO
 //#define ENABLE_SLEEP_MODE
+#define RF24NetworkMulticast
+#define DISABLE_FRAGMENTATION // Saves a bit of space by disabling fragmentation
 
+//#define SERIAL_DEBUG
+//#define SERIAL_DEBUG_MINIMAL
+//#define SERIAL_DEBUG_ROUTING
+//#define SERIAL_DEBUG_FRAGMENTATION
 /*************************************/
+ 
+#endif
 
+#ifndef __RF24_CONFIG_H__
+#define __RF24_CONFIG_H__
 
   // Define _BV for non-Arduino platforms and for Arduino DUE
 #if defined (ARDUINO) && !defined (__arm__) && !defined (__ARDUINO_X86__)
@@ -55,8 +65,8 @@
 #endif
 
 
-  #undef SERIAL_DEBUG
-  #ifdef SERIAL_DEBUG
+  
+  #if defined (SERIAL_DEBUG)
 	#define IF_SERIAL_DEBUG(x) ({x;})
   #else
 	#define IF_SERIAL_DEBUG(x)
@@ -70,6 +80,24 @@
 	#define sprintf_P sprintf
 	#define _BV(bit) (1<<(bit))
 #endif
+
+  #if defined (SERIAL_DEBUG_MINIMAL)
+    #define IF_SERIAL_DEBUG_MINIMAL(x) ({x;})
+  #else
+    #define IF_SERIAL_DEBUG_MINIMAL(x)
+  #endif
+  
+  #if defined (SERIAL_DEBUG_FRAGMENTATION)
+    #define IF_SERIAL_DEBUG_FRAGMENTATION(x) ({x;})
+  #else
+    #define IF_SERIAL_DEBUG_FRAGMENTATION(x)
+  #endif
+  
+  #if defined (SERIAL_DEBUG_ROUTING)
+    #define IF_SERIAL_DEBUG_ROUTING(x) ({x;})
+  #else
+    #define IF_SERIAL_DEBUG_ROUTING(x)
+  #endif
 
 // Avoid spurious warnings
 // Arduino DUE is arm and uses traditional PROGMEM constructs
@@ -107,6 +135,5 @@
 	#define PRIPSTR "%s"
 
 #endif
-
 #endif // __RF24_CONFIG_H__
 // vim:ai:cin:sts=2 sw=2 ft=cpp

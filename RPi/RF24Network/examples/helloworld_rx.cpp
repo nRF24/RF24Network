@@ -9,15 +9,13 @@
  * Listens for messages from the transmitter and prints them out.
  */
 
-
-
-#include <cstdlib>
-#include <iostream>
 #include <RF24/RF24.h>
 #include <RF24Network/RF24Network.h>
+#include <iostream>
 #include <ctime>
 #include <stdio.h>
 #include <time.h>
+
 
 /**
  * g++ -L/usr/lib main.cc -I/usr/include -o main -lrrd
@@ -76,7 +74,8 @@ int main(int argc, char** argv)
 			
 			printf("Received payload # %lu at %lu \n",payload.counter,payload.ms);
   }		  
-		 sleep(2);
+		 //sleep(2);
+		 delay(2000);
 		 //fclose(pFile);
 	}
 
