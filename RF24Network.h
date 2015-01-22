@@ -483,13 +483,14 @@ public:
    bool is_valid_address( uint16_t node );
    
    bool fastFragTransfer;
+
    //bool isRouted;
    
 private:
 
   bool write(uint16_t, uint8_t directTo);
   bool write_to_pipe( uint16_t node, uint8_t pipe, bool multicast );
-  uint8_t enqueue(RF24NetworkFrame frame);
+  uint8_t enqueue(RF24NetworkHeader *header);
 
   bool is_direct_child( uint16_t node );
   bool is_descendant( uint16_t node );
@@ -507,9 +508,6 @@ private:
   
   bool logicalToPhysicalAddress(logicalToPhysicalStruct *conversionInfo);
   
-#if defined (RF24_LINUX)  
-  bool appendFragmentToFrame(RF24NetworkFrame frame);
-#endif
   
   RF24& radio; /**< Underlying radio driver, provides link/physical layers */
 #if defined (DUAL_HEAD_RADIO)
@@ -526,7 +524,7 @@ private:
   #if defined (RF24_LINUX)
     std::queue<RF24NetworkFrame> frame_queue;
     std::map<std::pair<uint16_t, uint16_t>, RF24NetworkFrame> frameFragmentsCache;
-  
+    bool appendFragmentToFrame(RF24NetworkFrame frame);
   
   #else
     #if  defined(__AVR_ATtiny25__) || defined(__AVR_ATtiny45__) || defined(__AVR_ATtiny85__) || defined(__AVR_ATtiny24__) || defined(__AVR_ATtiny44__) || defined(__AVR_ATtiny84__)
@@ -545,6 +543,12 @@ private:
 	#endif
 	
 	uint8_t* next_frame; /**< Pointer into the @p frame_queue where we should place the next received frame */
+	
+	#if !defined ( DISABLE_FRAGMENTATION )
+      RF24NetworkFrame frag_queue;
+      uint8_t frag_queue_message_buffer[MAX_PAYLOAD_SIZE+3]; //frame size + 1 
+    #endif
+  
   #endif
   
   //uint8_t frag_queue[MAX_PAYLOAD_SIZE + 11];
@@ -553,14 +557,11 @@ private:
   uint16_t parent_node; /**< Our parent's node address */
   uint8_t parent_pipe; /**< The pipe our parent uses to listen to us */
   uint16_t node_mask; /**< The bits which contain signfificant node address information */
+  
+  #if defined ENABLE_NETWORK_STATS
   static uint32_t nFails;
   static uint32_t nOK;
-  
-  #if !defined ( DISABLE_FRAGMENTATION ) &&  !defined (RF24_LINUX)
-      RF24NetworkFrame frag_queue;
-      uint8_t frag_queue_message_buffer[MAX_PAYLOAD_SIZE+3]; //frame size + 1 
-  #endif
-  
+  #endif  
   
 public:
   uint8_t frame_buffer[MAX_FRAME_SIZE]; /**< Space to put the frame that will be sent/received over the air */ 

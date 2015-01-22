@@ -35,8 +35,10 @@
 
 
 uint16_t RF24NetworkHeader::next_id = 1;
+#if defined ENABLE_NETWORK_STATS
 uint32_t RF24Network::nFails = 0;
 uint32_t RF24Network::nOK = 0;
+#endif
 uint64_t pipe_address( uint16_t node, uint8_t pipe );
 #if defined (RF24NetworkMulticast)
 uint16_t levelToAddress( uint8_t level );
@@ -73,7 +75,7 @@ void RF24Network::begin(uint8_t _channel, uint16_t _node_address )
     return;
   }
   
-   radio.stopListening();
+  //radio.stopListening();
   // Set up the radio the way we want it to look
   radio.setChannel(_channel);
   radio.enableDynamicAck();
@@ -96,7 +98,7 @@ void RF24Network::begin(uint8_t _channel, uint16_t _node_address )
   setup_address();
 
   // Open up all listening pipes
-  int i = 6;
+  uint8_t i = 6;
   while (i--){
     radio.openReadingPipe(i,pipe_address(_node_address,i));	
   }
@@ -106,10 +108,15 @@ void RF24Network::begin(uint8_t _channel, uint16_t _node_address )
 }
 
 /******************************************************************/
+
+#if defined ENABLE_NETWORK_STATS
 void RF24Network::failures(uint32_t *_fails, uint32_t *_ok){
 	*_fails = nFails;
 	*_ok = nOK;
 }
+#endif
+
+/******************************************************************/
 
 uint8_t RF24Network::update(void)
 {
@@ -120,16 +127,19 @@ uint8_t RF24Network::update(void)
   while ( radio.isValid() && radio.available(&pipe_num) )
   {
 
-      frame_size = radio.getDynamicPayloadSize();
-	  if(frame_size < sizeof(RF24NetworkHeader)){delay(10);continue;}	  
-	  
+      if( (frame_size = radio.getDynamicPayloadSize() ) < sizeof(RF24NetworkHeader)){
+	    delay(10);
+		continue;
+	  }
+
       // Dump the payloads until we've gotten everything
       // Fetch the payload, and see if this was the last one.
       //radio.read( frame_buffer, sizeof(frame_buffer) );
 	  radio.read( frame_buffer, frame_size );
 	  
       // Read the beginning of the frame as the header
-      RF24NetworkHeader *header = (RF24NetworkHeader*)(&frame_buffer);
+      //RF24NetworkHeader& header = reinterpret_cast<RF24NetworkHeader&>(frame_buffer);
+	  RF24NetworkHeader *header = (RF24NetworkHeader*)(&frame_buffer);
 	  
 	  #if defined (RF24_LINUX)
 	    IF_SERIAL_DEBUG(printf_P("%u: MAC Received on %u %s\n\r",millis(),pipe_num,header->toString()));
@@ -148,12 +158,12 @@ uint8_t RF24Network::update(void)
 	  }
 	  
 	  
-	  #if defined (RF24_LINUX)
+	 /* #if defined (RF24_LINUX)
 	    RF24NetworkFrame frame = RF24NetworkFrame(*header,frame_buffer+sizeof(RF24NetworkHeader),frame_size-sizeof(RF24NetworkHeader));  
 	  #else
 	    RF24NetworkFrame frame = RF24NetworkFrame(*header,frame_size-sizeof(RF24NetworkHeader));
 	    frame.message_buffer = frame_buffer+sizeof(RF24NetworkHeader);
-	  #endif
+	  #endif*/
 	  
 	  uint8_t returnVal = header->type;
 		//printf("got\n");
@@ -164,8 +174,7 @@ uint8_t RF24Network::update(void)
 			   continue;
 			}
 		    if(header->type == NETWORK_ADDR_RESPONSE ){	
-			    uint16_t requester = frame_buffer[8];// | frame_buffer[9] << 8;
-				requester |= frame_buffer[9] << 8;				
+			    uint16_t requester = (uint16_t)frame_buffer[8];			
 				if(requester != node_address){
 					header->to_node = requester;
 					write(header->to_node,USER_TX_TO_PHYSICAL_ADDRESS);
@@ -191,9 +200,9 @@ uint8_t RF24Network::update(void)
 				}				
 			}
 			#if defined (RF24_LINUX)
-				enqueue(frame);
+				enqueue(header);
 			#else
-			if( enqueue(frame) == 2 ){ //External data received			
+			if( enqueue(header) == 2 ){ //External data received			
 				#if defined (SERIAL_DEBUG_MINIMAL)
 				  Serial.println("ret ext");
 				#endif
@@ -206,26 +215,30 @@ uint8_t RF24Network::update(void)
 	  #if defined	(RF24NetworkMulticast)	
 
 			if( header->to_node == 0100){
-				  if(header->type == NETWORK_POLL ){
+			
+				uint8_t val;
+				#if defined (RF24_Linux)
+					enqueue(header);
+				#else
+				    val = enqueue(header);			
+				#endif
+				if(header->type == NETWORK_POLL ){
 				    //Serial.println("Send poll");
 					header->to_node = header->from_node;
 					header->from_node = node_address;			
 					delay((node_address%5)*5);
 					write(header->to_node,USER_TX_TO_PHYSICAL_ADDRESS);
 					continue;
-				  }else
-				  if(multicastRelay){					
+				}else
+				if(multicastRelay){					
 					IF_SERIAL_DEBUG_ROUTING( printf_P(PSTR("%u MAC: FWD multicast frame from 0%o to level %u\n"),millis(),header->from_node,multicast_level+1); );
 					write(levelToAddress(multicast_level)<<3,4);
-				  }
-				#if defined (RF24_Linux)
-					enqueue(frame);
-				#else
-				  if( enqueue(frame) == 2 ){ //External data received			
-				    //Serial.println("ret ext multicast");
+				}
+				if( val == 2 ){ //External data received			
+				  //Serial.println("ret ext multicast");
 					return EXTERNAL_DATA_TYPE;
-				  }
-				#endif
+				}
+
 			}else{
 			//printf("route\n");
 				//isRouted=0;
@@ -248,8 +261,10 @@ uint8_t RF24Network::update(void)
 #if defined (RF24_LINUX)
 /******************************************************************/
 
-uint8_t RF24Network::enqueue(RF24NetworkFrame frame) {
+uint8_t RF24Network::enqueue(RF24NetworkHeader* header) {
   bool result = false;
+  
+  RF24NetworkFrame frame = RF24NetworkFrame(*header,frame_buffer+sizeof(RF24NetworkHeader),frame_size-sizeof(RF24NetworkHeader)); 
   
   bool isFragment = ( frame.header.type == NETWORK_FIRST_FRAGMENT || frame.header.type == NETWORK_MORE_FRAGMENTS || frame.header.type == NETWORK_LAST_FRAGMENT || frame.header.type == NETWORK_MORE_FRAGMENTS_NACK);
   
@@ -393,77 +408,73 @@ bool RF24Network::appendFragmentToFrame(RF24NetworkFrame frame) {
 /******************************************************************/
 /******************************************************************/
 
-uint8_t RF24Network::enqueue(RF24NetworkFrame frame)
+uint8_t RF24Network::enqueue(RF24NetworkHeader* header)
 {
   bool result = false;
+  uint8_t message_size = frame_size - sizeof(RF24NetworkHeader);
   
   IF_SERIAL_DEBUG(printf_P(PSTR("%lu: NET Enqueue @%x "),millis(),next_frame-frame_queue));
-
+  
+  //RF24NetworkFrame frame = RF24NetworkFrame(*header,frame_size-sizeof(RF24NetworkHeader));
+  //frame.message_buffer = frame_buffer+sizeof(RF24NetworkHeader);
+	//RF24NetworkFrame frame = RF24NetworkFrame(*header,frame_size-sizeof(RF24NetworkHeader));
+	  //frame.message_buffer = frame_buffer+sizeof(RF24NetworkHeader);
 #if !defined ( DISABLE_FRAGMENTATION ) 
 
-  bool isFragment = frame.header.type == NETWORK_FIRST_FRAGMENT || frame.header.type == NETWORK_MORE_FRAGMENTS || frame.header.type == NETWORK_LAST_FRAGMENT || frame.header.type == NETWORK_MORE_FRAGMENTS_NACK ? true : false;
+  bool isFragment = header->type == NETWORK_FIRST_FRAGMENT || header->type == NETWORK_MORE_FRAGMENTS || header->type == NETWORK_LAST_FRAGMENT || header->type == NETWORK_MORE_FRAGMENTS_NACK ;
 
   if(isFragment){
 
 	frag_queue.message_buffer=&frag_queue_message_buffer[0];
 	
-	if(frame.header.type == NETWORK_FIRST_FRAGMENT){
-	    if(frame.header.reserved > (MAX_PAYLOAD_SIZE / max_frame_payload_size) + 1  ||  (frag_queue.header.id == frame.header.id && frag_queue.header.from_node == frame.header.from_node) ){
+	if(header->type == NETWORK_FIRST_FRAGMENT){
+	    if(header->reserved > (MAX_PAYLOAD_SIZE / max_frame_payload_size) + 1  ||  (frag_queue.header.id == header->id && frag_queue.header.from_node == header->from_node) ){
 
 #if defined (SERIAL_DEBUG_FRAGMENTATION) || defined (SERIAL_DEBUG_MINIMAL)
-			printf(PSTR("Frag frame with %d frags exceeds MAX_PAYLOAD_SIZE or out of sequence\n"),frame.header.reserved);
+			printf_P(PSTR("Frag frame with %d frags exceeds MAX_PAYLOAD_SIZE or out of sequence\n"),header->reserved);
 #endif
 			frag_queue.header.reserved = 0;
 			return false;
 		}
   		  
-		  memcpy(&frag_queue,&frame,10);
-		  memcpy(frag_queue.message_buffer,frame_buffer+sizeof(RF24NetworkHeader),frame.message_size);
+		memcpy(&frag_queue,&frame_buffer,10);
+		memcpy(frag_queue.message_buffer,frame_buffer+sizeof(RF24NetworkHeader),message_size);
 		
-#if defined (SERIAL_DEBUG_FRAGMENTATION)
-		  Serial.print(F("queue first, total frags ")); Serial.println(frame.header.reserved);
-#endif
+IF_SERIAL_DEBUG_FRAGMENTATION( Serial.print(F("queue first, total frags ")); Serial.println(header->reserved); );
 		//Store the total size of the stored frame in message_size
-	    frag_queue.message_size = frame.message_size;
+	    frag_queue.message_size = message_size;
 		--frag_queue.header.reserved;
 		  
-#if defined (SERIAL_DEBUG_FRAGMENTATION_L2)		
-		  for(int i=0; i<frag_queue.message_size;i++){  Serial.println(frag_queue.message_buffer[i],HEX);  }
-#endif
-		  return true;		
+IF_SERIAL_DEBUG_FRAGMENTATION_L2(  for(int i=0; i<frag_queue.message_size;i++){  Serial.println(frag_queue.message_buffer[i],HEX);  } );
+		
+		return true;		
 
 	}else // NETWORK_MORE_FRAGMENTS
 	
-	if(frame.header.type == NETWORK_LAST_FRAGMENT || frame.header.type == NETWORK_MORE_FRAGMENTS || frame.header.type == NETWORK_MORE_FRAGMENTS_NACK){
+	if(header->type == NETWORK_LAST_FRAGMENT || header->type == NETWORK_MORE_FRAGMENTS || header->type == NETWORK_MORE_FRAGMENTS_NACK){
 		
-		if( (frame.header.type != NETWORK_LAST_FRAGMENT && frame.header.reserved != frag_queue.header.reserved ) || frag_queue.header.id != frame.header.id || frag_queue.message_size + frame.message_size > MAX_PAYLOAD_SIZE){
+		if( (header->type != NETWORK_LAST_FRAGMENT && header->reserved != frag_queue.header.reserved ) || frag_queue.header.id != header->id || frag_queue.message_size + message_size > MAX_PAYLOAD_SIZE){
 			#if defined (SERIAL_DEBUG_FRAGMENTATION) || defined (SERIAL_DEBUG_MINIMAL)
-			Serial.print(F("Drop frag ")); Serial.print(frame.header.reserved);
-			Serial.print(F(" header id ")); Serial.print(frame.header.id);
+			Serial.print(F("Drop frag ")); Serial.print(header->reserved);
+			Serial.print(F(" header id ")); Serial.print(header->id);
 			Serial.println(F(" Out of order or size exceeds max"));
 			#endif
 			frag_queue.header.reserved = 0;
 			return false;
 		}
 		
-		memcpy(frag_queue.message_buffer+frag_queue.message_size,frame_buffer+sizeof(RF24NetworkHeader),frame.message_size);
-	    frag_queue.message_size += frame.message_size;
+		memcpy(frag_queue.message_buffer+frag_queue.message_size,frame_buffer+sizeof(RF24NetworkHeader),message_size);
+	    frag_queue.message_size += message_size;
 		
-		if(frame.header.type != NETWORK_LAST_FRAGMENT){
+		if(header->type != NETWORK_LAST_FRAGMENT){
 		  --frag_queue.header.reserved;
 		  return true;
 		}
 		frag_queue.header.reserved = 0;
 		
 	
-#if defined (SERIAL_DEBUG_FRAGMENTATION)
-		printf(PSTR("fq 3: %d\n"),frag_queue.message_size);
-#endif
-#if defined (SERIAL_DEBUG_FRAGMENTATION_L2)
-		for(int i=0; i< frag_queue.message_size;i++){
-			Serial.println(frag_queue.message_buffer[i],HEX);
-		}
-#endif		
+IF_SERIAL_DEBUG_FRAGMENTATION( printf_P(PSTR("fq 3: %d\n"),frag_queue.message_size); );
+IF_SERIAL_DEBUG_FRAGMENTATION_L2(for(int i=0; i< frag_queue.message_size;i++){ Serial.println(frag_queue.message_buffer[i],HEX); }  );		
 	
 	
 		//Frame assembly complete, copy to main buffer if OK	
@@ -471,7 +482,7 @@ uint8_t RF24Network::enqueue(RF24NetworkFrame frame)
 		if (  next_frame < frame_queue + sizeof(frame_queue) )
 		{
 			//Set the type on the incoming message header, as well as the received message
-			frag_queue.header.type = frame.header.reserved;
+			frag_queue.header.type = header->reserved;
 		
 			if(frag_queue.header.type == EXTERNAL_DATA_TYPE){
 				frag_ptr = &frag_queue;
@@ -486,9 +497,7 @@ uint8_t RF24Network::enqueue(RF24NetworkFrame frame)
 				next_frame += (10+frag_queue.message_size);
 				}
 			}
-		#if defined (SERIAL_DEBUG_FRAGMENTATION)
-			printf(PSTR("enq size %d\n"),frag_queue.message_size);
-		#endif
+		IF_SERIAL_DEBUG_FRAGMENTATION( printf_P(PSTR("enq size %d\n"),frag_queue.message_size); );
 		   return true;
 		}
   
@@ -498,37 +507,35 @@ uint8_t RF24Network::enqueue(RF24NetworkFrame frame)
  #endif 
 
   // Copy the current frame into the frame queue
-  if (  next_frame < frame_queue + sizeof(frame_queue) && frame.message_size <= MAX_FRAME_SIZE)
+  if (  next_frame < frame_queue + sizeof(frame_queue) )
   {
 
 #if !defined( DISABLE_FRAGMENTATION )
 	frag_ptr = &frag_queue;
 
-	if(frame.header.type == EXTERNAL_DATA_TYPE){
-		memcpy(&frag_queue,&frame,10);
+	if(header->type == EXTERNAL_DATA_TYPE){
+		memcpy(&frag_queue,&frame_buffer,8);
+		frag_queue.message_size = message_size;
+		//frag_queue = frame;
 		frag_queue.message_buffer = frame_buffer+sizeof(RF24NetworkHeader);
-		frag_queue.message_size = frame.message_size;
+		frag_queue.message_size = message_size;
 		return 2;
 	}
 #endif		
 #if defined (DISABLE_USER_PAYLOADS)
 	return 0;
-#endif
-	memcpy(next_frame,&frame,10);
-	memcpy(next_frame+10,frame_buffer+sizeof(RF24NetworkHeader),frame.message_size);
-#if defined (SERIAL_DEBUG_FRAGMENTATION)
-	for(int i=0; i<frame.message_size+10;i++){
-		Serial.print(frame_queue[i],HEX);
-		Serial.print(" : ");
-	}
-	Serial.println("");
-#endif
-    next_frame += (frame.message_size + 10); 
-#if defined (SERIAL_DEBUG_FRAGMENTATION)
-	printf(PSTR("enq %d\n"),next_frame-frame_queue);
-#endif
+ }
+ }
+#else
+	memcpy(next_frame,&frame_buffer,8);
+	next_frame[8] = message_size;
+	memcpy(next_frame+10,frame_buffer+sizeof(RF24NetworkHeader),message_size);
+  IF_SERIAL_DEBUG_FRAGMENTATION( for(int i=0; i<message_size;i++){ Serial.print(next_frame[i],HEX); Serial.print(" : "); } Serial.println(""); );
+    
+	next_frame += (message_size + 10);
+  IF_SERIAL_DEBUG_FRAGMENTATION( printf_P(PSTR("enq %d\n"),next_frame-frame_queue); );
     result = true;
-    IF_SERIAL_DEBUG(printf_P(PSTR("ok\n\r")));
+  IF_SERIAL_DEBUG(printf_P(PSTR("ok\n\r")));
   }
   else
   {
@@ -537,6 +544,7 @@ uint8_t RF24Network::enqueue(RF24NetworkFrame frame)
   }
   return result;
 }
+#endif //USER_PAYLOADS_ENABLED
 
 #endif //End not defined RF24_Linux
 /******************************************************************/
@@ -576,9 +584,10 @@ size_t RF24Network::peek(RF24NetworkHeader& header)
     memcpy(&header,&frame,sizeof(RF24NetworkHeader));
     return frame.message_size;
   #else
-	memcpy(&header,frame_queue,sizeof(RF24NetworkHeader));
-	RF24NetworkFrame& frame = * reinterpret_cast<RF24NetworkFrame*>(frame_queue);
-	return frame.message_size;
+	//memcpy(&header,frame_queue,sizeof(RF24NetworkHeader));
+	RF24NetworkFrame *frame = (RF24NetworkFrame*)(frame_queue);
+	header = frame->header;
+	return frame->message_size;
   #endif
   }
   return 0;
@@ -611,9 +620,8 @@ size_t RF24Network::read(RF24NetworkHeader& header,void* message, size_t maxlen)
   {
     
 	memcpy(&header,frame_queue,8);
+	bufsize = (uint16_t)frame_queue[8];
 
-	bufsize = (size_t)frame_queue[8];
-	
     if (maxlen > 0)
     {		
 		maxlen = min(maxlen,bufsize);
@@ -646,7 +654,7 @@ bool RF24Network::multicast(RF24NetworkHeader& header,const void* message, size_
 #endif
 
 /******************************************************************/
-bool RF24Network::write(RF24NetworkHeader& header,const void* message, size_t len){
+bool RF24Network::write(RF24NetworkHeader& header,const void* message, size_t len){    
 	return write(header,message,len,070);
 }
 /******************************************************************/
@@ -684,27 +692,26 @@ bool RF24Network::write(RF24NetworkHeader& header,const void* message, size_t le
   
   if(header.to_node != 0100){
     fastFragTransfer = 1;
-  }
-  if(fastFragTransfer){
 	radio.stopListening();
   }
-  uint8_t retriesPerFrag = 0;
 
+  uint8_t retriesPerFrag = 0;
+  uint8_t type = header.type;
 
   while (fragment_id > 0) {
 
     //Copy and fill out the header
-    RF24NetworkHeader fragmentHeader = header;
-    fragmentHeader.reserved = fragment_id;
+    //RF24NetworkHeader fragmentHeader = header;
+   header.reserved = fragment_id;
 
     if (fragment_id == 1) {
-      fragmentHeader.type = NETWORK_LAST_FRAGMENT;  //Set the last fragment flag to indicate the last fragment
-      fragmentHeader.reserved = header.type; //Workaroung/Hack: to transmit the user application defined header.type, save this variable in the header.fragment_id.
+      header.type = NETWORK_LAST_FRAGMENT;  //Set the last fragment flag to indicate the last fragment
+      header.reserved = type; //The reserved field is used to transmit the header type
     } else {
       if (msgCount == 0) {
-        fragmentHeader.type = NETWORK_FIRST_FRAGMENT;
+        header.type = NETWORK_FIRST_FRAGMENT;
       }else{
-        fragmentHeader.type = NETWORK_MORE_FRAGMENTS; //Set the more fragments flag to indicate a fragmented frame
+        header.type = NETWORK_MORE_FRAGMENTS; //Set the more fragments flag to indicate a fragmented frame
       }
     }
 	
@@ -714,7 +721,7 @@ bool RF24Network::write(RF24NetworkHeader& header,const void* message, size_t le
 	//delay(3);
     //Try to send the payload chunk with the copied header
     frame_size = sizeof(RF24NetworkHeader)+fragmentLen;
-	bool ok = _write(fragmentHeader,((char *)message)+offset,fragmentLen,writeDirect);
+	bool ok = _write(header,((char *)message)+offset,fragmentLen,writeDirect);
     
 	if (!ok) {
 	   delay(2);
@@ -731,7 +738,6 @@ bool RF24Network::write(RF24NetworkHeader& header,const void* message, size_t le
  
 	if (!ok && retriesPerFrag >= 3) {
         IF_SERIAL_DEBUG_FRAGMENTATION(printf("%lu: FRG TX with fragmentID '%d' failed after %d fragments. Abort.\n\r",millis(),fragment_id,msgCount););
-		printf("%lu: FRG TX with fragmentID '%d' failed after %d fragments. Abort.\n\r",millis(),fragment_id,msgCount);
 		break;
     }
 
@@ -746,11 +752,13 @@ bool RF24Network::write(RF24NetworkHeader& header,const void* message, size_t le
 	  //delay(3);
 	}
   }
+
+  if(fastFragTransfer){
+    radio.startListening();
+  }
   fastFragTransfer = 0;
-  radio.txStandBy(txTimeout);
-  radio.startListening();
-  int frag_delay = uint8_t(len/48);
-  delay( rf24_min(frag_delay,20));
+  //int frag_delay = uint8_t(len/48);
+  delay( rf24_min(len/48,20));
 
   //Return true if all the chunks where sent successfully
  
@@ -783,14 +791,15 @@ bool RF24Network::_write(RF24NetworkHeader& header,const void* message, size_t l
     IF_SERIAL_DEBUG(printf("%u: FRG frame size %i\n",millis(),frame_size););
     IF_SERIAL_DEBUG(printf("%u: FRG frame ",millis()); const char* charPtr = reinterpret_cast<const char*>(frame_buffer); for (size_t i = 0; i < frame_size; i++) { printf("%02X ", charPtr[i]); }; printf("\n\r"));
 	#else
-    memcpy(frame_buffer + sizeof(RF24NetworkHeader),message,rf24_min(frame_size-sizeof(RF24NetworkHeader),len));
+	
+    memcpy(frame_buffer + sizeof(RF24NetworkHeader),message,len);
 	
 	IF_SERIAL_DEBUG(size_t tmpLen = len;printf_P(PSTR("%lu: NET message "),millis());const uint8_t* charPtr = reinterpret_cast<const uint8_t*>(message);while(tmpLen--){ printf("%02x ",charPtr[tmpLen]);} printf_P(PSTR("\n\r") ) );
     #endif
   }
 
   // If the user is trying to send it to himself
-  if ( header.to_node == node_address ){
+  /*if ( header.to_node == node_address ){
 	#if defined (RF24_LINUX)
 	  RF24NetworkFrame frame = RF24NetworkFrame(header,message,rf24_min(MAX_FRAME_SIZE-sizeof(RF24NetworkHeader),len));	
 	#else
@@ -798,18 +807,18 @@ bool RF24Network::_write(RF24NetworkHeader& header,const void* message, size_t l
     #endif
 	// Just queue it in the received queue
     return enqueue(frame);
-  }
+  }*/
     // Otherwise send it out over the air	
-	if(writeDirect != 070){
+	
+	
+	if(writeDirect != 070){		
 		if(header.to_node == writeDirect){
 			return write(writeDirect,USER_TX_TO_PHYSICAL_ADDRESS);
-	    }else{
-			return write(writeDirect,USER_TX_TO_LOGICAL_ADDRESS);
-		}		
-	}else{
-	   return write(header.to_node,TX_NORMAL); 
+		}
+		return write(writeDirect,USER_TX_TO_LOGICAL_ADDRESS);				
 	}
-  
+	return write(header.to_node,TX_NORMAL);
+	
 }
 
 /******************************************************************/
@@ -820,9 +829,9 @@ bool RF24Network::write(uint16_t to_node, uint8_t directTo)  // Direct To: 0 = F
   bool isAckType;
   if(frame_buffer[6] > 64 && frame_buffer[6] < 192 ){ ++isAckType; }
   
-  if( ( (frame_buffer[7] % 2) && frame_buffer[6] == NETWORK_MORE_FRAGMENTS) ){
+  /*if( ( (frame_buffer[7] % 2) && frame_buffer[6] == NETWORK_MORE_FRAGMENTS) ){
 	isAckType = 0;
-  }
+  }*/
   
   // Throw it away if it's not a valid address
   if ( !is_valid_address(to_node) )
@@ -850,23 +859,24 @@ bool RF24Network::write(uint16_t to_node, uint8_t directTo)  // Direct To: 0 = F
  
 	if( directTo == TX_ROUTED && ok && conversion.send_node == to_node && isAckType){
 			
-			RF24NetworkHeader& header = * reinterpret_cast<RF24NetworkHeader*>(frame_buffer);
-			header.type = NETWORK_ACK;				    // Set the payload type to NETWORK_ACK			
-			header.to_node = header.from_node;          // Change the 'to' address to the 'from' address			
+			RF24NetworkHeader* header = (RF24NetworkHeader*)&frame_buffer;
+			header->type = NETWORK_ACK;				    // Set the payload type to NETWORK_ACK			
+			header->to_node = header->from_node;          // Change the 'to' address to the 'from' address			
 
-			conversion.send_node = header.from_node;
+			conversion.send_node = header->from_node;
 			conversion.send_pipe = TX_ROUTED;
 			conversion.multicast = 0;
 			logicalToPhysicalAddress(&conversion);
 			
 			//Write the data using the resulting physical address
+			frame_size = sizeof(RF24NetworkHeader);
 			write_to_pipe(conversion.send_node, conversion.send_pipe, conversion.multicast);
 			
 			//dynLen=0;
 			#if defined (RF24_LINUX)
-				IF_SERIAL_DEBUG_ROUTING( printf_P(PSTR("%u MAC: Route OK to 0%o ACK sent to 0%o\n"),millis(),to_node,header.to_node); );
+				IF_SERIAL_DEBUG_ROUTING( printf_P(PSTR("%u MAC: Route OK to 0%o ACK sent to 0%o\n"),millis(),to_node,header->to_node); );
 			#else
-			    IF_SERIAL_DEBUG_ROUTING( printf_P(PSTR("%lu MAC: Route OK to 0%o ACK sent to 0%o\n"),millis(),to_node,header.to_node); );
+			    IF_SERIAL_DEBUG_ROUTING( printf_P(PSTR("%lu MAC: Route OK to 0%o ACK sent to 0%o\n"),millis(),to_node,header->to_node); );
 			#endif
 	}
 
@@ -878,7 +888,7 @@ bool RF24Network::write(uint16_t to_node, uint8_t directTo)  // Direct To: 0 = F
           // Now, continue listening
 		  if(fastFragTransfer){
 			 radio.txStandBy(txTimeout);
-			 fastFragTransfer = 0;
+			 fastFragTransfer = false;
 		  }
           radio.startListening();
         #endif
@@ -890,22 +900,25 @@ bool RF24Network::write(uint16_t to_node, uint8_t directTo)  // Direct To: 0 = F
 				#else
 				  IF_SERIAL_DEBUG_ROUTING( printf_P(PSTR("%lu: MAC Network ACK fail from 0%o via 0%o on pipe %x\n\r"),millis(),to_node,conversion.send_node,conversion.send_pipe); );
 				#endif
-				ok=0;
+				ok=false;
 				break;					
 			}
-		}		
-    }else
+		}
+		
+    }
 	if(!fastFragTransfer){
 	   #if !defined (DUAL_HEAD_RADIO)
          // Now, continue listening
          radio.startListening();
        #endif	
 	}
-	
+
+#if defined ENABLE_NETWORK_STATS
   if(ok == true){
 			++nOK;
   }else{	++nFails;
   }
+#endif
   return ok;
 }
 

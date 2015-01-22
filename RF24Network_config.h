@@ -54,12 +54,15 @@
  */
 #define MAX_PAYLOAD_SIZE  144
 
-/** The number of 32-byte payloads RF24Network will automatically buffer for network.read().
-* If using fragmentation, this value multiplied by 42 must be larger than the MAX_PAYLOAD_SIZE defined above */
+/** The number of 24-byte payloads RF24Network will automatically buffer for network.read().
+* If using fragmentation, this value multiplied by 24 must be larger than the MAX_PAYLOAD_SIZE defined above */
 #define NUM_USER_PAYLOADS 5
 
 /** Disable user payloads. Saves memory when used with RF24Ethernet or software that uses external data.*/
 //#define DISABLE_USER_PAYLOADS 
+
+/** Enable tracking of success and failures for all transmissions, routed and user initiated */
+//#define ENABLE_NETWORK_STATS
 
 /** Debug Options */
 //#define SERIAL_DEBUG
