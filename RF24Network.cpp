@@ -174,7 +174,8 @@ uint8_t RF24Network::update(void)
 			   continue;
 			}
 		    if(header->type == NETWORK_ADDR_RESPONSE ){	
-			    uint16_t requester = (uint16_t)frame_buffer[8];			
+			    uint16_t requester = frame_buffer[8];	
+				requester |= frame_buffer[9] << 8;
 				if(requester != node_address){
 					header->to_node = requester;
 					write(header->to_node,USER_TX_TO_PHYSICAL_ADDRESS);
@@ -216,12 +217,7 @@ uint8_t RF24Network::update(void)
 
 			if( header->to_node == 0100){
 			
-				uint8_t val;
-				#if defined (RF24_Linux)
-					enqueue(header);
-				#else
-				    val = enqueue(header);			
-				#endif
+
 				if(header->type == NETWORK_POLL ){
 				    //Serial.println("Send poll");
 					header->to_node = header->from_node;
@@ -229,7 +225,14 @@ uint8_t RF24Network::update(void)
 					delay((node_address%5)*5);
 					write(header->to_node,USER_TX_TO_PHYSICAL_ADDRESS);
 					continue;
-				}else
+				}
+				uint8_t val;
+				#if defined (RF24_Linux)
+					enqueue(header);
+				#else
+				    val = enqueue(header);			
+				#endif
+				
 				if(multicastRelay){					
 					IF_SERIAL_DEBUG_ROUTING( printf_P(PSTR("%u MAC: FWD multicast frame from 0%o to level %u\n"),millis(),header->from_node,multicast_level+1); );
 					write(levelToAddress(multicast_level)<<3,4);
