@@ -179,7 +179,7 @@ uint8_t RF24Network::update(void)
 				if(requester != node_address){
 					header->to_node = requester;
 					write(header->to_node,USER_TX_TO_PHYSICAL_ADDRESS);
-					delay(50);
+					delay(15);
 					write(header->to_node,USER_TX_TO_PHYSICAL_ADDRESS);
 					//printf("Fwd add response to 0%o\n",requester);
 					continue;
@@ -222,7 +222,7 @@ uint8_t RF24Network::update(void)
 				    //Serial.println("Send poll");
 					header->to_node = header->from_node;
 					header->from_node = node_address;			
-					delay((node_address%5)*5);
+					delay((node_address%5)*3);
 					write(header->to_node,USER_TX_TO_PHYSICAL_ADDRESS);
 					continue;
 				}
@@ -334,7 +334,6 @@ bool RF24Network::appendFragmentToFrame(RF24NetworkFrame frame) {
 	  
 	  if(frame.header.reserved > (MAX_PAYLOAD_SIZE /24) + 1 ){
 		IF_SERIAL_DEBUG_FRAGMENTATION( printf("%u FRG Too many fragments in payload %u, dropping...",millis(),frame.header.reserved); );
-		printf("%u FRG Too many fragments in payload %u, dropping...",millis(),frame.header.reserved);
 		// If there are more fragments than we can possibly handle, return
 		return false;
 	  }
@@ -815,10 +814,15 @@ bool RF24Network::_write(RF24NetworkHeader& header,const void* message, size_t l
 	
 	
 	if(writeDirect != 070){		
-		if(header.to_node == writeDirect){
-			return write(writeDirect,USER_TX_TO_PHYSICAL_ADDRESS);
+		uint8_t sendType = USER_TX_TO_LOGICAL_ADDRESS;
+	    
+		if(header.to_node == 0100){
+		  sendType = USER_TX_MULTICAST;
 		}
-		return write(writeDirect,USER_TX_TO_LOGICAL_ADDRESS);				
+		if(header.to_node == writeDirect){
+		  sendType = USER_TX_TO_PHYSICAL_ADDRESS;
+		}
+		return write(writeDirect,sendType);				
 	}
 	return write(header.to_node,TX_NORMAL);
 	
@@ -829,8 +833,8 @@ bool RF24Network::_write(RF24NetworkHeader& header,const void* message, size_t l
 bool RF24Network::write(uint16_t to_node, uint8_t directTo)  // Direct To: 0 = First Payload, standard routing, 1=routed payload, 2=directRoute to host, 3=directRoute to Route
 {
   bool ok = false;
-  bool isAckType;
-  if(frame_buffer[6] > 64 && frame_buffer[6] < 192 ){ ++isAckType; }
+  bool isAckType = false;
+  if(frame_buffer[6] > 64 && frame_buffer[6] < 192 && frame_buffer[6] != NETWORK_ACK){ ++isAckType; }
   
   /*if( ( (frame_buffer[7] % 2) && frame_buffer[6] == NETWORK_MORE_FRAGMENTS) ){
 	isAckType = 0;
@@ -877,9 +881,9 @@ bool RF24Network::write(uint16_t to_node, uint8_t directTo)  // Direct To: 0 = F
 			
 			//dynLen=0;
 			#if defined (RF24_LINUX)
-				IF_SERIAL_DEBUG_ROUTING( printf_P(PSTR("%u MAC: Route OK to 0%o ACK sent to 0%o\n"),millis(),to_node,header->to_node); );
+				IF_SERIAL_DEBUG_ROUTING( printf_P(PSTR("%u MAC: Route OK to 0%o ACK sent to 0%o\n"),millis(),to_node,header->from_node); );
 			#else
-			    IF_SERIAL_DEBUG_ROUTING( printf_P(PSTR("%lu MAC: Route OK to 0%o ACK sent to 0%o\n"),millis(),to_node,header->to_node); );
+			    IF_SERIAL_DEBUG_ROUTING( printf_P(PSTR("%lu MAC: Route OK to 0%o ACK sent to 0%o\n"),millis(),to_node,header->from_node); );
 			#endif
 	}
 
