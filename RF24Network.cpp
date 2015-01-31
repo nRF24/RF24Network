@@ -30,6 +30,7 @@
 	#include <avr/sleep.h>
 	#include <avr/power.h>
 	volatile byte sleep_cycles_remaining;
+        volatile bool wasInterrupted;
 #endif
 
 
@@ -1253,8 +1254,8 @@ uint64_t pipe_address( uint16_t node, uint8_t pipe )
 #if !defined(__arm__) && !defined(__ARDUINO_X86__)
 
 void wakeUp(){
-  sleep_disable();
   sleep_cycles_remaining = 0;
+  wasInterrupted = true;
 }
 
 ISR(WDT_vect){
@@ -1269,6 +1270,8 @@ void RF24Network::sleepNode( unsigned int cycles, int interruptPin ){
   set_sleep_mode(SLEEP_MODE_PWR_DOWN); // sleep mode is set here
   sleep_enable();
   if(interruptPin != 255){
+	wasInterrupted = false; //Reset Flag
+	sleepInterrupted = false; //Reset Flag
   	attachInterrupt(interruptPin,wakeUp, LOW);
   }    
   #if defined(__AVR_ATtiny25__) || defined(__AVR_ATtiny45__) || defined(__AVR_ATtiny85__)
@@ -1286,6 +1289,8 @@ void RF24Network::sleepNode( unsigned int cycles, int interruptPin ){
   #else
 	WDTCSR &= ~_BV(WDIE);
   #endif
+
+  if (wasInterrupted) sleepInterrupted = true;
 }
 
 void RF24Network::setup_watchdog(uint8_t prescalar){

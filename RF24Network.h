@@ -428,6 +428,8 @@ public:
    */
    bool write(RF24NetworkHeader& header,const void* message, size_t len, uint16_t writeDirect);
 
+#if defined ENABLE_SLEEP_MODE
+
    /**
    * Sleep this node - For AVR devices only
    * @note NEW - Nodes can now be slept while the radio is not actively transmitting. This must be manually enabled by uncommenting
@@ -463,6 +465,9 @@ public:
    */
  void setup_watchdog(uint8_t prescalar);
 
+  bool sleepInterrupted;
+
+#endif
 
   /**
    * This node's parent address
