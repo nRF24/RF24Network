@@ -30,7 +30,7 @@
 	#include <avr/sleep.h>
 	#include <avr/power.h>
 	volatile byte sleep_cycles_remaining;
-        volatile bool wasInterrupted;
+	volatile bool wasInterrupted;
 #endif
 
 
@@ -49,8 +49,12 @@ bool is_valid_address( uint16_t node );
 //uint8_t dynLen = 0;
 
 /******************************************************************/
-#if defined (RF24_LINUX)
-RF24Network::RF24Network( RF24& _radio ): radio(_radio), frame_size(MAX_FRAME_SIZE)
+#if defined (RF24_LINUX) 
+  #if !defined (DUAL_HEAD_RADIO)
+  RF24Network::RF24Network( RF24& _radio ): radio(_radio), frame_size(MAX_FRAME_SIZE)
+  #else
+  RF24Network::RF24Network( RF24& _radio, RF24& _radio1 ): radio(_radio), radio1(_radio1),frame_size(MAX_FRAME_SIZE)
+  #endif
 {
 }
 #elif !defined (DUAL_HEAD_RADIO)
@@ -91,8 +95,8 @@ void RF24Network::begin(uint8_t _channel, uint16_t _node_address )
 
 #if defined (DUAL_HEAD_RADIO)
   radio1.setChannel(_channel);
-  radio1.setDataRate(RF24_1MBPS);
-  radio1.setCRCLength(RF24_CRC_16);
+  radio1.enableDynamicAck();
+  radio1.enableDynamicPayloads();
 #endif
 
   // Setup our address helper cache
@@ -695,7 +699,9 @@ bool RF24Network::write(RF24NetworkHeader& header,const void* message, size_t le
   
   if(header.to_node != 0100){
     fastFragTransfer = 1;
+	#if !defined (DUAL_HEAD_RADIO)
 	radio.stopListening();
+	#endif
   }
 
   uint8_t retriesPerFrag = 0;
@@ -756,9 +762,11 @@ bool RF24Network::write(RF24NetworkHeader& header,const void* message, size_t le
 	}
   }
 
-  if(fastFragTransfer){
-    radio.startListening();
+  #if !defined (DUAL_HEAD_RADIO)
+  if(fastFragTransfer){    
+	radio.startListening();
   }
+  #endif
   fastFragTransfer = 0;
   //int frag_delay = uint8_t(len/48);
   delay( rf24_min(len/48,20));
@@ -835,7 +843,7 @@ bool RF24Network::write(uint16_t to_node, uint8_t directTo)  // Direct To: 0 = F
 {
   bool ok = false;
   bool isAckType = false;
-  if(frame_buffer[6] > 64 && frame_buffer[6] < 192 && frame_buffer[6] != NETWORK_ACK){ ++isAckType; }
+  if(frame_buffer[6] > 64 && frame_buffer[6] < 192 && frame_buffer[6] != NETWORK_ACK ){ ++isAckType; }
   
   /*if( ( (frame_buffer[7] % 2) && frame_buffer[6] == NETWORK_MORE_FRAGMENTS) ){
 	isAckType = 0;
@@ -991,8 +999,7 @@ bool RF24Network::write_to_pipe( uint16_t node, uint8_t pipe, bool multicast )
   #if !defined (DUAL_HEAD_RADIO)
   // Open the correct pipe for writing.
   // First, stop listening so we can talk
-  
-  
+
   if(!fastFragTransfer){
     radio.stopListening();
   }
@@ -1254,8 +1261,8 @@ uint64_t pipe_address( uint16_t node, uint8_t pipe )
 #if !defined(__arm__) && !defined(__ARDUINO_X86__)
 
 void wakeUp(){
+  wasInterrupted=true;
   sleep_cycles_remaining = 0;
-  wasInterrupted = true;
 }
 
 ISR(WDT_vect){
@@ -1264,14 +1271,13 @@ ISR(WDT_vect){
 }
 
 
-void RF24Network::sleepNode( unsigned int cycles, int interruptPin ){
+bool RF24Network::sleepNode( unsigned int cycles, int interruptPin ){
 
   sleep_cycles_remaining = cycles;
   set_sleep_mode(SLEEP_MODE_PWR_DOWN); // sleep mode is set here
   sleep_enable();
   if(interruptPin != 255){
-	wasInterrupted = false; //Reset Flag
-	sleepInterrupted = false; //Reset Flag
+    wasInterrupted = false; //Reset Flag
   	attachInterrupt(interruptPin,wakeUp, LOW);
   }    
   #if defined(__AVR_ATtiny25__) || defined(__AVR_ATtiny45__) || defined(__AVR_ATtiny85__)
@@ -1289,8 +1295,8 @@ void RF24Network::sleepNode( unsigned int cycles, int interruptPin ){
   #else
 	WDTCSR &= ~_BV(WDIE);
   #endif
-
-  if (wasInterrupted) sleepInterrupted = true;
+  
+  return !wasInterrupted;
 }
 
 void RF24Network::setup_watchdog(uint8_t prescalar){
