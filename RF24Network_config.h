@@ -37,7 +37,7 @@
     /********** USER CONFIG - non ATTiny **************/
 
     //#define DUAL_HEAD_RADIO
-    #define ENABLE_SLEEP_MODE  //AVR only
+    //#define ENABLE_SLEEP_MODE  //AVR only
     #define RF24NetworkMulticast
 
     /** \def
