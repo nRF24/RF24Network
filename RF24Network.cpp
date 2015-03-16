@@ -136,7 +136,7 @@ uint8_t RF24Network::update(void)
 	    delay(10);
 		continue;
 	  }
-
+	  
       // Dump the payloads until we've gotten everything
       // Fetch the payload, and see if this was the last one.
       //radio.read( frame_buffer, sizeof(frame_buffer) );
@@ -205,16 +205,13 @@ uint8_t RF24Network::update(void)
 					return returnVal;
 				}				
 			}
-			#if defined (RF24_LINUX)
-				enqueue(header);
-			#else
+
 			if( enqueue(header) == 2 ){ //External data received			
 				#if defined (SERIAL_DEBUG_MINIMAL)
-				  Serial.println("ret ext");
+				  //Serial.println("ret ext");
 				#endif
 				return EXTERNAL_DATA_TYPE;				
 			}
-			#endif
 
 	  }else{	  
 
@@ -232,11 +229,7 @@ uint8_t RF24Network::update(void)
 					continue;
 				}
 				uint8_t val;
-				#if defined (RF24_Linux)
-					enqueue(header);
-				#else
-				    val = enqueue(header);			
-				#endif
+				val = enqueue(header);
 				
 				if(multicastRelay){					
 					IF_SERIAL_DEBUG_ROUTING( printf_P(PSTR("%u MAC: FWD multicast frame from 0%o to level %u\n"),millis(),header->from_node,multicast_level+1); );
@@ -270,7 +263,7 @@ uint8_t RF24Network::update(void)
 /******************************************************************/
 
 uint8_t RF24Network::enqueue(RF24NetworkHeader* header) {
-  bool result = false;
+  uint8_t result = false;
   
   RF24NetworkFrame frame = RF24NetworkFrame(*header,frame_buffer+sizeof(RF24NetworkHeader),frame_size-sizeof(RF24NetworkHeader)); 
   
@@ -301,8 +294,12 @@ uint8_t RF24Network::enqueue(RF24NetworkHeader* header) {
 	  IF_SERIAL_DEBUG_FRAGMENTATION(printf("%u: FRG Last fragment received. \n",millis() ););
       IF_SERIAL_DEBUG(printf_P(PSTR("%u: NET Enqueue assembled frame @%x "),millis(),frame_queue.size()));
 
+	  RF24NetworkFrame *f = &(frameFragmentsCache[ std::make_pair(frame.header.id,frame.header.from_node) ]);
+	  result=f->header.type == EXTERNAL_DATA_TYPE ? 2 : 1;
+	  
       frame_queue.push( frameFragmentsCache[ std::make_pair(frame.header.id,frame.header.from_node) ] );
       frameFragmentsCache.erase( std::make_pair(frame.header.id,frame.header.from_node) );
+	  
 	}
 
   }else{//  if (frame.header.type <= MAX_USER_DEFINED_HEADER_TYPE) {
@@ -683,12 +680,6 @@ bool RF24Network::write(RF24NetworkHeader& header,const void* message, size_t le
     IF_SERIAL_DEBUG(printf("%u: NET write message failed. Given 'len' %d is bigger than the MAX Payload size %i\n\r",millis(),len,MAX_PAYLOAD_SIZE););
     return false;
   }
-	
-  //If the message payload is too big, whe cannot generate enough fragments
-  //and enumerate them
-  /*if (len > 255*max_frame_payload_size) {
-    return false;
-  }*/
 
   //Divide the message payload into chunks of max_frame_payload_size
   uint8_t fragment_id = (len % max_frame_payload_size != 0) + ((len ) / max_frame_payload_size);  //the number of fragments to send = ceil(len/max_frame_payload_size)
@@ -727,7 +718,6 @@ bool RF24Network::write(RF24NetworkHeader& header,const void* message, size_t le
     size_t offset = msgCount*max_frame_payload_size;
 	size_t fragmentLen = rf24_min(len-offset,max_frame_payload_size);
 
-	//delay(3);
     //Try to send the payload chunk with the copied header
     frame_size = sizeof(RF24NetworkHeader)+fragmentLen;
 	bool ok = _write(header,((char *)message)+offset,fragmentLen,writeDirect);
@@ -740,10 +730,9 @@ bool RF24Network::write(RF24NetworkHeader& header,const void* message, size_t le
 	  retriesPerFrag = 0;
 	  fragment_id--;
       msgCount++;
-	  //delayMicroseconds(130);
 	}
 	
-    if(writeDirect != 070){ delay(2); } //Delay 5ms between sending multicast payloads
+    if(writeDirect != 070){ delay(2); } //Delay 2ms between sending multicast payloads
  
 	if (!ok && retriesPerFrag >= 3) {
         IF_SERIAL_DEBUG_FRAGMENTATION(printf("%lu: FRG TX with fragmentID '%d' failed after %d fragments. Abort.\n\r",millis(),fragment_id,msgCount););
@@ -756,10 +745,6 @@ bool RF24Network::write(RF24NetworkHeader& header,const void* message, size_t le
 	  printf("%lu: FRG message transmission with fragmentID '%d' sucessfull.\n\r",millis(),fragment_id);
 	#endif
 
-    //Check and modify counters	
-	if((msgCount%3) == 0){	
-	  //delay(3);
-	}
   }
 
   #if !defined (DUAL_HEAD_RADIO)
@@ -866,11 +851,13 @@ bool RF24Network::write(uint16_t to_node, uint8_t directTo)  // Direct To: 0 = F
   ok=write_to_pipe(conversion.send_node, conversion.send_pipe, conversion.multicast);  	
   
   
-  if(!ok){	
+    if(!ok){	
     #if defined (RF24_LINUX)
-    IF_SERIAL_DEBUG_ROUTING( printf_P(PSTR("%u: MAC Send fail to 0%o via 0%o on pipe %x\n\r"),millis(),to_node,conversion.send_node,conversion.send_pipe);); }
+    IF_SERIAL_DEBUG_ROUTING( printf_P(PSTR("%u: MAC Send fail to 0%o via 0%o on pipe %x\n\r"),millis(),to_node,conversion.send_node,conversion.send_pipe);); 
+	}
 	#else
-	IF_SERIAL_DEBUG_ROUTING( printf_P(PSTR("%lu: MAC Send fail to 0%o via 0%o on pipe %x\n\r"),millis(),to_node,conversion.send_node,conversion.send_pipe);); }
+	IF_SERIAL_DEBUG_ROUTING( printf_P(PSTR("%lu: MAC Send fail to 0%o via 0%o on pipe %x\n\r"),millis(),to_node,conversion.send_node,conversion.send_pipe););
+	}
 	#endif
  
 	if( directTo == TX_ROUTED && ok && conversion.send_node == to_node && isAckType){
@@ -1004,21 +991,9 @@ bool RF24Network::write_to_pipe( uint16_t node, uint8_t pipe, bool multicast )
     radio.stopListening();
   }
   radio.openWritingPipe(out_pipe);
-  
-//  if( (frame_buffer[7] % 2) && frame_buffer[6] == NETWORK_MORE_FRAGMENTS){
-//    ok = true;
-//	radio.startFastWrite(frame_buffer, frame_size,multicast);
-  //}else{
-    ok = radio.writeFast(frame_buffer, frame_size,multicast);
-  //}
-  
-  //if(!fastFragTransfer){
-    ok = radio.txStandBy(txTimeout);
-	//radio.startListening();
-  //}
-//  if(multicast){
-    
-//  }
+  radio.writeFast(frame_buffer, frame_size,multicast);
+  ok = radio.txStandBy(txTimeout);
+
   
 #else
   radio1.openWritingPipe(out_pipe);
@@ -1033,12 +1008,6 @@ bool RF24Network::write_to_pipe( uint16_t node, uint8_t pipe, bool multicast )
   IF_SERIAL_DEBUG(printf_P(PSTR("%lu: MAC Sent on %lx %S\n\r"),millis(),(uint32_t)out_pipe,ok?PSTR("ok"):PSTR("failed")));
   #endif
   
-  /*for(int i=0; i<5; i++){
-	uint8_t tmp = out_pipe;
-	out_pipe=out_pipe >> 8;
-	Serial.println(tmp,HEX);
-  }*/
-
   return ok;
 }
 
