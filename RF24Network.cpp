@@ -203,7 +203,7 @@ uint8_t RF24Network::update(void)
 				//if( (header->type < 148 || header->type > 150) && header->type != NETWORK_MORE_FRAGMENTS_NACK && header->type != EXTERNAL_DATA_TYPE && header->type!= NETWORK_LAST_FRAGMENT){
 				if( header->type != NETWORK_FIRST_FRAGMENT && header->type != NETWORK_MORE_FRAGMENTS && header->type != NETWORK_MORE_FRAGMENTS_NACK && header->type != EXTERNAL_DATA_TYPE && header->type!= NETWORK_LAST_FRAGMENT){
 					return returnVal;
-				}				
+				}
 			}
 
 			if( enqueue(header) == 2 ){ //External data received			
@@ -295,7 +295,12 @@ uint8_t RF24Network::enqueue(RF24NetworkHeader* header) {
 	  RF24NetworkFrame *f = &(frameFragmentsCache[ std::make_pair(frame.header.id,frame.header.from_node) ]);
 	  result=f->header.type == EXTERNAL_DATA_TYPE ? 2 : 1;
 	  
-      frame_queue.push( frameFragmentsCache[ std::make_pair(frame.header.id,frame.header.from_node) ] );
+	  //Load external payloads into a separate queue on linux
+	  if(result == 2){
+	    external_queue.push( frameFragmentsCache[ std::make_pair(frame.header.id,frame.header.from_node) ] );
+	  }else{
+        frame_queue.push( frameFragmentsCache[ std::make_pair(frame.header.id,frame.header.from_node) ] );
+	  }
       frameFragmentsCache.erase( std::make_pair(frame.header.id,frame.header.from_node) );
 	}
 
@@ -304,8 +309,14 @@ uint8_t RF24Network::enqueue(RF24NetworkHeader* header) {
 
     IF_SERIAL_DEBUG(printf_P(PSTR("%u: NET Enqueue @%x "),millis(),frame_queue.size()));
     // Copy the current frame into the frame queue
-    frame_queue.push(frame);
 	result=frame.header.type == EXTERNAL_DATA_TYPE ? 2 : 1;
+    //Load external payloads into a separate queue on linux
+	if(result == 2){
+	  external_queue.push( frame );
+	}else{
+      frame_queue.push( frame );
+	}
+	
 
   }/* else {
     //Undefined/Unknown header.type received. Drop frame!
@@ -582,7 +593,7 @@ uint16_t RF24Network::peek(RF24NetworkHeader& header)
   {
   #if defined (RF24_LINUX)
     RF24NetworkFrame frame = frame_queue.front();
-    memcpy(&header,&frame,sizeof(RF24NetworkHeader));
+    memcpy(&header,&frame.header,sizeof(RF24NetworkHeader));
     return frame.message_size;
   #else
 	RF24NetworkFrame *frame = (RF24NetworkFrame*)(frame_queue);
@@ -620,7 +631,6 @@ uint16_t RF24Network::read(RF24NetworkHeader& header,void* message, uint16_t max
   {
     
 	memcpy(&header,frame_queue,8);
-	//bufsize = (uint16_t)frame_queue[8];
 	RF24NetworkFrame *f = (RF24NetworkFrame*)frame_queue;
 	bufsize = f->message_size;
 
@@ -826,7 +836,7 @@ bool RF24Network::write(uint16_t to_node, uint8_t directTo)  // Direct To: 0 = F
 {
   bool ok = false;
   bool isAckType = false;
-  if(frame_buffer[6] > 64 && frame_buffer[6] < 192 && frame_buffer[6] != NETWORK_ACK ){ ++isAckType; }
+  if(frame_buffer[6] > 64 && frame_buffer[6] < 192 ){ isAckType=true; }
   
   /*if( ( (frame_buffer[7] % 2) && frame_buffer[6] == NETWORK_MORE_FRAGMENTS) ){
 	isAckType = 0;
@@ -880,7 +890,6 @@ bool RF24Network::write(uint16_t to_node, uint8_t directTo)  // Direct To: 0 = F
 			    IF_SERIAL_DEBUG_ROUTING( printf_P(PSTR("%lu MAC: Route OK to 0%o ACK sent to 0%o\n"),millis(),to_node,header->from_node); );
 			#endif
 	}
-
  
 
 
@@ -905,7 +914,6 @@ bool RF24Network::write(uint16_t to_node, uint8_t directTo)  // Direct To: 0 = F
 				break;					
 			}
 		}
-		
     }
 	if(!fastFragTransfer){
 	   #if !defined (DUAL_HEAD_RADIO)

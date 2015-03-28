@@ -633,7 +633,9 @@ public:
   /** The raw system frame buffer of received data. */
   
   uint8_t frame_buffer[MAX_FRAME_SIZE];   
-
+  #if defined (RF24_LINUX)
+  std::queue<RF24NetworkFrame> external_queue;
+  #endif
   
   #if !defined ( DISABLE_FRAGMENTATION ) &&  !defined (RF24_LINUX)
   /**
