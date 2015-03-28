@@ -92,7 +92,7 @@
  * @code
  * uint8_t return_type = network.update();
  * if(return_type == EXTERNAL_DATA_TYPE){
- *     size_t size = network.frag_ptr->message_size;	
+ *     uint16_t size = network.frag_ptr->message_size;	
  *     memcpy(&myDataBuffer,network.frag_ptr->message_buffer,network.frag_ptr->message_size);
  * }		
  * @endcode
@@ -255,7 +255,7 @@ struct RF24NetworkHeader
  struct RF24NetworkFrame
 {
   RF24NetworkHeader header; /**< Header which is sent with each message */
-  size_t message_size; /**< The size in bytes of the payload length */
+  uint16_t message_size; /**< The size in bytes of the payload length */
   
   /**
   * On Arduino, the message buffer is just a pointer, and can be pointed to any memory location.
@@ -294,7 +294,7 @@ struct RF24NetworkHeader
    * Frames are used internally and by external systems. See RF24NetworkHeader.
    */
 #if defined (RF24_LINUX)   
-  RF24NetworkFrame(RF24NetworkHeader& _header, const void* _message = NULL, size_t _len = 0) :
+  RF24NetworkFrame(RF24NetworkHeader& _header, const void* _message = NULL, uint16_t _len = 0) :
                   header(_header), message_size(_len) {
     if (_message && _len) {
       memcpy(message_buffer,_message,_len);
@@ -405,7 +405,7 @@ public:
    *
    * @param[out] header The header (envelope) of the next message
    */
-  size_t peek(RF24NetworkHeader& header);
+  uint16_t peek(RF24NetworkHeader& header);
 
   /**
    * Read a message
@@ -427,7 +427,7 @@ public:
    * @param maxlen The largest message size which can be held in @p message
    * @return The total number of bytes copied into @p message
    */
-  size_t read(RF24NetworkHeader& header, void* message, size_t maxlen);
+  uint16_t read(RF24NetworkHeader& header, void* message, uint16_t maxlen);
 
   /**
    * Send a message
@@ -448,7 +448,7 @@ public:
    * @param len The size of the message
    * @return Whether the message was successfully received
    */
-  bool write(RF24NetworkHeader& header,const void* message, size_t len);
+  bool write(RF24NetworkHeader& header,const void* message, uint16_t len);
 
   /**@}*/
   /**
@@ -481,6 +481,7 @@ public:
 	* This option is used to override the defaults, and create custom multicast groups that all share a single
 	* address. <br> 
 	* The level should be specified in decimal format 1-6 <br>
+	* @see multicastRelay
 	* @param level Levels 1 to 6 are available. All nodes at the same level will receive the same
 	* messages if in range. Messages will be routed in order of level, low to high by default, with the
 	* master node (00) at multicast Level 0
@@ -492,6 +493,7 @@ public:
 	* Enabling this will allow this node to automatically forward received multicast frames to the next highest
 	* multicast level. Duplicate frames are filtered out, so multiple forwarding nodes at the same level should
 	* not interfere. Forwarded payloads will also be received.
+	* @see multicastLevel
 	*/
 	
 	bool multicastRelay;
@@ -557,13 +559,14 @@ public:
    * Multicasting is arranged in levels, with all nodes on the same level listening to the same address  
    * Levels are assigned by network level ie: nodes 01-05: Level 1, nodes 011-055: Level 2
    * @see multicastLevel
+   * @see multicastRelay
    * @param message Pointer to memory where the message is located
    * @param len The size of the message
    * @param level Multicast level to broadcast to
    * @return Whether the message was successfully sent
    */
    
-   bool multicast(RF24NetworkHeader& header,const void* message, size_t len, uint8_t level);
+   bool multicast(RF24NetworkHeader& header,const void* message, uint16_t len, uint8_t level);
    
 	
    #endif
@@ -573,7 +576,7 @@ public:
    * The same as write, but a physical address is specified as the last option.
    * The payload will be written to the physical address, and routed as necessary by the recipient
    */
-   bool write(RF24NetworkHeader& header,const void* message, size_t len, uint16_t writeDirect);
+   bool write(RF24NetworkHeader& header,const void* message, uint16_t len, uint16_t writeDirect);
 
    /**
    * Sleep this node - For AVR devices only
@@ -644,7 +647,7 @@ public:
  * @code
  * uint8_t return_type = network.update();
  * if(return_type == EXTERNAL_DATA_TYPE){
- *     size_t size = network.frag_ptr->message_size;	
+ *     uint16_t size = network.frag_ptr->message_size;	
  *     memcpy(&myDataBuffer,network.frag_ptr->message_buffer,network.frag_ptr->message_size);
  * }		
  * @endcode  
@@ -685,7 +688,7 @@ private:
   uint16_t direct_child_route_to( uint16_t node );
   //uint8_t pipe_to_descendant( uint16_t node );
   void setup_address(void);
-  bool _write(RF24NetworkHeader& header,const void* message, size_t len, uint16_t writeDirect);
+  bool _write(RF24NetworkHeader& header,const void* message, uint16_t len, uint16_t writeDirect);
     
   struct logicalToPhysicalStruct{
 	uint16_t send_node; 
