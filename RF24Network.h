@@ -160,9 +160,11 @@
 #define USER_TX_TO_PHYSICAL_ADDRESS 2  //no network ACK
 #define USER_TX_TO_LOGICAL_ADDRESS 3   // network ACK
 #define USER_TX_MULTICAST 4
+
 #define MAX_FRAME_SIZE 32   //Size of individual radio frames
+#define FRAME_HEADER_SIZE 10 //Size of RF24Network frames - data
 
-
+#define USE_CURRENT_CHANNEL 255 // Use current radio channel when setting up the network
 
 class RF24;
 
@@ -351,31 +353,33 @@ public:
   RF24Network( RF24& _radio );
 
   /**
-   * Bring up the network.
-   * Calling begin sets up the radio frequency/channel and configures the address, which designates the location of the node within RF24Network topology.
+   * Bring up the network using the current radio frequency/channel.
+   * Calling begin brings up the network, and configures the address, which designates the location of the node within RF24Network topology.
    * @note Node addresses are specified in Octal format, see <a href=Addressing.html>RF24Network Addressing</a> for more information.
    * @warning Be sure to 'begin' the radio first.
    *
-   * **Example 1:** Begin on channel 90 with address 0 (master node)
+   * **Example 1:** Begin on current radio channel with address 0 (master node)
    * @code
-   * network.begin(90,0);
+   * network.begin(00);
    * @endcode
-   * **Example 2:** Begin on channel 90 with address 01 (child of master)
+   * **Example 2:** Begin with address 01 (child of master)
    * @code
-   * network.begin(90,01);
+   * network.begin(01);
    * @endcode
-   * **Example 3:** Begin on channel 90 with address 011 (child of 01, grandchild of master)
+   * **Example 3:** Begin with address 011 (child of 01, grandchild of master)
    * @code
-   * network.begin(90,011);
+   * network.begin(011);
    * @endcode   
    *
-   * @param _channel The RF channel to operate on
+   * @see begin(uint8_t _channel, uint16_t _node_address )
    * @param _node_address The logical address of this node
    *
    */
-  void begin(uint8_t _channel, uint16_t _node_address );
-  
-  
+   
+  inline void begin(uint16_t _node_address){
+	  begin(USE_CURRENT_CHANNEL,_node_address);
+  }
+
   /**
    * Main layer loop
    *
@@ -537,7 +541,7 @@ public:
    *  For advanced operation of the network
    */
   /**@{*/
-   
+
   /**
    * Return the number of failures and successes for all transmitted payloads, routed or sent directly  
    * @note This needs to be enabled via #define ENABLE_NETWORK_STATS in RF24Network_config.h
@@ -621,7 +625,38 @@ public:
     * @return True if a supplied address is valid
 	*/
    bool is_valid_address( uint16_t node );
-   
+
+ /**@}*/
+  /**
+   * @name Deprecated
+   *
+   *  Maintained for backwards compatibility
+   */
+  /**@{*/  
+  
+  /**
+   * Bring up the network on a specific radio frequency/channel.
+   * @note Use radio.setChannel() to configure the radio channel
+   *
+   * **Example 1:** Begin on channel 90 with address 0 (master node)
+   * @code
+   * network.begin(90,0);
+   * @endcode
+   * **Example 2:** Begin on channel 90 with address 01 (child of master)
+   * @code
+   * network.begin(90,01);
+   * @endcode
+   * **Example 3:** Begin on channel 90 with address 011 (child of 01, grandchild of master)
+   * @code
+   * network.begin(90,011);
+   * @endcode   
+   *
+   * @param _channel The RF channel to operate on
+   * @param _node_address The logical address of this node
+   *
+   */
+  void begin(uint8_t _channel, uint16_t _node_address );  
+  
   /**@}*/
   /**
    * @name External Applications/Systems
@@ -633,12 +668,29 @@ public:
   /** The raw system frame buffer of received data. */
   
   uint8_t frame_buffer[MAX_FRAME_SIZE];   
+
+  /** 
+   * **Linux** <br>
+   * Data with a header type of EXTERNAL_DATA_TYPE will be loaded into a separate queue.
+   * The data can be accessed as follows:
+   * @code
+   * RF24NetworkFrame f;
+   * while(network.external_queue.size() > 0){
+   *   f = network.external_queue.front();
+   *   uint16_t dataSize = f.message_size;
+   *   //read the frame message buffer
+   *   memcpy(&myBuffer,&f.message_buffer,dataSize);
+   *   network.external_queue.pop();
+   * }
+   * @endcode
+   */
   #if defined (RF24_LINUX)
-  std::queue<RF24NetworkFrame> external_queue;
+    std::queue<RF24NetworkFrame> external_queue;
   #endif
   
   #if !defined ( DISABLE_FRAGMENTATION ) &&  !defined (RF24_LINUX)
   /**
+  * **ARDUINO** <br>
   * The frag_ptr is only used with Arduino (not RPi/Linux) and is mainly used for external data systems like RF24Ethernet. When
   * an EXTERNAL_DATA payload type is received, and returned from network.update(), the frag_ptr will always point to the starting
   * memory location of the received frame. <br>This is used by external data systems (RF24Ethernet) to immediately copy the received
@@ -676,6 +728,10 @@ public:
   *
   */  
   bool returnSysMsgs;
+  
+ 
+  
+  
   
 private:
 
