@@ -33,8 +33,6 @@
 	volatile bool wasInterrupted;
 #endif
 
-
-
 uint16_t RF24NetworkHeader::next_id = 1;
 #if defined ENABLE_NETWORK_STATS
 uint32_t RF24Network::nFails = 0;
@@ -106,7 +104,6 @@ void RF24Network::begin(uint8_t _channel, uint16_t _node_address )
   while (i--){
     radio.openReadingPipe(i,pipe_address(_node_address,i));	
   }
-
   radio.startListening();
 
 }
@@ -275,16 +272,18 @@ uint8_t RF24Network::enqueue(RF24NetworkHeader* header) {
 	  IF_SERIAL_DEBUG_FRAGMENTATION(printf("%u: FRG Last fragment received. \n",millis() ););
       IF_SERIAL_DEBUG(printf_P(PSTR("%u: NET Enqueue assembled frame @%x "),millis(),frame_queue.size()));
 
-	  RF24NetworkFrame *f = &(frameFragmentsCache[ std::make_pair(frame.header.id,frame.header.from_node) ]);
+	  RF24NetworkFrame *f = &(frameFragmentsCache[ frame.header.from_node ] );
+	  
+	  
 	  result=f->header.type == EXTERNAL_DATA_TYPE ? 2 : 1;
 	  
 	  //Load external payloads into a separate queue on linux
 	  if(result == 2){
-	    external_queue.push( frameFragmentsCache[ std::make_pair(frame.header.id,frame.header.from_node) ] );
+	    external_queue.push( frameFragmentsCache[ frame.header.from_node ] );
 	  }else{
-        frame_queue.push( frameFragmentsCache[ std::make_pair(frame.header.id,frame.header.from_node) ] );
+        frame_queue.push( frameFragmentsCache[ frame.header.from_node ] );
 	  }
-      frameFragmentsCache.erase( std::make_pair(frame.header.id,frame.header.from_node) );
+      frameFragmentsCache.erase( frame.header.from_node );
 	}
 
   }else{//  if (frame.header.type <= MAX_USER_DEFINED_HEADER_TYPE) {
@@ -323,34 +322,29 @@ bool RF24Network::appendFragmentToFrame(RF24NetworkFrame frame) {
 
   // This is the first of 2 or more fragments.
   if (frame.header.type == NETWORK_FIRST_FRAGMENT){
-    if( frameFragmentsCache.count(std::make_pair(frame.header.id,frame.header.from_node)) == 0 ){
-	  
+      if( frameFragmentsCache.count(frame.header.from_node) != 0 ){
+	    RF24NetworkFrame *f = &(frameFragmentsCache[ frame.header.from_node ]);
+	    //Already rcvd first frag
+	    if (f->header.id == frame.header.id){
+	      return false;
+		}
+	  }
 	  if(frame.header.reserved > (MAX_PAYLOAD_SIZE /24) + 1 ){
 		IF_SERIAL_DEBUG_FRAGMENTATION( printf("%u FRG Too many fragments in payload %u, dropping...",millis(),frame.header.reserved); );
 		// If there are more fragments than we can possibly handle, return
 		return false;
 	  }
-      // Search for duplicate frames in the cache with an old header id, delete the older one
-	  for (std::map<std::pair<uint16_t, uint16_t>, RF24NetworkFrame>::iterator it=frameFragmentsCache.begin(); it!=frameFragmentsCache.end(); ++it){	  
-	    if(it->first.second == frame.header.from_node && it->first.first < frame.header.id ){
-		  IF_SERIAL_DEBUG_FRAGMENTATION( printf("%u FRG Erased %d from 0%o\n",millis(),it->first.first,it->first.second); );
-	      frameFragmentsCache.erase(it);		  
-		  break;
-	    }
-	  }
-	  frameFragmentsCache[ std::make_pair(frame.header.id,frame.header.from_node) ] = frame;
+	  frameFragmentsCache[ frame.header.from_node ] = frame;
 	  return true;
-	}
-	return false;
   }else
   
   if ( frame.header.type == NETWORK_MORE_FRAGMENTS || frame.header.type == NETWORK_MORE_FRAGMENTS_NACK ){
 	
-	if( frameFragmentsCache.count(std::make_pair(frame.header.id,frame.header.from_node)) < 1 ){
+	if( frameFragmentsCache.count(frame.header.from_node) < 1 ){
 	  return false;
     }	
-	RF24NetworkFrame *f = &(frameFragmentsCache[ std::make_pair(frame.header.id,frame.header.from_node) ]);
-	if( f->header.reserved - 1 == frame.header.reserved ){	
+	RF24NetworkFrame *f = &(frameFragmentsCache[ frame.header.from_node ]);	
+	if( f->header.reserved - 1 == frame.header.reserved && f->header.id == frame.header.id){	
       // Cache the fragment
       memcpy(f->message_buffer+f->message_size, frame.message_buffer, frame.message_size);
 	  f->message_size += frame.message_size;  //Increment message size
@@ -366,18 +360,18 @@ bool RF24Network::appendFragmentToFrame(RF24NetworkFrame frame) {
   if ( frame.header.type == NETWORK_LAST_FRAGMENT ){
   
     //We have received the last fragment
-	if(frameFragmentsCache.count(std::make_pair(frame.header.id,frame.header.from_node)) < 1){
+	if(frameFragmentsCache.count(frame.header.from_node) < 1){
 		return false;
 	}	
 	//Create pointer to the cached frame
-    RF24NetworkFrame *f = &(frameFragmentsCache[ std::make_pair(frame.header.id,frame.header.from_node) ]);
+    RF24NetworkFrame *f = &(frameFragmentsCache[ frame.header.from_node ]);
 
 	if( f->message_size + frame.message_size > MAX_PAYLOAD_SIZE){
 		IF_SERIAL_DEBUG_FRAGMENTATION( printf("%u FRG Frame of size %u plus enqueued frame of size %u exceeds max payload size \n",millis(),frame.message_size,f->message_size); );
 		return false;
 	}
     //Error checking for missed fragments and payload size
-    if ( f->header.reserved-1 != 1 ) {
+    if ( f->header.reserved-1 != 1 || f->header.id != frame.header.id) {
         IF_SERIAL_DEBUG_FRAGMENTATION(printf("%u: FRG Duplicate or out of sequence frame %d, expected %d. Cleared.\n",millis(),frame.header.reserved,f->header.reserved););
             //frameFragmentsCache.erase( std::make_pair(frame.header.id,frame.header.from_node) );
         return false;
@@ -678,7 +672,7 @@ bool RF24Network::write(RF24NetworkHeader& header,const void* message, uint16_t 
   IF_SERIAL_DEBUG_FRAGMENTATION(printf("%lu: FRG Total message fragments %d\n\r",millis(),fragment_id););
   
   if(header.to_node != 0100){
-    fastFragTransfer = 1;
+    fastFragTransfer = true;
 	#if !defined (DUAL_HEAD_RADIO)
 	radio.stopListening();
 	#endif
@@ -737,7 +731,7 @@ bool RF24Network::write(RF24NetworkHeader& header,const void* message, uint16_t 
   }
 
   #if !defined (DUAL_HEAD_RADIO)
-  if(fastFragTransfer){    
+  if(fastFragTransfer){
 	radio.startListening();
   }
   #endif
@@ -886,6 +880,7 @@ bool RF24Network::write(uint16_t to_node, uint8_t directTo)  // Direct To: 0 = F
 		uint32_t reply_time = millis(); 
 
 		while( update() != NETWORK_ACK){
+			delayMicroseconds(900);
 			if(millis() - reply_time > routeTimeout){
 				#if defined (RF24_LINUX)
 				  IF_SERIAL_DEBUG_ROUTING( printf_P(PSTR("%u: MAC Network ACK fail from 0%o via 0%o on pipe %x\n\r"),millis(),to_node,conversion.send_node,conversion.send_pipe); );
@@ -933,7 +928,7 @@ bool RF24Network::logicalToPhysicalAddress(logicalToPhysicalStruct *conversionIn
   
  if(*directTo > TX_ROUTED ){    
 	pre_conversion_send_node = *to_node;
-	*multicast = 1;	
+	*multicast = 1;
 	if(*directTo == USER_TX_MULTICAST){
 		pre_conversion_send_pipe=0;
 	}	
@@ -941,7 +936,7 @@ bool RF24Network::logicalToPhysicalAddress(logicalToPhysicalStruct *conversionIn
   // If the node is a direct child,
   else
   if ( is_direct_child(*to_node) )
-  {
+  {   
     // Send directly
     pre_conversion_send_node = *to_node;
     // To its listening pipe

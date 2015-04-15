@@ -729,10 +729,6 @@ public:
   */  
   bool returnSysMsgs;
   
- 
-  
-  
-  
 private:
 
   bool fastFragTransfer;
@@ -771,7 +767,7 @@ private:
 
   #if defined (RF24_LINUX)
     std::queue<RF24NetworkFrame> frame_queue;
-    std::map<std::pair<uint16_t, uint16_t>, RF24NetworkFrame> frameFragmentsCache;
+	std::map< uint16_t, RF24NetworkFrame> frameFragmentsCache;
     bool appendFragmentToFrame(RF24NetworkFrame frame);
   
   #else
