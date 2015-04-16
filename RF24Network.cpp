@@ -56,11 +56,18 @@ bool is_valid_address( uint16_t node );
 #elif !defined (DUAL_HEAD_RADIO)
 RF24Network::RF24Network( RF24& _radio ): radio(_radio), next_frame(frame_queue) 
 {
-
+  #if !defined ( DISABLE_FRAGMENTATION )
+  frag_queue.message_buffer=&frag_queue_message_buffer[0];
+  frag_ptr = &frag_queue;
+  #endif
 }
 #else
 RF24Network::RF24Network( RF24& _radio, RF24& _radio1 ): radio(_radio), radio1(_radio1), next_frame(frame_queue)
 {
+  #if !defined ( DISABLE_FRAGMENTATION )
+  frag_queue.message_buffer=&frag_queue_message_buffer[0];
+  frag_ptr = &frag_queue;
+  #endif
 }
 #endif
 /******************************************************************/
@@ -410,8 +417,6 @@ uint8_t RF24Network::enqueue(RF24NetworkHeader* header)
 
   if(isFragment){
 
-	frag_queue.message_buffer=&frag_queue_message_buffer[0];
-	
 	if(header->type == NETWORK_FIRST_FRAGMENT){
 	    // Drop frames exceeding max size and duplicates
 	    if(header->reserved > (MAX_PAYLOAD_SIZE / max_frame_payload_size) + 1  ||  (frag_queue.header.id == header->id && frag_queue.header.from_node == header->from_node) ){
@@ -468,7 +473,6 @@ IF_SERIAL_DEBUG_FRAGMENTATION_L2(for(int i=0; i< frag_queue.message_size;i++){ S
 			//Set the type on the incoming message header, as well as the received message
 			frag_queue.header.type = header->reserved;
 			if(frag_queue.header.type == EXTERNAL_DATA_TYPE){
-				frag_ptr = &frag_queue;
 				return 2;
 			}else{
 			#if defined (DISABLE_USER_PAYLOADS)
@@ -494,12 +498,10 @@ IF_SERIAL_DEBUG_FRAGMENTATION_L2(for(int i=0; i< frag_queue.message_size;i++){ S
   {
 
 #if !defined( DISABLE_FRAGMENTATION )
-	frag_ptr = &frag_queue;
 
 	if(header->type == EXTERNAL_DATA_TYPE){
 		memcpy(&frag_queue,&frame_buffer,8);
 		frag_queue.message_size = message_size;
-		//frag_queue = frame;
 		frag_queue.message_buffer = frame_buffer+sizeof(RF24NetworkHeader);
 		frag_queue.message_size = message_size;
 		return 2;
