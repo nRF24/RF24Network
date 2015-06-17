@@ -419,14 +419,18 @@ uint8_t RF24Network::enqueue(RF24NetworkHeader* header)
 
 	if(header->type == NETWORK_FIRST_FRAGMENT){
 	    // Drop frames exceeding max size and duplicates
-	    if(header->reserved > (MAX_PAYLOAD_SIZE / max_frame_payload_size) + 1  ||  (frag_queue.header.id == header->id && frag_queue.header.from_node == header->from_node) ){
+	    if(header->reserved > (MAX_PAYLOAD_SIZE / max_frame_payload_size) + 1  ){
 
   #if defined (SERIAL_DEBUG_FRAGMENTATION) || defined (SERIAL_DEBUG_MINIMAL)
 			printf_P(PSTR("Frag frame with %d frags exceeds MAX_PAYLOAD_SIZE or out of sequence\n"),header->reserved);
   #endif
 			frag_queue.header.reserved = 0;
 			return false;
-		}
+		}else
+        if(frag_queue.header.id == header->id && frag_queue.header.from_node == header->from_node){
+            frag_queue.message_size = message_size;
+            return true;
+        }
   		  
 		memcpy(&frag_queue,&frame_buffer,10);
 		memcpy(frag_queue.message_buffer,frame_buffer+sizeof(RF24NetworkHeader),message_size);
@@ -443,13 +447,17 @@ IF_SERIAL_DEBUG_FRAGMENTATION_L2(  for(int i=0; i<frag_queue.message_size;i++){ 
 	}else // NETWORK_MORE_FRAGMENTS	
 	if(header->type == NETWORK_LAST_FRAGMENT || header->type == NETWORK_MORE_FRAGMENTS || header->type == NETWORK_MORE_FRAGMENTS_NACK){
 		
-		if( (header->type != NETWORK_LAST_FRAGMENT && header->reserved != frag_queue.header.reserved ) || frag_queue.header.id != header->id || frag_queue.message_size + message_size > MAX_PAYLOAD_SIZE){
+        //If 
+        if(frag_queue.message_size + message_size > MAX_PAYLOAD_SIZE){
+          frag_queue.header.reserved=0;
+          return false;
+        }
+		if(  frag_queue.header.reserved == 0 || (header->type != NETWORK_LAST_FRAGMENT && header->reserved != frag_queue.header.reserved ) || frag_queue.header.id != header->id ){
 			#if defined (SERIAL_DEBUG_FRAGMENTATION) || defined (SERIAL_DEBUG_MINIMAL)
 			//Serial.print(F("Drop frag ")); Serial.print(header->reserved);
 			//Serial.print(F(" header id ")); Serial.print(header->id);
 			//Serial.println(F(" Out of order or size exceeds max"));
 			#endif
-			frag_queue.header.reserved = 0;
 			return false;
 		}
 		
@@ -501,7 +509,6 @@ IF_SERIAL_DEBUG_FRAGMENTATION_L2(for(int i=0; i< frag_queue.message_size;i++){ S
 
 	if(header->type == EXTERNAL_DATA_TYPE){
 		memcpy(&frag_queue,&frame_buffer,8);
-		frag_queue.message_size = message_size;
 		frag_queue.message_buffer = frame_buffer+sizeof(RF24NetworkHeader);
 		frag_queue.message_size = message_size;
 		return 2;
