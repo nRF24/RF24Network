@@ -47,24 +47,27 @@
 
     /** System defines */
 
-    /** Size of fragmented network frames 
-    *
-    * @note: If used with RF24Ethernet, this value should match the uip buffer size (default 120). Different nodes can use different max payload sizes,
-    * but are limited to the smallest of the two when in direct communication. Routing nodes do not need to support fragmentation.
-    * With RF24ethernet, assign in multiples of 24. General minimum is 96 (a 32-byte ping from windows is 74 bytes, (Ethernet Header is 42))
-    * 
-    */
-    #define MAX_PAYLOAD_SIZE  144
+    /** The size of the main buffer. This is the user-cache, where incoming data is stored.
+     * Data is stored using Frames: Header (8-bytes) + Frame_Size (2-bytes) + Data (?-bytes)
+     * 
+     * @note The MAX_PAYLOAD_SIZE is (MAIN_BUFFER_SIZE - 10), and the result must be divisible by 24.
+     */
+    #define MAIN_BUFFER_SIZE 144 + 10;
 
-    /** The number of 24-byte payloads RF24Network will automatically buffer for network.read().
-    * If using fragmentation, this value multiplied by 24 must be larger than the MAX_PAYLOAD_SIZE defined above */
-    #define NUM_USER_PAYLOADS 5
+    /** Maximum size of fragmented network frames and fragmentation cache. This MUST BE divisible by 24.
+    * @note: Must be a multiple of 24.
+    * @note: If used with RF24Ethernet, this value is used to set the buffer sizes.
+    */
+    #define MAX_PAYLOAD_SIZE  MAIN_BUFFER_SIZE-10
 
     /** Disable user payloads. Saves memory when used with RF24Ethernet or software that uses external data.*/
     //#define DISABLE_USER_PAYLOADS 
 
     /** Enable tracking of success and failures for all transmissions, routed and user initiated */
     //#define ENABLE_NETWORK_STATS
+    
+    /** Enable dynamic payloads - If using different types of NRF24L01 modules, some may be incompatible when using this feature **/
+    #define ENABLE_DYNAMIC_PAYLOADS
 
     /** Debug Options */
     //#define SERIAL_DEBUG

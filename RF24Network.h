@@ -113,7 +113,8 @@
  * Messages of this type indicate the last fragment in a sequence of message fragments.
  * Messages of this type do not receive a NETWORK_ACK
  */
-#define NETWORK_LAST_FRAGMENT 201
+#define NETWORK_LAST_FRAGMENT 150 
+//#define NETWORK_LAST_FRAGMENT 201
 
 // NO ACK Response Types
 //#define NETWORK_ACK_REQUEST 192
@@ -165,6 +166,20 @@
 #define FRAME_HEADER_SIZE 10 //Size of RF24Network frames - data
 
 #define USE_CURRENT_CHANNEL 255 // Use current radio channel when setting up the network
+
+/** Internal defines for handling internal payloads - prevents reading additional data from the radio
+ * when buffers are full */
+ #define FLAG_HOLD_INCOMING 1
+ /** FLAG_BYPASS_HOLDS is mainly for use with RF24Mesh as follows:
+  * a: Ensure no data in radio buffers, else exit
+  * b: Address is changed to multicast address for renewal
+  * c: Holds Cleared (bypass flag is set)
+  * d: Address renewal takes place and is set
+  * e: Holds Enabled (bypass flag off)
+  */
+ #define FLAG_BYPASS_HOLDS 2
+ 
+ #define FLAG_FAST_FRAG 4
 
 class RF24;
 
@@ -728,10 +743,13 @@ public:
   *
   */  
   bool returnSysMsgs;
-  
-private:
 
-  bool fastFragTransfer;
+  uint8_t networkFlags;
+    
+  private:
+
+  uint32_t txTime;
+
   bool write(uint16_t, uint8_t directTo);
   bool write_to_pipe( uint16_t node, uint8_t pipe, bool multicast );
   uint8_t enqueue(RF24NetworkHeader *header);
@@ -783,14 +801,14 @@ private:
 	#if defined (DISABLE_USER_PAYLOADS)
     uint8_t frame_queue[1]; /**< Space for a small set of frames that need to be delivered to the app layer */
 	#else
-	uint8_t frame_queue[NUM_USER_PAYLOADS * (MAX_FRAME_SIZE + 2)]; /**< Space for a small set of frames that need to be delivered to the app layer */
+	uint8_t frame_queue[MAIN_BUFFER_SIZE]; /**< Space for a small set of frames that need to be delivered to the app layer */
 	#endif
 	
 	uint8_t* next_frame; /**< Pointer into the @p frame_queue where we should place the next received frame */
 	
 	#if !defined ( DISABLE_FRAGMENTATION )
       RF24NetworkFrame frag_queue;
-      uint8_t frag_queue_message_buffer[MAX_PAYLOAD_SIZE+3]; //frame size + 1 
+      uint8_t frag_queue_message_buffer[MAX_PAYLOAD_SIZE]; //frame size + 1 
     #endif
   
   #endif
