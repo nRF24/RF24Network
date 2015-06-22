@@ -52,7 +52,7 @@
      * 
      * @note The MAX_PAYLOAD_SIZE is (MAIN_BUFFER_SIZE - 10), and the result must be divisible by 24.
      */
-    #define MAIN_BUFFER_SIZE 144 + 10;
+    #define MAIN_BUFFER_SIZE 144 + 10
 
     /** Maximum size of fragmented network frames and fragmentation cache. This MUST BE divisible by 24.
     * @note: Must be a multiple of 24.
