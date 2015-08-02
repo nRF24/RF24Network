@@ -83,8 +83,8 @@
     //#define ENABLE_SLEEP_MODE  //AVR only
     #define RF24NetworkMulticast
     #define DISABLE_FRAGMENTATION 
-    //#define MAX_PAYLOAD_SIZE  96 
-    #define NUM_USER_PAYLOADS 3
+    #define MAIN_BUFFER_SIZE 96 + 10
+    //#define MAX_PAYLOAD_SIZE  MAIN_BUFFER_SIZE-10
     //#define DISABLE_USER_PAYLOADS 
   #endif
   /*************************************/
