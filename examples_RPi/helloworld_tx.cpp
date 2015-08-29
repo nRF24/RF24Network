@@ -9,12 +9,10 @@
  * Listens for messages from the transmitter and prints them out.
  */
 
-
-
-#include <cstdlib>
-#include <iostream>
+//#include <cstdlib>
 #include <RF24/RF24.h>
 #include <RF24Network/RF24Network.h>
+#include <iostream>
 #include <ctime>
 #include <stdio.h>
 #include <time.h>
@@ -22,7 +20,7 @@
 /**
  * g++ -L/usr/lib main.cc -I/usr/include -o main -lrrd
  **/
-//using namespace std;
+using namespace std;
 
 // CE Pin, CSN Pin, SPI Speed
 
@@ -37,11 +35,11 @@ RF24 radio(RPI_V2_GPIO_P1_15, BCM2835_SPI_CS0, BCM2835_SPI_SPEED_8MHZ);
 
 RF24Network network(radio);
 
-// Address of our node in Octal format
-const uint16_t this_node = 00;
+// Address of our node in Octal format (01,021, etc)
+const uint16_t this_node = 01;
 
-// Address of the other node in Octal format (01,021, etc)
-const uint16_t other_node = 01;
+// Address of the other node
+const uint16_t other_node = 00;
 
 const unsigned long interval = 2000; //ms  // How often to send 'hello world to the other unit
 
@@ -64,22 +62,26 @@ int main(int argc, char** argv)
 	network.begin(/*channel*/ 90, /*node address*/ this_node);
 	radio.printDetails();
 	
-	while(1)
-	{
+	while(1){
 
-		  network.update();
-  		  while ( network.available() ) {     // Is there anything ready for us?
-    			
-		 	RF24NetworkHeader header;        // If so, grab it and print it out
-   			 payload_t payload;
-  			 network.read(header,&payload,sizeof(payload));
-			
-			printf("Received payload # %lu at %lu \n",payload.counter,payload.ms);
-  }		  
-		 sleep(2);
-		 //fclose(pFile);
+		network.update();
+		unsigned long now = millis();              // If it's time to send a message, send it!
+		if ( now - last_sent >= interval  ){
+    			last_sent = now;
+
+    			printf("Sending ..\n");
+			payload_t payload = { millis(), packets_sent++ };
+		        RF24NetworkHeader header(/*to node*/ other_node);
+			bool ok = network.write(header,&payload,sizeof(payload));
+		        if (ok){
+		        	printf("ok.\n");
+		        }else{ 
+      				printf("failed.\n");
+  			}
+		}
 	}
 
 	return 0;
+
 }
 
