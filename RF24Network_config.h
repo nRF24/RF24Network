@@ -67,7 +67,7 @@
     //#define ENABLE_NETWORK_STATS
     
     /** Enable dynamic payloads - If using different types of NRF24L01 modules, some may be incompatible when using this feature **/
-    #define ENABLE_DYNAMIC_PAYLOADS
+    //#define ENABLE_DYNAMIC_PAYLOADS
 
     /** Debug Options */
     //#define SERIAL_DEBUG
@@ -92,7 +92,6 @@
 
 #endif //RF24_NETWORK_CONFIG_H
 
-
 #ifdef __cplusplus
 
   #ifndef rf24_max
@@ -101,7 +100,6 @@
   #ifndef rf24_min
     #define rf24_min(a,b) (a<b?a:b)
   #endif
-
 
 
   #ifndef __RF24_CONFIG_H__
@@ -154,7 +152,13 @@
 
     // Progmem is Arduino-specific
     // Arduino DUE is arm and does not include avr/pgmspace
-    #if defined(ARDUINO) && ! defined(__arm__)  && !defined (__ARDUINO_X86__)
+    #if defined (ARDUINO_ARCH_ESP8266)
+	  #include <pgmspace.h>
+	  #define PRIPSTR "%S"
+	  #define printf_P printf
+	  #define sprintf_P sprintf
+    
+    #elif defined(ARDUINO) && ! defined(__arm__)  && !defined (__ARDUINO_X86__)
 	  #include <avr/pgmspace.h>
 	  #define PRIPSTR "%S"
     #else
@@ -182,3 +186,4 @@
     #endif
   #endif  //cplusplus
 #endif //RF24_CONFIG_H
+
