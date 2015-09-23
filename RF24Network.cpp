@@ -87,7 +87,9 @@ void RF24Network::begin(uint8_t _channel, uint16_t _node_address )
   if(_channel != USE_CURRENT_CHANNEL){
     radio.setChannel(_channel);
   }
-  radio.enableDynamicAck();
+  //radio.enableDynamicAck();
+  radio.setAutoAck(0,0);
+  
   #if defined (ENABLE_DYNAMIC_PAYLOADS)
   radio.enableDynamicPayloads();
   #endif
@@ -197,7 +199,8 @@ uint8_t RF24Network::update(void)
 				if(requester != node_address){
 					header->to_node = requester;
 					write(header->to_node,USER_TX_TO_PHYSICAL_ADDRESS);
-					write(header->to_node,USER_TX_TO_PHYSICAL_ADDRESS);
+					delay(10);
+                    write(header->to_node,USER_TX_TO_PHYSICAL_ADDRESS);
 					//printf("Fwd add response to 0%o\n",requester);
 					continue;
 				}
@@ -962,7 +965,7 @@ bool RF24Network::logicalToPhysicalAddress(logicalToPhysicalStruct *conversionIn
  if(*directTo > TX_ROUTED ){    
 	pre_conversion_send_node = *to_node;
 	*multicast = 1;
-	if(*directTo == USER_TX_MULTICAST){
+	if(*directTo == USER_TX_MULTICAST || *directTo == USER_TX_TO_PHYSICAL_ADDRESS){
 		pre_conversion_send_pipe=0;
 	}	
   }     
@@ -1006,10 +1009,14 @@ bool RF24Network::write_to_pipe( uint16_t node, uint8_t pipe, bool multicast )
   if(!(networkFlags & FLAG_FAST_FRAG)){
     radio.stopListening();
   }
+  
+  if(multicast){ radio.setAutoAck(0,0);}else{radio.setAutoAck(0,1);}
+  
   radio.openWritingPipe(out_pipe);
   radio.writeFast(frame_buffer, frame_size,multicast);
   ok = radio.txStandBy(txTimeout);
-
+  
+  radio.setAutoAck(0,0);
   
 #else
   radio1.openWritingPipe(out_pipe);
