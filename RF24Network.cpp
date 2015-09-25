@@ -827,13 +827,13 @@ bool RF24Network::_write(RF24NetworkHeader& header,const void* message, uint16_t
 	
 	
 	if(writeDirect != 070){		
-		uint8_t sendType = USER_TX_TO_LOGICAL_ADDRESS;
+		uint8_t sendType = USER_TX_TO_LOGICAL_ADDRESS; // Payload is multicast to the first node, and routed normally to the next
 	    
 		if(header.to_node == 0100){
 		  sendType = USER_TX_MULTICAST;
 		}
 		if(header.to_node == writeDirect){
-		  sendType = USER_TX_TO_PHYSICAL_ADDRESS;
+		  sendType = USER_TX_TO_PHYSICAL_ADDRESS; // Payload is multicast to the first node, which is the recipient
 		}
 		return write(writeDirect,sendType);				
 	}
@@ -965,9 +965,9 @@ bool RF24Network::logicalToPhysicalAddress(logicalToPhysicalStruct *conversionIn
  if(*directTo > TX_ROUTED ){    
 	pre_conversion_send_node = *to_node;
 	*multicast = 1;
-	if(*directTo == USER_TX_MULTICAST || *directTo == USER_TX_TO_PHYSICAL_ADDRESS){
+	//if(*directTo == USER_TX_MULTICAST || *directTo == USER_TX_TO_PHYSICAL_ADDRESS){
 		pre_conversion_send_pipe=0;
-	}	
+	//}	
   }     
   // If the node is a direct child,
   else
