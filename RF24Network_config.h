@@ -10,28 +10,6 @@
 #ifndef __RF24NETWORK_CONFIG_H__
 #define __RF24NETWORK_CONFIG_H__
 
-  #ifdef __cplusplus
-
-    #if (defined (__linux) || defined (linux)) && !defined (__ARDUINO_X86__)
-      #define RF24_LINUX
-      #include <stdint.h>
-      #include <stdio.h>
-      #include <string.h>
-      #define _BV(x) (1<<(x))
-    #endif
-
-    #if defined (ARDUINO)
-      #if ARDUINO < 100
-        #include <WProgram.h>
-      #else
-        #include <Arduino.h>
-      #endif
-    #endif
-
-    #include <stddef.h>
-
-  #endif //cplusplus: Allows RF24Ethernet(uIP) or other c programs to get access to the RF24Network config variables
-
   #if !defined(__AVR_ATtiny85__) && !defined(__AVR_ATtiny84__)
 
     /********** USER CONFIG - non ATTiny **************/
@@ -94,26 +72,16 @@
 
 #ifdef __cplusplus
 
-  #ifndef rf24_max
-    #define rf24_max(a,b) (a>b?a:b)
+#if (defined (__linux) || defined (linux)) && !defined (__ARDUINO_X86__)
+    #include <RF24/RF24_config.h>
+#else
+    #include <RF24_config.h>
+#endif
+
+  #if !defined (ARDUINO_ARCH_AVR)
+    #define sprintf_P sprintf    
   #endif
-  #ifndef rf24_min
-    #define rf24_min(a,b) (a<b?a:b)
-  #endif
-
-
-  #ifndef __RF24_CONFIG_H__
-  #define __RF24_CONFIG_H__
-
-    #if defined (SERIAL_DEBUG)
-      #define IF_SERIAL_DEBUG(x) ({x;})
-    #else
-	  #define IF_SERIAL_DEBUG(x)
-	  #if defined(__AVR_ATtiny84__) || defined(__AVR_ATtiny85__)
-	    #define printf_P(...)
-      #endif
-    #endif
-
+  
     #if defined (SERIAL_DEBUG_MINIMAL)
       #define IF_SERIAL_DEBUG_MINIMAL(x) ({x;})
     #else
@@ -137,53 +105,7 @@
     #else
       #define IF_SERIAL_DEBUG_ROUTING(x)
     #endif
-
-
-    // Avoid spurious warnings
-    // Arduino DUE is arm and uses traditional PROGMEM constructs
-    #if 1
-      #if ! defined( NATIVE ) && defined( ARDUINO ) && ! defined(__arm__)  && ! defined( CORE_TEENSY3 )
-        #undef PROGMEM
-        #define PROGMEM __attribute__(( section(".progmem.data") ))
-        #undef PSTR
-        #define PSTR(s) (__extension__({static const char __c[] PROGMEM = (s); &__c[0];}))
-      #endif
-    #endif
-
-    // Progmem is Arduino-specific
-    // Arduino DUE is arm and does not include avr/pgmspace
-    #if defined (ARDUINO_ARCH_ESP8266)
-	  #include <pgmspace.h>
-	  #define PRIPSTR "%S"
-	  #define printf_P printf
-	  #define sprintf_P sprintf
     
-    #elif defined(ARDUINO) && ! defined(__arm__)  && !defined (__ARDUINO_X86__)
-	  #include <avr/pgmspace.h>
-	  #define PRIPSTR "%S"
-    #else
-      #if ! defined(ARDUINO) && !defined (RF24_LINUX) // This doesn't work on Arduino DUE
-	  typedef char const char;
-      #else // Fill in pgm_read_byte that is used, but missing from DUE
-	    #define pgm_read_byte(addr) (*(const unsigned char *)(addr))
-      #endif
 
-      #if !defined(sprintf_P)
-	    #define sprintf_P sprintf
-      #endif
-
-      #if !defined (CORE_TEENSY)
-	    typedef uint16_t prog_uint16_t;
-	    #define PSTR(x) (x)
-	    #define printf_P printf
-	    #define strlen_P strlen
-	    #define PROGMEM
-	    #define pgm_read_word(p) (*(p))
-      #endif
-
-	  #define PRIPSTR "%s"
-
-    #endif
-  #endif  //cplusplus
 #endif //RF24_CONFIG_H
 
