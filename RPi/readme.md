@@ -1,2 +1,2 @@
-See RPi/RF24Network/README.md
 
+See https://github.com/TMRh20/RF24Network/README.md

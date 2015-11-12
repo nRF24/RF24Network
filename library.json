@@ -1,0 +1,23 @@
+{
+  "name": "RF24Network",
+  "keywords": "rf, radio, wireless, spi",
+  "description": "Optimized Network Layer for nRF24L01(+) Radios",
+  "repository":
+  {
+    "type": "git",
+    "url": "https://github.com/TMRh20/RF24Network.git"
+  },
+  "dependencies": { "name": "RF24", "authors": "TMRh20", "frameworks": "arduino" },
+  "exclude": [
+    "examples/*",
+    "examples_RPi/*",
+    "RPi/*",
+    "tests/*"
+  ],
+  "frameworks": "arduino",
+  "platforms": [
+    "atmelavr",
+    "atmelsam",
+    "teensy"
+  ]
+}
