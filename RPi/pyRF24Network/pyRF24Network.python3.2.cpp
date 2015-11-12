@@ -1,7 +1,6 @@
 #include "boost/python.hpp"
-
-#include "RF24Network/RF24Network.h"
 #include "RF24/RF24.h"
+#include "RF24Network/RF24Network.h"
 
 namespace bp = boost::python;
 
@@ -131,9 +130,9 @@ BOOST_PYTHON_MODULE(RF24Network){
         }
         { //::RF24Network::write
         
-            typedef bool ( *write_function_type )( ::RF24Network&, ::RF24NetworkHeader&, std::string ) ;
+            typedef bool ( *write_function_type )( ::RF24Network&, ::RF24NetworkHeader&, bp::object ) ;
             
-            RF24Network_exposer.def("write", write_function_type( &write_wrap ), ( bp::arg("header"), bp::arg("message") ) );
+            RF24Network_exposer.def("write", write_function_type( &write_wrap ), ( bp::arg("header"), bp::arg("buf") ) );
         
         }
         RF24Network_exposer.def_readwrite( "txTimeout", &RF24Network::txTimeout );
