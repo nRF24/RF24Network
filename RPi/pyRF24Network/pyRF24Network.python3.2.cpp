@@ -1,4 +1,3 @@
-#include <Python.h>
 #include "boost/python.hpp"
 
 #include "RF24Network/RF24Network.h"
@@ -9,30 +8,56 @@ namespace bp = boost::python;
 // **************** expicit wrappers *****************
 // where needed, especially where buffer is involved
 //
+void throw_ba_exception(void)
+{
+    PyErr_SetString(PyExc_TypeError, "buf parameter must be bytes or bytearray");
+    bp::throw_error_already_set();
+}
+
+char *get_bytes_or_bytearray_str(bp::object buf)
+{
+    PyObject *py_ba;
+    py_ba = buf.ptr();
+    if (PyByteArray_Check(py_ba))
+        return PyByteArray_AsString(py_ba);
+    else if (PyBytes_Check(py_ba))
+        return PyBytes_AsString(py_ba);
+    else
+        throw_ba_exception();
+    return NULL;
+}
+
+int get_bytes_or_bytearray_ln(bp::object buf)
+{
+    PyObject *py_ba;
+    py_ba = buf.ptr();
+    if (PyByteArray_Check(py_ba))
+        return PyByteArray_Size(py_ba);
+    else if (PyBytes_Check(py_ba))
+        return PyBytes_Size(py_ba);
+    else
+        throw_ba_exception();
+    return 0;
+}
+
 bp::tuple read_wrap(RF24Network& ref, size_t maxlen)
 {
-	size_t len;
 	char *buf = new char[maxlen+1];
 	RF24NetworkHeader header;
 
-	len=ref.read(header, buf, maxlen);
-	// std::string str(buf, len);
-
-	Py_buffer buffer;
-	int result = PyBuffer_FillInfo(&buffer, 0, buf, len, true, PyBUF_CONTIG_RO);
-	if (result == -1)
-	{
-			PyErr_Print();
-			exit(EXIT_FAILURE);
-	}
-	bp::object memoryView(bp::handle<>(PyMemoryView_FromBuffer(&buffer)));
-	// delete[] buf;
-	return bp::make_tuple(header, memoryView);
+	ref.read(header, buf, maxlen);
+	
+	char *buf = new char[maxlen+1];
+    ref.read(buf, maxlen);
+    bp::object py_ba(bp::handle<>(PyByteArray_FromStringAndSize(buf, maxlen<ref.getPayloadSize()?maxlen:ref.getPayloadSize())));
+    delete[] buf;
+	
+	return bp::make_tuple(header, py_ba);
 }
 
-bool write_wrap(RF24Network& ref, RF24NetworkHeader& header, std::string message)
+bool write_wrap(RF24Network& ref, RF24NetworkHeader& header, bp::object buf)
 {
-	return ref.write(header, message.c_str(), message.length());
+	return ref.write(header, get_bytes_or_bytearray_str(buf), get_bytes_or_bytearray_ln(buf));
 }
 
 std::string toString_wrap(RF24NetworkHeader& ref)
