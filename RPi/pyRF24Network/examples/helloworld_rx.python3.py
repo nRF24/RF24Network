@@ -48,8 +48,8 @@ last_sent = 0
 while 1:
     network.update()
     while network.available():
-        header, payload = network.read(12)
-        ms, number = unpack('<qi', payload)
+        header, payload = network.read(8)
+        ms, number = unpack('<LL', payload)
         print('Received payload # ', number, ' at ', ms, ' from ', oct(header.from_node))
     time.sleep(1)
 

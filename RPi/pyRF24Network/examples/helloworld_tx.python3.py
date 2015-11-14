@@ -50,7 +50,7 @@ while 1:
     if ( now - last_sent >= interval  ):
         last_sent = now
         print('Sending ..')
-        payload = pack('<qi', millis(), packets_sent )
+        payload = pack('<LL', millis(), packets_sent )
         packets_sent += 1
         ok = network.write(RF24NetworkHeader(other_node), payload)
         if ok:
