@@ -1,28 +1,59 @@
 #include "boost/python.hpp"
-
-#include "RF24Network/RF24Network.h"
 #include "RF24/RF24.h"
+#include "RF24Network/RF24Network.h"
 
 namespace bp = boost::python;
 
 // **************** expicit wrappers *****************
 // where needed, especially where buffer is involved
 //
-bp::tuple read_wrap(RF24Network& ref, size_t maxlen)
+void throw_ba_exception(void)
 {
-	size_t len;
-        char *buf = new char[maxlen+1];
-	RF24NetworkHeader header;
-
-        len=ref.read(header, buf, maxlen);
-        std::string str(buf, len);
-	delete[] buf;
-	return bp::make_tuple(header, str);
+    PyErr_SetString(PyExc_TypeError, "buf parameter must be bytes or bytearray");
+    bp::throw_error_already_set();
 }
 
-bool write_wrap(RF24Network& ref, RF24NetworkHeader& header, std::string message)
+char *get_bytes_or_bytearray_str(bp::object buf)
 {
-	return ref.write(header, message.c_str(), message.length());
+    PyObject *py_ba;
+    py_ba = buf.ptr();
+    if (PyByteArray_Check(py_ba))
+        return PyByteArray_AsString(py_ba);
+    else if (PyBytes_Check(py_ba))
+        return PyBytes_AsString(py_ba);
+    else
+        throw_ba_exception();
+    return NULL;
+}
+
+int get_bytes_or_bytearray_ln(bp::object buf)
+{
+    PyObject *py_ba;
+    py_ba = buf.ptr();
+    if (PyByteArray_Check(py_ba))
+        return PyByteArray_Size(py_ba);
+    else if (PyBytes_Check(py_ba))
+        return PyBytes_Size(py_ba);
+    else
+        throw_ba_exception();
+    return 0;
+}
+
+bp::tuple read_wrap(RF24Network& ref, size_t maxlen)
+{
+	char *buf = new char[maxlen+1];
+	RF24NetworkHeader header;
+
+	ref.read(header, buf, maxlen);
+    bp::object py_ba(bp::handle<>(PyByteArray_FromStringAndSize(buf, maxlen)));
+    delete[] buf;
+	
+	return bp::make_tuple(header, py_ba);
+}
+
+bool write_wrap(RF24Network& ref, RF24NetworkHeader& header, bp::object buf)
+{
+	return ref.write(header, get_bytes_or_bytearray_str(buf), get_bytes_or_bytearray_ln(buf));
 }
 
 std::string toString_wrap(RF24NetworkHeader& ref)
@@ -99,9 +130,9 @@ BOOST_PYTHON_MODULE(RF24Network){
         }
         { //::RF24Network::write
         
-            typedef bool ( *write_function_type )( ::RF24Network&, ::RF24NetworkHeader&, std::string ) ;
+            typedef bool ( *write_function_type )( ::RF24Network&, ::RF24NetworkHeader&, bp::object ) ;
             
-            RF24Network_exposer.def("write", write_function_type( &write_wrap ), ( bp::arg("header"), bp::arg("message") ) );
+            RF24Network_exposer.def("write", write_function_type( &write_wrap ), ( bp::arg("header"), bp::arg("buf") ) );
         
         }
         RF24Network_exposer.def_readwrite( "txTimeout", &RF24Network::txTimeout );

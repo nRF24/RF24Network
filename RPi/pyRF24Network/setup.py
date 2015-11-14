@@ -2,8 +2,13 @@
 
 from distutils.core import setup, Extension
 
+if sys.version_info >= (3,): 
+    BOOST_LIB = 'boost_python3' 
+else: 
+    BOOST_LIB = 'boost_python' 
+
 module_RF24Network = Extension('RF24Network',
-            libraries = ['rf24network', 'boost_python'],
+            libraries = ['rf24network', BOOST_LIB],
             sources = ['pyRF24Network.cpp'])
 
 setup(name='RF24Network',
