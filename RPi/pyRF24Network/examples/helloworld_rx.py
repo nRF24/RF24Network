@@ -26,7 +26,7 @@ from RF24Network import *
 # Setup for GPIO 22 CE and CE0 CSN for RPi B+ with SPI Speed @ 8Mhz
 #radio = RF24(RPI_BPLUS_GPIO_J8_22, RPI_BPLUS_GPIO_J8_24, BCM2835_SPI_SPEED_8MHZ)
 
-self.radio = RF24(RPI_V2_GPIO_P1_15, RPI_V2_GPIO_P1_24, BCM2835_SPI_SPEED_8MHZ)
+radio = RF24(RPI_V2_GPIO_P1_15, RPI_V2_GPIO_P1_24, BCM2835_SPI_SPEED_8MHZ)
 
 network = RF24Network(radio)
 
