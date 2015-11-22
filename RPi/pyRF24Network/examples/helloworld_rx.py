@@ -51,7 +51,7 @@ while 1:
     network.update()
     while network.available():
         header, payload = network.read(12)
-        ms, number = unpack('<qi', payload)
+        ms, number = unpack('<LL', payload)
         print 'Received payload # ', number, ' at ', ms, ' from ', oct(header.from_node)
     time.sleep(1)
 
