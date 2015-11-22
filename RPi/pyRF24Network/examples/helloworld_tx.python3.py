@@ -42,18 +42,18 @@ interval = 2000     #ms -  How often to send 'hello world' to the other unit
 millis = lambda: int(round(time.time() * 1000))
 
 radio.begin()
-time.sleep(0.1);
+time.sleep(1);
 network.begin(90, this_node)    # channel 90
 radio.printDetails()
 packets_sent = 0
 last_sent = 0
 while 1:
-    network.update()
+    #network.update()
     now = millis()              # If it's time to send a message, send it!
     if ( now - last_sent >= interval  ):
         last_sent = now
         print('Sending ..')
-        payload = pack('<LL', millis(), packets_sent )
+        payload = pack('<LL', packets_sent, packets_sent )
         packets_sent += 1
         ok = network.write(RF24NetworkHeader(other_node), payload)
         if ok:
