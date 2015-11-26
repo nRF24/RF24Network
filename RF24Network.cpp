@@ -619,7 +619,7 @@ uint16_t RF24Network::read(RF24NetworkHeader& header,void* message, uint16_t max
     RF24NetworkFrame frame = frame_queue.front();
 
     // How much buffer size should we actually copy?
-    bufsize = std::min(frame.message_size,maxlen);
+    bufsize = rf24_min(frame.message_size,maxlen);
     memcpy(&header,&(frame.header),sizeof(RF24NetworkHeader));
     memcpy(message,frame.message_buffer,bufsize);
 
@@ -640,7 +640,7 @@ uint16_t RF24Network::read(RF24NetworkHeader& header,void* message, uint16_t max
 
     if (maxlen > 0)
     {		
-		maxlen = min(maxlen,bufsize);
+		maxlen = rf24_min(maxlen,bufsize);
 		memcpy(message,frame_queue+10,maxlen);
 	    IF_SERIAL_DEBUG(printf("%lu: NET message size %d\n",millis(),bufsize););
 
