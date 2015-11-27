@@ -234,11 +234,11 @@ uint8_t RF24Network::update(void)
 			
 
 				if(header->type == NETWORK_POLL ){
-				    //Serial.println("Send poll");
-					header->to_node = header->from_node;
-					header->from_node = node_address;			
-					//delay((node_address%5)*3);
-					write(header->to_node,USER_TX_TO_PHYSICAL_ADDRESS);
+                    if( !(networkFlags & FLAG_NO_POLL) ){
+					  header->to_node = header->from_node;
+					  header->from_node = node_address;			
+					  write(header->to_node,USER_TX_TO_PHYSICAL_ADDRESS);
+                    }
 					continue;
 				}
 				uint8_t val = enqueue(header);
@@ -763,7 +763,7 @@ bool RF24Network::write(RF24NetworkHeader& header,const void* message, uint16_t 
 	#endif
 
   }
-
+  header.type = type;
   #if !defined (DUAL_HEAD_RADIO)
   if(networkFlags & FLAG_FAST_FRAG){
 	radio.startListening();
