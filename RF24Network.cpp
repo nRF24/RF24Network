@@ -768,10 +768,10 @@ bool RF24Network::write(RF24NetworkHeader& header,const void* message, uint16_t 
   header.type = type;
   #if !defined (DUAL_HEAD_RADIO)
   if(networkFlags & FLAG_FAST_FRAG){	
-    ok = radio.txStandBy(txTimeout);    
-  }
-  radio.startListening();
-  radio.setAutoAck(0,0);
+    ok = radio.txStandBy(txTimeout);  
+    radio.startListening();
+    radio.setAutoAck(0,0);
+  }    
   if(!ok){
        return false;
   }
