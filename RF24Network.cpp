@@ -96,9 +96,9 @@ void RF24Network::begin(uint8_t _channel, uint16_t _node_address )
   
   // Use different retry periods to reduce data collisions
   uint8_t retryVar = (((node_address % 6)+1) *2) + 3;
-  radio.setRetries(retryVar, 5);
+  radio.setRetries(retryVar, 5); // max about 85ms per attempt
   txTimeout = 25;
-  routeTimeout = txTimeout*9; // Adjust for max delay per node
+  routeTimeout = txTimeout*3; // Adjust for max delay per node within a single chain
 
 
 #if defined (DUAL_HEAD_RADIO)
@@ -233,11 +233,12 @@ uint8_t RF24Network::update(void)
 			if( header->to_node == 0100){
 			
 
-				if(header->type == NETWORK_POLL ){
+				if(header->type == NETWORK_POLL && node_address != 04444 ){
                     if( !(networkFlags & FLAG_NO_POLL) ){
 					  header->to_node = header->from_node;
 					  header->from_node = node_address;			
-					  write(header->to_node,USER_TX_TO_PHYSICAL_ADDRESS);
+					  delay(parent_pipe);
+                      write(header->to_node,USER_TX_TO_PHYSICAL_ADDRESS);                      
                     }
 					continue;
 				}
@@ -714,7 +715,8 @@ bool RF24Network::write(RF24NetworkHeader& header,const void* message, uint16_t 
 
   uint8_t retriesPerFrag = 0;
   uint8_t type = header.type;
-
+  bool ok = 0;
+  
   while (fragment_id > 0) {
 
     //Copy and fill out the header
@@ -737,8 +739,8 @@ bool RF24Network::write(RF24NetworkHeader& header,const void* message, uint16_t 
 
     //Try to send the payload chunk with the copied header
     frame_size = sizeof(RF24NetworkHeader)+fragmentLen;
-	bool ok = _write(header,((char *)message)+offset,fragmentLen,writeDirect);
-    
+	ok = _write(header,((char *)message)+offset,fragmentLen,writeDirect);
+
 	if (!ok) {
 	   delay(2);
 	   ++retriesPerFrag;
@@ -749,7 +751,7 @@ bool RF24Network::write(RF24NetworkHeader& header,const void* message, uint16_t 
       msgCount++;
 	}
 	
-    if(writeDirect != 070){ delay(2); } //Delay 2ms between sending multicast payloads
+    //if(writeDirect != 070){ delay(2); } //Delay 2ms between sending multicast payloads
  
 	if (!ok && retriesPerFrag >= 3) {
         IF_SERIAL_DEBUG_FRAGMENTATION(printf("%lu: FRG TX with fragmentID '%d' failed after %d fragments. Abort.\n\r",millis(),fragment_id,msgCount););
@@ -765,8 +767,13 @@ bool RF24Network::write(RF24NetworkHeader& header,const void* message, uint16_t 
   }
   header.type = type;
   #if !defined (DUAL_HEAD_RADIO)
-  if(networkFlags & FLAG_FAST_FRAG){
-	radio.startListening();
+  if(networkFlags & FLAG_FAST_FRAG){	
+    ok = radio.txStandBy(txTimeout);    
+  }
+  radio.startListening();
+  radio.setAutoAck(0,0);
+  if(!ok){
+       return false;
   }
   #endif
   networkFlags &= ~FLAG_FAST_FRAG
@@ -915,7 +922,9 @@ bool RF24Network::write(uint16_t to_node, uint8_t directTo)  // Direct To: 0 = F
 		uint32_t reply_time = millis(); 
 
 		while( update() != NETWORK_ACK){
-			delayMicroseconds(900);
+			#if defined (RF24_LINUX)
+            delayMicroseconds(900);
+            #endif
 			if(millis() - reply_time > routeTimeout){
 				#if defined (RF24_LINUX)
 				  IF_SERIAL_DEBUG_ROUTING( printf_P(PSTR("%u: MAC Network ACK fail from 0%o via 0%o on pipe %x\n\r"),millis(),to_node,conversion.send_node,conversion.send_pipe); );
@@ -1012,10 +1021,13 @@ bool RF24Network::write_to_pipe( uint16_t node, uint8_t pipe, bool multicast )
   if(multicast){ radio.setAutoAck(0,0);}else{radio.setAutoAck(0,1);}
   
   radio.openWritingPipe(out_pipe);
-  radio.writeFast(frame_buffer, frame_size,multicast);
-  ok = radio.txStandBy(txTimeout);
+
+  ok = radio.writeFast(frame_buffer, frame_size,multicast);
   
-  radio.setAutoAck(0,0);
+  if(!(networkFlags & FLAG_FAST_FRAG)){
+    ok = radio.txStandBy(txTimeout);
+    radio.setAutoAck(0,0);
+  }
   
 #else
   radio1.openWritingPipe(out_pipe);
