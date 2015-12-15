@@ -771,12 +771,13 @@ bool RF24Network::write(RF24NetworkHeader& header,const void* message, uint16_t 
     ok = radio.txStandBy(txTimeout);  
     radio.startListening();
     radio.setAutoAck(0,0);
-  }    
+  }  
+  networkFlags &= ~FLAG_FAST_FRAG;
+  
   if(!ok){
        return false;
   }
   #endif
-  networkFlags &= ~FLAG_FAST_FRAG
   //int frag_delay = uint8_t(len/48);
   //delay( rf24_min(len/48,20));
 
@@ -916,6 +917,7 @@ bool RF24Network::write(uint16_t to_node, uint8_t directTo)  // Direct To: 0 = F
 		  if(networkFlags & FLAG_FAST_FRAG){
 			 radio.txStandBy(txTimeout);
              networkFlags &= ~FLAG_FAST_FRAG;
+             radio.setAutoAck(0,0); 
 		  }
           radio.startListening();
         #endif
