@@ -31,6 +31,10 @@
   #include <utility>      // std::pair
   #include <queue>
   
+//ATXMega
+#elif defined(__AVR_ATxmega256D3__)
+  #define XMEGA_D3
+  #include "../RF24/RF24.h"
 #endif
 
 

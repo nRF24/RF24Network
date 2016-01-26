@@ -76,6 +76,11 @@
 
 #if (defined (__linux) || defined (linux)) && !defined (__ARDUINO_X86__)
     #include <RF24/RF24_config.h>
+	
+//ATXMega
+#elif defined(__AVR_ATxmega256D3__)
+	#define XMEGA_D3
+	#include "../RF24/RF24_config.h"
 #else
     #include <RF24_config.h>
 #endif

@@ -21,6 +21,10 @@
   #include <algorithm>
   #include <RF24/RF24.h>
   #include "RF24Network.h"
+#elif defined(__AVR_ATxmega256D3__)
+	#define XMEGA_D3
+	#include "../RF24/RF24.h"
+	#include "RF24Network.h"
 #else  
   #include "RF24.h"
   #include "RF24Network.h"
@@ -154,7 +158,7 @@ uint8_t RF24Network::update(void)
   
   while ( radio.isValid() && radio.available(&pipe_num) ){
 
-    #if defined (ENABLE_DYNAMIC_PAYLOADS)
+    #if defined (ENABLE_DYNAMIC_PAYLOADS) && !defined (XMEGA_D3)
       if( (frame_size = radio.getDynamicPayloadSize() ) < sizeof(RF24NetworkHeader)){
 	    delay(10);
 		continue;
