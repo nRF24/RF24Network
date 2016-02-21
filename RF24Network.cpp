@@ -429,7 +429,7 @@ bool RF24Network::appendFragmentToFrame(RF24NetworkFrame frame) {
 uint8_t RF24Network::enqueue(RF24NetworkHeader* header)
 {
   bool result = false;
-  uint8_t message_size = frame_size - sizeof(RF24NetworkHeader);
+  uint16_t message_size = frame_size - sizeof(RF24NetworkHeader);
   
   IF_SERIAL_DEBUG(printf_P(PSTR("%lu: NET Enqueue @%x "),millis(),next_frame-frame_queue));
   
@@ -545,13 +545,16 @@ IF_SERIAL_DEBUG_FRAGMENTATION_L2(for(int i=0; i< frag_queue.message_size;i++){ S
 #else
   if(message_size + (next_frame-frame_queue) <= MAIN_BUFFER_SIZE){
 	memcpy(next_frame,&frame_buffer,8);
-	RF24NetworkFrame *f = (RF24NetworkFrame*)next_frame;
-	f->message_size = message_size;
-	memcpy(next_frame+10,frame_buffer+sizeof(RF24NetworkHeader),message_size);
-
+    memcpy(next_frame+8,&message_size,2);
+	memcpy(next_frame+10,frame_buffer+8,message_size);
+    
 	//IF_SERIAL_DEBUG_FRAGMENTATION( for(int i=0; i<message_size;i++){ Serial.print(next_frame[i],HEX); Serial.print(" : "); } Serial.println(""); );
     
 	next_frame += (message_size + 10);
+    if(uint8_t padding = (message_size+10)%4){
+      next_frame += 4 - padding;
+    }
+    
   //IF_SERIAL_DEBUG_FRAGMENTATION( Serial.print("Enq "); Serial.println(next_frame-frame_queue); );//printf_P(PSTR("enq %d\n"),next_frame-frame_queue); );
   
     result = true;
@@ -636,8 +639,7 @@ uint16_t RF24Network::read(RF24NetworkHeader& header,void* message, uint16_t max
   {
     
 	memcpy(&header,frame_queue,8);
-	RF24NetworkFrame *f = (RF24NetworkFrame*)frame_queue;
-	bufsize = f->message_size;
+    memcpy(&bufsize,frame_queue+8,2);
 
     if (maxlen > 0)
     {		
@@ -651,6 +653,9 @@ uint16_t RF24Network::read(RF24NetworkHeader& header,void* message, uint16_t max
     }
 	memmove(frame_queue,frame_queue+bufsize+10,sizeof(frame_queue)- bufsize);
 	next_frame-=bufsize+10;
+    if(uint8_t padding = (bufsize+10)%4){
+      next_frame -= 4 - padding;
+    }
 
 	//IF_SERIAL_DEBUG(printf_P(PSTR("%lu: NET Received %s\n\r"),millis(),header.toString()));
   }
