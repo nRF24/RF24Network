@@ -44,8 +44,8 @@ bp::tuple read_wrap(RF24Network& ref, size_t maxlen)
 	char *buf = new char[maxlen+1];
 	RF24NetworkHeader header;
 
-	ref.read(header, buf, maxlen);
-    bp::object py_ba(bp::handle<>(PyByteArray_FromStringAndSize(buf, maxlen)));
+	uint16_t len = ref.read(header, buf, maxlen);
+    bp::object py_ba(bp::handle<>(PyByteArray_FromStringAndSize(buf, len)));
     delete[] buf;
 	
 	return bp::make_tuple(header, py_ba);
