@@ -606,7 +606,9 @@ uint16_t RF24Network::peek(RF24NetworkHeader& header)
   #else
 	RF24NetworkFrame *frame = (RF24NetworkFrame*)(frame_queue);
 	memcpy(&header,&frame->header,sizeof(RF24NetworkHeader));
-	return frame->message_size;
+    uint16_t msg_size;
+    memcpy(&msg_size,frame+8,2);
+    return msg_size;
   #endif
   }
   return 0;
