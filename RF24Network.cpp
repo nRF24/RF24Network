@@ -977,7 +977,7 @@ bool RF24Network::logicalToPhysicalAddress(logicalToPhysicalStruct *conversionIn
   uint16_t pre_conversion_send_node = parent_node; 
 
   // On which pipe
-  uint8_t pre_conversion_send_pipe = parent_pipe %5;
+  uint8_t pre_conversion_send_pipe = parent_pipe;
   
  if(*directTo > TX_ROUTED ){    
 	pre_conversion_send_node = *to_node;
@@ -1045,12 +1045,12 @@ bool RF24Network::write_to_pipe( uint16_t node, uint8_t pipe, bool multicast )
 
 #endif
 
-  #if defined (__arm__) || defined (RF24_LINUX)
+/*  #if defined (__arm__) || defined (RF24_LINUX)
   IF_SERIAL_DEBUG(printf_P(PSTR("%u: MAC Sent on %x %s\n\r"),millis(),(uint32_t)out_pipe,ok?PSTR("ok"):PSTR("failed")));
   #else
   IF_SERIAL_DEBUG(printf_P(PSTR("%lu: MAC Sent on %lx %S\n\r"),millis(),(uint32_t)out_pipe,ok?PSTR("ok"):PSTR("failed")));
   #endif
-  
+*/  
   return ok;
 }
 
@@ -1131,7 +1131,7 @@ void RF24Network::setup_address(void)
   }
   parent_pipe = i;
 
-  IF_SERIAL_DEBUG( printf_P(PSTR("setup_address node=0%o mask=0%o parent=0%o pipe=0%o\n\r"),node_address,node_mask,parent_node,parent_pipe););
+  IF_SERIAL_DEBUG_MINIMAL( printf_P(PSTR("setup_address node=0%o mask=0%o parent=0%o pipe=0%o\n\r"),node_address,node_mask,parent_node,parent_pipe););
 
 }
 
