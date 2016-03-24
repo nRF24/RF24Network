@@ -233,8 +233,8 @@ uint8_t RF24Network::update(void)
 			if( header->to_node == 0100){
 			
 
-				if(header->type == NETWORK_POLL && node_address != 04444 ){
-                    if( !(networkFlags & FLAG_NO_POLL) ){
+				if(header->type == NETWORK_POLL  ){
+                    if( !(networkFlags & FLAG_NO_POLL) && node_address != 04444 ){
 					  header->to_node = header->from_node;
 					  header->from_node = node_address;			
 					  delay(parent_pipe);
