@@ -237,8 +237,8 @@ uint8_t RF24Network::update(void)
 			if( header->to_node == 0100){
 			
 
-				if(header->type == NETWORK_POLL && node_address != 04444 ){
-                    if( !(networkFlags & FLAG_NO_POLL) ){
+				if(header->type == NETWORK_POLL  ){
+                    if( !(networkFlags & FLAG_NO_POLL) && node_address != 04444 ){
 					  header->to_node = header->from_node;
 					  header->from_node = node_address;			
 					  delay(parent_pipe);
@@ -433,7 +433,7 @@ bool RF24Network::appendFragmentToFrame(RF24NetworkFrame frame) {
 uint8_t RF24Network::enqueue(RF24NetworkHeader* header)
 {
   bool result = false;
-  uint8_t message_size = frame_size - sizeof(RF24NetworkHeader);
+  uint16_t message_size = frame_size - sizeof(RF24NetworkHeader);
   
   IF_SERIAL_DEBUG(printf_P(PSTR("%lu: NET Enqueue @%x "),millis(),next_frame-frame_queue));
   
@@ -549,13 +549,16 @@ IF_SERIAL_DEBUG_FRAGMENTATION_L2(for(int i=0; i< frag_queue.message_size;i++){ S
 #else
   if(message_size + (next_frame-frame_queue) <= MAIN_BUFFER_SIZE){
 	memcpy(next_frame,&frame_buffer,8);
-	RF24NetworkFrame *f = (RF24NetworkFrame*)next_frame;
-	f->message_size = message_size;
-	memcpy(next_frame+10,frame_buffer+sizeof(RF24NetworkHeader),message_size);
-
+    memcpy(next_frame+8,&message_size,2);
+	memcpy(next_frame+10,frame_buffer+8,message_size);
+    
 	//IF_SERIAL_DEBUG_FRAGMENTATION( for(int i=0; i<message_size;i++){ Serial.print(next_frame[i],HEX); Serial.print(" : "); } Serial.println(""); );
     
 	next_frame += (message_size + 10);
+    if(uint8_t padding = (message_size+10)%4){
+      next_frame += 4 - padding;
+    }
+    
   //IF_SERIAL_DEBUG_FRAGMENTATION( Serial.print("Enq "); Serial.println(next_frame-frame_queue); );//printf_P(PSTR("enq %d\n"),next_frame-frame_queue); );
   
     result = true;
@@ -607,7 +610,9 @@ uint16_t RF24Network::peek(RF24NetworkHeader& header)
   #else
 	RF24NetworkFrame *frame = (RF24NetworkFrame*)(frame_queue);
 	memcpy(&header,&frame->header,sizeof(RF24NetworkHeader));
-	return frame->message_size;
+    uint16_t msg_size;
+    memcpy(&msg_size,frame+8,2);
+    return msg_size;
   #endif
   }
   return 0;
@@ -640,8 +645,7 @@ uint16_t RF24Network::read(RF24NetworkHeader& header,void* message, uint16_t max
   {
     
 	memcpy(&header,frame_queue,8);
-	RF24NetworkFrame *f = (RF24NetworkFrame*)frame_queue;
-	bufsize = f->message_size;
+    memcpy(&bufsize,frame_queue+8,2);
 
     if (maxlen > 0)
     {		
@@ -655,6 +659,9 @@ uint16_t RF24Network::read(RF24NetworkHeader& header,void* message, uint16_t max
     }
 	memmove(frame_queue,frame_queue+bufsize+10,sizeof(frame_queue)- bufsize);
 	next_frame-=bufsize+10;
+    if(uint8_t padding = (bufsize+10)%4){
+      next_frame -= 4 - padding;
+    }
 
 	//IF_SERIAL_DEBUG(printf_P(PSTR("%lu: NET Received %s\n\r"),millis(),header.toString()));
   }
@@ -974,7 +981,7 @@ bool RF24Network::logicalToPhysicalAddress(logicalToPhysicalStruct *conversionIn
   uint16_t pre_conversion_send_node = parent_node; 
 
   // On which pipe
-  uint8_t pre_conversion_send_pipe = parent_pipe %5;
+  uint8_t pre_conversion_send_pipe = parent_pipe;
   
  if(*directTo > TX_ROUTED ){    
 	pre_conversion_send_node = *to_node;
@@ -1042,12 +1049,12 @@ bool RF24Network::write_to_pipe( uint16_t node, uint8_t pipe, bool multicast )
 
 #endif
 
-  #if defined (__arm__) || defined (RF24_LINUX)
+/*  #if defined (__arm__) || defined (RF24_LINUX)
   IF_SERIAL_DEBUG(printf_P(PSTR("%u: MAC Sent on %x %s\n\r"),millis(),(uint32_t)out_pipe,ok?PSTR("ok"):PSTR("failed")));
   #else
   IF_SERIAL_DEBUG(printf_P(PSTR("%lu: MAC Sent on %lx %S\n\r"),millis(),(uint32_t)out_pipe,ok?PSTR("ok"):PSTR("failed")));
   #endif
-  
+*/  
   return ok;
 }
 
@@ -1128,7 +1135,7 @@ void RF24Network::setup_address(void)
   }
   parent_pipe = i;
 
-  IF_SERIAL_DEBUG( printf_P(PSTR("setup_address node=0%o mask=0%o parent=0%o pipe=0%o\n\r"),node_address,node_mask,parent_node,parent_pipe););
+  IF_SERIAL_DEBUG_MINIMAL( printf_P(PSTR("setup_address node=0%o mask=0%o parent=0%o pipe=0%o\n\r"),node_address,node_mask,parent_node,parent_pipe););
 
 }
 
