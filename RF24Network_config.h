@@ -15,9 +15,7 @@
     /********** USER CONFIG - non ATTiny **************/
 
     //#define DUAL_HEAD_RADIO
-    #ifndef ARDUINO_ARCH_ESP8266
     //#define ENABLE_SLEEP_MODE  //AVR only
-    #endif
     #define RF24NetworkMulticast
 
     /** \def
@@ -60,9 +58,7 @@
   #else // Different set of defaults for ATTiny - fragmentation is disabled and user payloads are set to 3 max
     /********** USER CONFIG - ATTiny **************/
     //#define DUAL_HEAD_RADIO
-    #ifndef ARDUINO_ARCH_ESP8266
     //#define ENABLE_SLEEP_MODE  //AVR only
-    #endif
     #define RF24NetworkMulticast
     #define MAIN_BUFFER_SIZE 96 + 10
     #define DISABLE_FRAGMENTATION
