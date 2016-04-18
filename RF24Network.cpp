@@ -52,6 +52,7 @@ bool is_valid_address( uint16_t node );
   RF24Network::RF24Network( RF24& _radio, RF24& _radio1 ): radio(_radio), radio1(_radio1),frame_size(MAX_FRAME_SIZE)
   #endif
 {
+  txTime=0; networkFlags=0; returnSysMsgs=0; multicastRelay=0;
 }
 #elif !defined (DUAL_HEAD_RADIO)
 RF24Network::RF24Network( RF24& _radio ): radio(_radio), next_frame(frame_queue) 
@@ -60,6 +61,7 @@ RF24Network::RF24Network( RF24& _radio ): radio(_radio), next_frame(frame_queue)
   frag_queue.message_buffer=&frag_queue_message_buffer[0];
   frag_ptr = &frag_queue;
   #endif
+  txTime=0; networkFlags=0; returnSysMsgs=0; multicastRelay=0;
 }
 #else
 RF24Network::RF24Network( RF24& _radio, RF24& _radio1 ): radio(_radio), radio1(_radio1), next_frame(frame_queue)
@@ -68,6 +70,7 @@ RF24Network::RF24Network( RF24& _radio, RF24& _radio1 ): radio(_radio), radio1(_
   frag_queue.message_buffer=&frag_queue_message_buffer[0];
   frag_ptr = &frag_queue;
   #endif
+  txTime=0; networkFlags=0; returnSysMsgs=0; multicastRelay=0;
 }
 #endif
 /******************************************************************/
