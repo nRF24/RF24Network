@@ -57,6 +57,7 @@ bool is_valid_address( uint16_t node );
   RF24Network::RF24Network( RF24& _radio, RF24& _radio1 ): radio(_radio), radio1(_radio1),frame_size(MAX_FRAME_SIZE)
   #endif
 {
+  txTime=0; networkFlags=0; returnSysMsgs=0; multicastRelay=0;
 }
 #elif !defined (DUAL_HEAD_RADIO)
 RF24Network::RF24Network( RF24& _radio ): radio(_radio), next_frame(frame_queue) 
@@ -65,6 +66,7 @@ RF24Network::RF24Network( RF24& _radio ): radio(_radio), next_frame(frame_queue)
   frag_queue.message_buffer=&frag_queue_message_buffer[0];
   frag_ptr = &frag_queue;
   #endif
+  txTime=0; networkFlags=0; returnSysMsgs=0; multicastRelay=0;
 }
 #else
 RF24Network::RF24Network( RF24& _radio, RF24& _radio1 ): radio(_radio), radio1(_radio1), next_frame(frame_queue)
@@ -73,6 +75,7 @@ RF24Network::RF24Network( RF24& _radio, RF24& _radio1 ): radio(_radio), radio1(_
   frag_queue.message_buffer=&frag_queue_message_buffer[0];
   frag_ptr = &frag_queue;
   #endif
+  txTime=0; networkFlags=0; returnSysMsgs=0; multicastRelay=0;
 }
 #endif
 /******************************************************************/
@@ -520,6 +523,11 @@ IF_SERIAL_DEBUG_FRAGMENTATION_L2(for(int i=0; i< frag_queue.message_size;i++){ S
           memcpy(next_frame,&frag_queue,10);
           memcpy(next_frame+10,frag_queue.message_buffer,frag_queue.message_size);
           next_frame += (10+frag_queue.message_size);
+          #if !defined(ARDUINO_ARCH_AVR)
+          if(uint8_t padding = (frag_queue.message_size+10)%4){
+            next_frame += 4 - padding;
+          }
+          #endif
           IF_SERIAL_DEBUG_FRAGMENTATION( printf_P(PSTR("enq size %d\n"),frag_queue.message_size); );
 		  return true;
 		}else{
@@ -556,10 +564,11 @@ IF_SERIAL_DEBUG_FRAGMENTATION_L2(for(int i=0; i< frag_queue.message_size;i++){ S
 	//IF_SERIAL_DEBUG_FRAGMENTATION( for(int i=0; i<message_size;i++){ Serial.print(next_frame[i],HEX); Serial.print(" : "); } Serial.println(""); );
     
 	next_frame += (message_size + 10);
+    #if !defined(ARDUINO_ARCH_AVR)
     if(uint8_t padding = (message_size+10)%4){
       next_frame += 4 - padding;
     }
-    
+    #endif
   //IF_SERIAL_DEBUG_FRAGMENTATION( Serial.print("Enq "); Serial.println(next_frame-frame_queue); );//printf_P(PSTR("enq %d\n"),next_frame-frame_queue); );
   
     result = true;
@@ -660,10 +669,11 @@ uint16_t RF24Network::read(RF24NetworkHeader& header,void* message, uint16_t max
     }
 	memmove(frame_queue,frame_queue+bufsize+10,sizeof(frame_queue)- bufsize);
 	next_frame-=bufsize+10;
+    #if !defined(ARDUINO_ARCH_AVR)
     if(uint8_t padding = (bufsize+10)%4){
       next_frame -= 4 - padding;
     }
-
+    #endif
 	//IF_SERIAL_DEBUG(printf_P(PSTR("%lu: NET Received %s\n\r"),millis(),header.toString()));
   }
 #endif
