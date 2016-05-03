@@ -32,10 +32,8 @@
   #include <queue>
   
 //ATXMega
-#elif defined(__AVR_ATxmega256D3__)
-  #define XMEGA_D3
+#elif defined(XMEGA_D3)
   #include "../../rf24lib/rf24lib/RF24.h"
-  //#include "../RF24/RF24.h"
 #endif
 
 

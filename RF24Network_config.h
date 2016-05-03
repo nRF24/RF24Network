@@ -78,10 +78,7 @@
     #include <RF24/RF24_config.h>
 	
 //ATXMega
-#elif defined(__AVR_ATxmega256D3__)
-	#define XMEGA_D3
-	//#include "../RF24/RF24_config.h"
-	//#include "F:\Programming\uC_Programming\HomeAutomation\rf24lib\rf24lib\RF24_config.h"
+#elif defined(XMEGA)
 	#include "../../rf24lib/rf24lib/RF24_config.h"
 #else
     #include <RF24_config.h>
