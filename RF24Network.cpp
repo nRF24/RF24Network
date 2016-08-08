@@ -1041,7 +1041,7 @@ bool RF24Network::write_to_pipe( uint16_t node, uint8_t pipe, bool multicast )
   
   radio.openWritingPipe(out_pipe);
 
-  ok = radio.writeFast(frame_buffer, frame_size,multicast);
+  ok = radio.writeFast(frame_buffer, frame_size,0);
   
   if(!(networkFlags & FLAG_FAST_FRAG)){
     ok = radio.txStandBy(txTimeout);
