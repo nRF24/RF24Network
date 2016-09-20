@@ -662,13 +662,15 @@ uint16_t RF24Network::read(RF24NetworkHeader& header,void* message, uint16_t max
 	IF_SERIAL_DEBUG( uint16_t len = maxlen; printf_P(PSTR("%lu: NET r message "),millis());const uint8_t* charPtr = reinterpret_cast<const uint8_t*>(message);while(len--){ printf("%02x ",charPtr[len]);} printf_P(PSTR("\n\r") ) );      
 	  
     }
-	memmove(frame_queue,frame_queue+bufsize+10,sizeof(frame_queue)- bufsize);
 	next_frame-=bufsize+10;
+    uint8_t padding = 0;
     #if !defined(ARDUINO_ARCH_AVR)
-    if(uint8_t padding = (bufsize+10)%4){
-      next_frame -= 4 - padding;
+    if( (padding = (bufsize+10)%4) ){
+      padding = 4-padding;
+      next_frame -= padding;
     }
     #endif
+    memmove(frame_queue,frame_queue+bufsize+10+padding,sizeof(frame_queue)- bufsize);
 	//IF_SERIAL_DEBUG(printf_P(PSTR("%lu: NET Received %s\n\r"),millis(),header.toString()));
   }
 #endif
