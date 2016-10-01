@@ -622,7 +622,7 @@ public:
    * @param interruptPin: The interrupt number to use (0,1) for pins two and three on Uno,Nano. More available on Mega etc.
    * @return True if sleepNode completed normally, after the specified number of cycles. False if sleep was interrupted
    */
- bool sleepNode( unsigned int cycles, int interruptPin );
+ bool sleepNode( unsigned int cycles, int interruptPin, int INTERRUPT_MODE=0); //added interrupt mode support (default 0=LOW)
 
 
   /**
