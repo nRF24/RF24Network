@@ -361,7 +361,7 @@ bool RF24Network::appendFragmentToFrame(RF24NetworkFrame frame) {
 	      return false;
 		}
 	  }
-	  if(frame.header.reserved > (MAX_PAYLOAD_SIZE /24) + 1 ){
+	  if(frame.header.reserved > (uint16_t(MAX_PAYLOAD_SIZE) / max_frame_payload_size) ){
 		IF_SERIAL_DEBUG_FRAGMENTATION( printf("%u FRG Too many fragments in payload %u, dropping...",millis(),frame.header.reserved); );
 		// If there are more fragments than we can possibly handle, return
 		return false;
@@ -444,7 +444,7 @@ uint8_t RF24Network::enqueue(RF24NetworkHeader* header)
 
 	if(header->type == NETWORK_FIRST_FRAGMENT){
 	    // Drop frames exceeding max size and duplicates (MAX_PAYLOAD_SIZE needs to be divisible by 24)
-	    if(header->reserved > (MAX_PAYLOAD_SIZE / max_frame_payload_size) ){
+        if(header->reserved > (uint16_t(MAX_PAYLOAD_SIZE) / max_frame_payload_size) ){
 
   #if defined (SERIAL_DEBUG_FRAGMENTATION) || defined (SERIAL_DEBUG_MINIMAL)
 			printf_P(PSTR("Frag frame with %d frags exceeds MAX_PAYLOAD_SIZE or out of sequence\n"),header->reserved);
