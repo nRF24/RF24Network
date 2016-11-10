@@ -1168,7 +1168,7 @@ uint16_t RF24Network::addressOfPipe( uint16_t node, uint8_t pipeNo )
 uint16_t RF24Network::direct_child_route_to( uint16_t node )
 {
   // Presumes that this is in fact a child!!
-  uint16_t child_mask = ( node_mask << 3 ) | 0B111;
+  uint16_t child_mask = ( node_mask << 3 ) | 0x07;
   return node & child_mask;
   
 }
@@ -1197,7 +1197,7 @@ bool RF24Network::is_valid_address( uint16_t node )
 
   while(node)
   {
-    uint8_t digit = node & 0B111;
+    uint8_t digit = node & 0x07;
 	#if !defined (RF24NetworkMulticast)
     if (digit < 1 || digit > 5)
 	#else
