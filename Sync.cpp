@@ -9,13 +9,20 @@
 // STL headers
 // C headers
 #include <stdlib.h>
-// Framework headers
-// Library headers
-#include <RF24Network.h>
-// Project headers
-// This component's header
-#include <Sync.h>
 
+#if defined(__AVR_ATxmega64D3__) || defined(__AVR_ATxmega128D3__) || defined(__AVR_ATxmega192D3__) || defined(__AVR_ATxmega256D3__) || defined(__AVR_ATxmega384D3__) /* Could not find the previous definition so it is redefined here */
+	#define XMEGA
+	#define XMEGA_D3
+	#include "RF24Network.h"
+	#include "Sync.h"
+#else
+	// Framework headers
+	// Library headers
+	#include <RF24Network.h>
+	// Project headers
+	// This component's header
+	#include <Sync.h>
+#endif
 /****************************************************************************/
 
 void Sync::update(void)

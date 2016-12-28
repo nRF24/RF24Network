@@ -31,6 +31,9 @@
   #include <utility>      // std::pair
   #include <queue>
   
+//ATXMega
+#elif defined(XMEGA_D3)
+  #include "../../rf24lib/rf24lib/RF24.h"
 #endif
 
 

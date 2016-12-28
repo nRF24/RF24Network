@@ -157,7 +157,7 @@ uint8_t RF24Network::update(void)
   
   while ( radio.isValid() && radio.available(&pipe_num) ){
 
-    #if defined (ENABLE_DYNAMIC_PAYLOADS)
+    #if defined (ENABLE_DYNAMIC_PAYLOADS) && !defined (XMEGA_D3)
       if( (frame_size = radio.getDynamicPayloadSize() ) < sizeof(RF24NetworkHeader)){
 	    delay(10);
 		continue;
