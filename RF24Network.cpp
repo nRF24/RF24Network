@@ -1294,7 +1294,7 @@ ISR(WDT_vect){
 }
 
 
-bool RF24Network::sleepNode( unsigned int cycles, int interruptPin, int INTERRUPT_MODE){
+bool RF24Network::sleepNode( unsigned int cycles, int interruptPin, uint8_t INTERRUPT_MODE){
 
 
   sleep_cycles_remaining = cycles;
@@ -1302,10 +1302,12 @@ bool RF24Network::sleepNode( unsigned int cycles, int interruptPin, int INTERRUP
   sleep_enable();
   if(interruptPin != 255){
     wasInterrupted = false; //Reset Flag
-  	if(INTERRUPT_MODE==0) attachInterrupt(interruptPin,wakeUp, LOW);
-	if(INTERRUPT_MODE==1) attachInterrupt(interruptPin,wakeUp, RISING);
-	if(INTERRUPT_MODE==2) attachInterrupt(interruptPin,wakeUp, FALLING);
-	if(INTERRUPT_MODE==3) attachInterrupt(interruptPin,wakeUp, CHANGE);
+	//LOW,CHANGE, FALLING, RISING correspond with the values 0,1,2,3 respectively
+	attachInterrupt(interruptPin,wakeUp, INTERRUPT_MODE);
+  	//if(INTERRUPT_MODE==0) attachInterrupt(interruptPin,wakeUp, LOW);
+	//if(INTERRUPT_MODE==1) attachInterrupt(interruptPin,wakeUp, RISING);
+	//if(INTERRUPT_MODE==2) attachInterrupt(interruptPin,wakeUp, FALLING);
+	//if(INTERRUPT_MODE==3) attachInterrupt(interruptPin,wakeUp, CHANGE);
   }    
 
   #if defined(__AVR_ATtiny25__) || defined(__AVR_ATtiny45__) || defined(__AVR_ATtiny85__)
