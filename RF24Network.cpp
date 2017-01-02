@@ -26,7 +26,11 @@
   #include "RF24Network.h"
 #endif
 
-#if defined (ENABLE_SLEEP_MODE) && !defined (RF24_LINUX) && !defined (__ARDUINO_X86__)
+#if defined(ENABLE_SLEEP_MODE) && defined(ESP8266)
+	#undef ENABEL_SLEEP_MODE
+#end
+
+#if defined (ENABLE_SLEEP_MODE) && !defined (RF24_LINUX) && !defined (__ARDUINO_X86__) 
 	#include <avr/sleep.h>
 	#include <avr/power.h>
 	volatile byte sleep_cycles_remaining;
@@ -1295,8 +1299,6 @@ ISR(WDT_vect){
 
 
 bool RF24Network::sleepNode( unsigned int cycles, int interruptPin, uint8_t INTERRUPT_MODE){
-
-
   sleep_cycles_remaining = cycles;
   set_sleep_mode(SLEEP_MODE_PWR_DOWN); // sleep mode is set here
   sleep_enable();
@@ -1327,7 +1329,6 @@ bool RF24Network::sleepNode( unsigned int cycles, int interruptPin, uint8_t INTE
   #else
 	WDTCSR &= ~_BV(WDIE);
   #endif
-  
   return !wasInterrupted;
 }
 
