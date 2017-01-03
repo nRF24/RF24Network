@@ -28,7 +28,7 @@
 
 #if defined(ENABLE_SLEEP_MODE) && defined(ESP8266)
 	#undef ENABEL_SLEEP_MODE
-#end
+#endif
 
 #if defined (ENABLE_SLEEP_MODE) && !defined (RF24_LINUX) && !defined (__ARDUINO_X86__) 
 	#include <avr/sleep.h>
