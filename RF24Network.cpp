@@ -27,7 +27,7 @@
 #endif
 
 #if defined(ENABLE_SLEEP_MODE) && defined(ESP8266)
-	#undef ENABEL_SLEEP_MODE
+	#undef ENABLE_SLEEP_MODE
 #endif
 
 #if defined (ENABLE_SLEEP_MODE) && !defined (RF24_LINUX) && !defined (__ARDUINO_X86__) 
