@@ -625,6 +625,27 @@ uint16_t RF24Network::peek(RF24NetworkHeader& header)
 
 /******************************************************************/
 
+void RF24Network::peek(RF24NetworkHeader& header, void* message, uint16_t maxlen)
+{
+
+#if defined (RF24_LINUX)
+  if ( available() ) { // TODO: Untested
+    RF24NetworkFrame frame = frame_queue.front();
+    memcpy(&header, &(frame.header), sizeof(RF24NetworkHeader));
+    memcpy(message, frame.message_buffer, maxlen);
+  }
+#else
+  if(available()) {
+    memcpy(&header, frame_queue, 8); //Copy the header
+    if(maxlen > 0) {
+      memcpy(message, frame_queue + 10, maxlen); //Copy the message
+    }
+  }
+#endif
+}
+
+/******************************************************************/
+
 uint16_t RF24Network::read(RF24NetworkHeader& header,void* message, uint16_t maxlen)
 {
   uint16_t bufsize = 0;
