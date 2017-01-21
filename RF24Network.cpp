@@ -27,6 +27,7 @@
 #endif
 
 #if defined(ENABLE_SLEEP_MODE) && defined(ESP8266)
+        #warning "Disabling sleep mode because sleep doesn't work on ESP8266"
 	#undef ENABLE_SLEEP_MODE
 #endif
 
