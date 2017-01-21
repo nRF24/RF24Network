@@ -599,10 +599,6 @@ uint16_t RF24Network::parent() const
 }
 
 /******************************************************************/
-/*uint8_t RF24Network::peekData(){
-		
-		return frame_queue[0];
-}*/
 
 uint16_t RF24Network::peek(RF24NetworkHeader& header)
 {
