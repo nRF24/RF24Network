@@ -202,7 +202,7 @@ uint8_t RF24Network::update(void)
 			   continue;
 			}
 		    if(header->type == NETWORK_ADDR_RESPONSE ){	
-			    uint16_t requester = 04444;
+			    uint16_t requester = NETWORK_DEFAULT_ADDRESS;
 				if(requester != node_address){
 					header->to_node = requester;
 					write(header->to_node,USER_TX_TO_PHYSICAL_ADDRESS);
@@ -242,7 +242,7 @@ uint8_t RF24Network::update(void)
 			
 
 				if(header->type == NETWORK_POLL  ){
-                    if( !(networkFlags & FLAG_NO_POLL) && node_address != 04444 ){
+                    if( !(networkFlags & FLAG_NO_POLL) && node_address != NETWORK_DEFAULT_ADDRESS ){
 					  header->to_node = header->from_node;
 					  header->from_node = node_address;			
 					  delay(parent_pipe);
