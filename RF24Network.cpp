@@ -254,6 +254,11 @@ uint8_t RF24Network::update(void)
 				
 				if(multicastRelay){					
 					IF_SERIAL_DEBUG_ROUTING( printf_P(PSTR("%u MAC: FWD multicast frame from 0%o to level %u\n"),millis(),header->from_node,multicast_level+1); );
+					if ((node_address >> 3) != 0) {
+					  // for all but the first level of nodes, those not directly connected to the master, we add the total delay per level
+					  delayMicroseconds(700*4);
+					}
+					delayMicroseconds((node_address % 4)*700);
 					write(levelToAddress(multicast_level)<<3,4);
 				}
 				if( val == 2 ){ //External data received			
