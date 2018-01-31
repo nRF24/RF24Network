@@ -1153,11 +1153,11 @@ void RF24Network::setup_address(void)
   }
   parent_pipe = i;
 
-//  IF_SERIAL_DEBUG_MINIMAL( printf_P(PSTR("setup_address node=0%o mask=0%o parent=0%o pipe=0%o\n\r"),node_address,node_mask,parent_node,parent_pipe););
-  IF_SERIAL_DEBUG_MINIMAL(Serial.print(F("setup_address node=")));
-  IF_SERIAL_DEBUG_MINIMAL(Serial.print(node_address,OCT));
-  IF_SERIAL_DEBUG_MINIMAL(Serial.print(F(" parent=")));
-  IF_SERIAL_DEBUG_MINIMAL(Serial.println(parent_node,OCT));
+  IF_SERIAL_DEBUG_MINIMAL( printf_P(PSTR("setup_address node=0%o mask=0%o parent=0%o pipe=0%o\n\r"),node_address,node_mask,parent_node,parent_pipe););
+//  IF_SERIAL_DEBUG_MINIMAL(Serial.print(F("setup_address node=")));
+//  IF_SERIAL_DEBUG_MINIMAL(Serial.print(node_address,OCT));
+//  IF_SERIAL_DEBUG_MINIMAL(Serial.print(F(" parent=")));
+//  IF_SERIAL_DEBUG_MINIMAL(Serial.println(parent_node,OCT));
 
 }
 
