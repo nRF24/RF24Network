@@ -256,9 +256,9 @@ uint8_t RF24Network::update(void)
 					IF_SERIAL_DEBUG_ROUTING( printf_P(PSTR("%u MAC: FWD multicast frame from 0%o to level %u\n"),millis(),header->from_node,multicast_level+1); );
 					if ((node_address >> 3) != 0) {
 					  // for all but the first level of nodes, those not directly connected to the master, we add the total delay per level
-					  delayMicroseconds(700*4);
+					  delayMicroseconds(600*4);
 					}
-					delayMicroseconds((node_address % 4)*700);
+					delayMicroseconds((node_address % 4)*600);
 					write(levelToAddress(multicast_level)<<3,4);
 				}
 				if( val == 2 ){ //External data received			
@@ -1153,7 +1153,11 @@ void RF24Network::setup_address(void)
   }
   parent_pipe = i;
 
-  IF_SERIAL_DEBUG_MINIMAL( printf_P(PSTR("setup_address node=0%o mask=0%o parent=0%o pipe=0%o\n\r"),node_address,node_mask,parent_node,parent_pipe););
+//  IF_SERIAL_DEBUG_MINIMAL( printf_P(PSTR("setup_address node=0%o mask=0%o parent=0%o pipe=0%o\n\r"),node_address,node_mask,parent_node,parent_pipe););
+  IF_SERIAL_DEBUG_MINIMAL(Serial.print(F("setup_address node=")));
+  IF_SERIAL_DEBUG_MINIMAL(Serial.print(node_address,OCT));
+  IF_SERIAL_DEBUG_MINIMAL(Serial.print(F(" parent=")));
+  IF_SERIAL_DEBUG_MINIMAL(Serial.println(parent_node,OCT));
 
 }
 
