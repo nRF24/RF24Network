@@ -432,6 +432,19 @@ public:
   uint16_t peek(RF24NetworkHeader& header);
 
   /**
+   * Read the next available payload
+   *
+   * Reads the next available payload without advancing to the next
+   * incoming message.  Useful for doing a transparent packet 
+   * manipulation layer on top of RF24Network.
+   *
+   * @param[out] header The header (envelope) of this message
+   * @param[out] message Pointer to memory where the message should be placed
+   * @param maxlen Amount of bytes to copy to message.
+   */
+  void peek(RF24NetworkHeader& header, void* message, uint16_t maxlen);
+
+  /**
    * Read a message
    *
    * @code

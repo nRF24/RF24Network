@@ -604,14 +604,10 @@ uint16_t RF24Network::parent() const
 }
 
 /******************************************************************/
-/*uint8_t RF24Network::peekData(){
-		
-		return frame_queue[0];
-}*/
 
 uint16_t RF24Network::peek(RF24NetworkHeader& header)
 {
-  if ( available() )
+  if (available())
   {
   #if defined (RF24_LINUX)
     RF24NetworkFrame frame = frame_queue.front();
@@ -630,12 +626,36 @@ uint16_t RF24Network::peek(RF24NetworkHeader& header)
 
 /******************************************************************/
 
+void RF24Network::peek(RF24NetworkHeader& header, void* message, uint16_t maxlen)
+{
+#if defined (RF24_LINUX)
+  if (available()) 
+  { // TODO: Untested
+    RF24NetworkFrame frame = frame_queue.front();
+    memcpy(&header, &(frame.header), sizeof(RF24NetworkHeader));
+    memcpy(message, frame.message_buffer, maxlen);
+  }
+#else
+  if(available()) 
+  {
+    memcpy(&header, frame_queue, 8); //Copy the header
+    if(maxlen > 0) 
+    {
+      memcpy(message, frame_queue + 10, maxlen); //Copy the message
+    }
+  }
+#endif
+}
+
+/******************************************************************/
+
 uint16_t RF24Network::read(RF24NetworkHeader& header,void* message, uint16_t maxlen)
 {
   uint16_t bufsize = 0;
 
  #if defined (RF24_LINUX)
-   if ( available() ) {
+   if (available())
+   {
     RF24NetworkFrame frame = frame_queue.front();
 
     // How much buffer size should we actually copy?
@@ -651,7 +671,7 @@ uint16_t RF24Network::read(RF24NetworkHeader& header,void* message, uint16_t max
     frame_queue.pop();
   }
 #else  
-  if ( available() )
+  if (available())
   {
     
 	memcpy(&header,frame_queue,8);
