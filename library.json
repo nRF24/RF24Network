@@ -3,6 +3,7 @@
   "version": "1.0.8",
   "keywords": "rf, radio, wireless, spi",
   "description": "Optimized Network Layer for nRF24L01(+) Radios",
+  "license": "GPL-2.0-only",
   "repository":
   {
     "type": "git",
