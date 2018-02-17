@@ -9,7 +9,7 @@
     "type": "git",
     "url": "https://github.com/TMRh20/RF24Network.git"
   },
-  "dependencies": { "name": "RF24", "authors": "TMRh20", "frameworks": "arduino" },
+  "dependencies": { "name": "RF24", "authors": "RF24", "frameworks": "arduino" },
   "exclude": [
     "examples/*",
     "examples_RPi/*",
