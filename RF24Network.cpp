@@ -193,7 +193,7 @@ uint8_t RF24Network::update(void)
 		continue;
 	  }
 	  
-	  uint8_t returnVal = header->type;
+      returnVal = header->type;
 
 	  // Is this for us?
       if ( header->to_node == node_address   ){
