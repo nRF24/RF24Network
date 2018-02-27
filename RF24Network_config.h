@@ -7,8 +7,11 @@
  version 2 as published by the Free Software Foundation.
  */
 
+
 #ifndef __RF24NETWORK_CONFIG_H__
 #define __RF24NETWORK_CONFIG_H__
+
+#define NETWORK_DEFAULT_ADDRESS 04444
 
   #if !defined(__AVR_ATtiny85__) && !defined(__AVR_ATtiny84__)
 
