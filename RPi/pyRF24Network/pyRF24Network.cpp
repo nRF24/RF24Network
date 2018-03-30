@@ -100,7 +100,7 @@ BOOST_PYTHON_MODULE(RF24Network){
         }
         { //::RF24Network::peek
         
-            typedef void ( ::RF24Network::*peek_function_type )( ::RF24NetworkHeader & ) ;
+            typedef uint16_t ( ::RF24Network::*peek_function_type )( ::RF24NetworkHeader & ) ;
             
             RF24Network_exposer.def( 
                 "peek"
