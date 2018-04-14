@@ -108,6 +108,16 @@ BOOST_PYTHON_MODULE(RF24Network){
                 , ( bp::arg("header") ) );
         
         }
+        { //::RF24Network::peek
+
+            typedef bp::tuple ( *peek_function_type )( ::RF24Network& , size_t) ;
+
+            RF24Network_exposer.def(
+                "peek"
+                , peek_function_type( &read_wrap )
+                , (bp::arg("maxlen") ) );
+
+        }
         { //::RF24Network::read
         
             typedef bp::tuple ( *read_function_type )(::RF24Network&, size_t ) ;
