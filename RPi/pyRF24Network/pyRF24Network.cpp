@@ -61,7 +61,10 @@ std::string toString_wrap(RF24NetworkHeader& ref)
 	return std::string(ref.toString());
 }
 
-
+BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(
+    peekvoid, RF24Network::peek, 1, 3)
+BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(
+    peekint, RF24Network::peek, 1, 2)
 // **************** RF24Network exposed  *****************
 //
 BOOST_PYTHON_MODULE(RF24Network){
@@ -99,22 +102,22 @@ BOOST_PYTHON_MODULE(RF24Network){
         
         }
         { //::RF24Network::peek
-        
-            typedef uint16_t ( ::RF24Network::*peek_function_type )( ::RF24NetworkHeader & ) ;
-            
-            RF24Network_exposer.def( 
+
+            typedef uint16_t ( ::RF24Network::*peekint )( ::RF24NetworkHeader & ) ;
+
+            RF24Network_exposer.def(
                 "peek"
-                , peek_function_type( &::RF24Network::peek )
+                , peekint( &::RF24Network::peek )
                 , ( bp::arg("header") ) );
         
         }
         { //::RF24Network::peek
 
-            typedef bp::tuple ( *peek_function_type )( ::RF24Network& , size_t) ;
+            typedef bp::tuple ( *peekvoid )( ::RF24Network& , size_t) ;
 
             RF24Network_exposer.def(
                 "peek"
-                , peek_function_type( &read_wrap )
+                , peekvoid( &read_wrap )
                 , (bp::arg("maxlen") ) );
 
         }
