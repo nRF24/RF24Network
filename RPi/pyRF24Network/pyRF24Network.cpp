@@ -47,7 +47,19 @@ bp::tuple read_wrap(RF24Network& ref, size_t maxlen)
 	uint16_t len = ref.read(header, buf, maxlen);
     bp::object py_ba(bp::handle<>(PyByteArray_FromStringAndSize(buf, len)));
     delete[] buf;
-	
+
+	return bp::make_tuple(header, py_ba);
+}
+
+bp::tuple peek_read_wrap(RF24Network& ref, size_t maxlen)
+{
+	char *buf = new char[maxlen+1];
+	RF24NetworkHeader header;
+
+	ref.peek(header, buf, maxlen);
+    bp::object py_ba(bp::handle<>(PyByteArray_FromStringAndSize(buf, len)));
+    delete[] buf;
+
 	return bp::make_tuple(header, py_ba);
 }
 
@@ -117,7 +129,7 @@ BOOST_PYTHON_MODULE(RF24Network){
 
             RF24Network_exposer.def(
                 "peek"
-                , peekvoid( &read_wrap )
+                , peekvoid( &peek_read_wrap )
                 , (bp::arg("maxlen") ) );
 
         }
