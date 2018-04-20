@@ -57,6 +57,7 @@ bp::tuple peek_read_wrap(RF24Network& ref, size_t maxlen)
 	RF24NetworkHeader header;
 
 	ref.peek(header, buf, maxlen);
+    uint16_t len = ref.peek(header);
     bp::object py_ba(bp::handle<>(PyByteArray_FromStringAndSize(buf, len)));
     delete[] buf;
 
