@@ -126,7 +126,7 @@ BOOST_PYTHON_MODULE(RF24Network){
         }
         { //::RF24Network::peek
 
-            typedef void ( *peekvoid )( ::RF24Network& , size_t) ;
+            typedef bp::tuple ( *peekvoid )( ::RF24Network& , size_t) ;
 
             RF24Network_exposer.def(
                 "peek"
