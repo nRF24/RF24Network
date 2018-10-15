@@ -47,7 +47,20 @@ bp::tuple read_wrap(RF24Network& ref, size_t maxlen)
 	uint16_t len = ref.read(header, buf, maxlen);
     bp::object py_ba(bp::handle<>(PyByteArray_FromStringAndSize(buf, len)));
     delete[] buf;
-	
+
+	return bp::make_tuple(header, py_ba);
+}
+
+bp::tuple peek_read_wrap(RF24Network& ref, size_t maxlen)
+{
+	char *buf = new char[maxlen+1];
+	RF24NetworkHeader header;
+
+	ref.peek(header, buf, maxlen);
+    uint16_t len = ref.peek(header);
+    bp::object py_ba(bp::handle<>(PyByteArray_FromStringAndSize(buf, len)));
+    delete[] buf;
+
 	return bp::make_tuple(header, py_ba);
 }
 
@@ -61,7 +74,10 @@ std::string toString_wrap(RF24NetworkHeader& ref)
 	return std::string(ref.toString());
 }
 
-
+BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(
+    peekvoid, RF24Network::peek, 1, 3)
+BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(
+    peekint, RF24Network::peek, 1, 2)
 // **************** RF24Network exposed  *****************
 //
 BOOST_PYTHON_MODULE(RF24Network){
@@ -99,14 +115,24 @@ BOOST_PYTHON_MODULE(RF24Network){
         
         }
         { //::RF24Network::peek
-        
-            typedef void ( ::RF24Network::*peek_function_type )( ::RF24NetworkHeader & ) ;
-            
-            RF24Network_exposer.def( 
+
+            typedef uint16_t ( ::RF24Network::*peekint )( ::RF24NetworkHeader & ) ;
+
+            RF24Network_exposer.def(
                 "peek"
-                , peek_function_type( &::RF24Network::peek )
+                , peekint( &::RF24Network::peek )
                 , ( bp::arg("header") ) );
         
+        }
+        { //::RF24Network::peek
+
+            typedef bp::tuple ( *peekvoid )( ::RF24Network& , size_t) ;
+
+            RF24Network_exposer.def(
+                "peek"
+                , peekvoid( &peek_read_wrap )
+                , (bp::arg("maxlen") ) );
+
         }
         { //::RF24Network::read
         
