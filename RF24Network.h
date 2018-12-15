@@ -955,7 +955,6 @@ public:
  * @li <b>New</b> (2014): Extended timeouts and staggered timeout intervals. The new txTimeout variable allows fully automated extended timeout periods via auto-retry/auto-reUse of payloads.
  * @li <b>New</b> (2014): Optimization to the core library provides improvements to reliability, speed and efficiency. See https://tmrh20.github.io/RF24 for more info.
  * @li <b>New</b> (2014): Built in sleep mode using interrupts. (Still under development. (Enable via RF24Network_config.h))
-  * @li <b>New</b> (2014): Dual headed operation: The use of dual radios for busy routing nodes or the master node enhances throughput and decreases errors. See the <a href="Tuning.html">Tuning</a> section.
  * @li Host Addressing.  Each node has a logical address on the local network.
  * @li Message Forwarding.  Messages can be sent from one node to any other, and
  * this layer will get them there no matter how many hops it takes.
@@ -1000,7 +999,7 @@ public:
  * @li Nodes 01-05 are nodes whose parent is the base.
  * @li Node 021 is the second child of node 01.
  * @li Node 0321 is the third child of node 021, an so on.
- * @li The largest node address is 05555, so 3,125 nodes are allowed on a single channel.
+ * @li The largest node address is 05555, so up to 781 nodes are allowed on a single channel.
  * An example topology is shown below, with 5 nodes in direct communication with the master node,
  * and multiple leaf nodes spread out at a distance, using intermediate nodes to reach other nodes.
  *
@@ -1110,7 +1109,6 @@ public:
  * | <b> #define NUM_USER_PAYLOADS 5 </b> | This is the number of 24-byte payloads the network layer will cache for the user. If using fragmentation, this number * 24 must be larger than MAX_PAYLOAD_SIZE |
  * | <b> #define DISABLE_USER_PAYLOADS </b> | This option will disable user-caching of payloads entirely. Use with RF24Ethernet to reduce memory usage. (TCP/IP is an external data type, and not cached) |
  * | <b> #define ENABLE_SLEEP_MODE </b> | Uncomment this option to enable sleep mode for AVR devices. (ATTiny,Uno, etc) |
- * | <b> #define DUAL_HEAD_RADIO </b> | Uncomment this option to enable use of dual radios |
  * | **#define ENABLE_NETWORK_STATS** | Enable counting of all successful or failed transmissions, routed or sent directly |
  *
  ** @page Tuning Performance and Data Loss: Tuning the Network
@@ -1213,7 +1211,7 @@ public:
  * The txTimeout variable is used to extend the retry count to a defined duration in milliseconds. See the
  * network.txTimeout variable. Timeout periods of extended duration (500+) will generally not help when payloads
  * are failing due to data collisions, it will only extend the duration of the errors. Extended duration timeouts
- * should generally only be configured on leaf nodes that do not receive data, or on a dual-headed node.
+ * should generally only be configured on leaf nodes that do not receive data.
  *
  * @section Examples
  *
@@ -1247,31 +1245,6 @@ public:
  * @endcode
  * c: First and third leaf nodes configured with default timeout periods or slightly increased timout periods.
  *
- * @section DualHead Dual Headed Operation
- *
- * The library now supports a dual radio configuration to further enhance network performance, while reducing errors on
- * busy networks. Master nodes or relay nodes with a large number of child nodes can benefit somewhat from a dual headed
- * configuration, since one radio is used for receiving, and the other entirely for transmission.
- *
- * To configure a dual headed node:
- * 1. Edit the RF24Network_config.h file, and uncomment #define DUAL_HEAD_RADIO
- * 2. Connect another radio, using the same MOSI, MISO, and SCK lines.
- * 3. Choose another two pins to use for CE and CS on the second radio. Connect them.
- * 4. Setup the radio and network like so:
- *
- * @code
- * 	RF24 radio(7,8);  			// Using CE (7) and CS (8) for first radio
- * 	RF24 radio1(4,5); 			// Using CE (4) and CS (5) for second radio
- * 	RF24Network network(radio,radio1);	// Set up the network using both radios
- *
- *  Then in setup(), call radio.begin(); and radio1.begin(); before network.begin();
- * @endcode
- *
- * 5. Upload to MCU. The node will now use the first radio to receive data, and radio1 to transmit, preventing data loss on a busy network.
- * 6. Re-comment the #define in the config file as required if configuring other single-headed radios.
- *
- *
- * Any node can be configured in dual-head mode.
  *
  *
  *
