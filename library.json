@@ -1,25 +1,31 @@
 {
-  "name": "RF24Network",
-  "version": "1.0.8",
-  "keywords": "rf, radio, wireless, spi",
-  "description": "Optimized Network Layer for nRF24L01(+) Radios",
-  "license": "GPL-2.0-only",
-  "repository":
-  {
-    "type": "git",
-    "url": "https://github.com/TMRh20/RF24Network.git"
-  },
-  "dependencies": { "name": "RF24", "authors": "RF24", "frameworks": "arduino" },
-  "exclude": [
-    "examples/*",
-    "examples_RPi/*",
-    "RPi/*",
-    "tests/*"
-  ],
-  "frameworks": "arduino",
-  "platforms": [
-    "atmelavr",
-    "atmelsam",
-    "teensy"
-  ]
+	"name": "RF24Network",
+	"version": "1.0.8",
+	"keywords": "rf, radio, wireless, spi",
+	"description": "Optimized Network Layer for nRF24L01(+) Radios",
+	"license": "GPL-2.0-only",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/TMRh20/RF24Network.git"
+	},
+	"dependencies": {
+		"name": "RF24",
+		"authors": "RF24",
+		"frameworks": "arduino"
+	},
+	"exclude": [
+		"examples/*",
+		"examples_RPi/*",
+		"RPi/*",
+		"tests/*"
+	],
+	"frameworks": "arduino",
+	"platforms": [
+		"atmelavr",
+		"atmelsam",
+		"teensy"
+	],
+	"requires": [{
+		"name": "RF24"
+	}]
 }
