@@ -162,8 +162,13 @@ uint8_t RF24Network::update(void)
   
   uint32_t timeout = millis();
   
-  while ( radio.isValid() && radio.available(&pipe_num) && millis() - timeout < 1000){
-
+  while ( radio.isValid() && radio.available(&pipe_num) ){
+    if(millis() - timeout > 1000){
+        #if defined FAILURE_HANDLING
+          radio.failureDetected = 1;
+        #endif
+        break;
+    }
     #if defined (ENABLE_DYNAMIC_PAYLOADS) && !defined (XMEGA_D3)
       if( (frame_size = radio.getDynamicPayloadSize() ) < sizeof(RF24NetworkHeader)){
 	    delay(10);
