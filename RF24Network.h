@@ -880,6 +880,19 @@ public:
  */
 
 /**
+ * @example helloworld_tx_advanced.ino
+ *
+ * A more advanced version of helloworld_tx using fragmentation/reassembly
+ * and variable payload sizes
+ */
+ 
+ /**
+ * @example helloworld_rx_advanced.ino
+ * A more advanced version of helloworld_rx using fragmentation/reassembly
+ * and variable payload sizes
+ */
+
+/**
  * @example Network_Ping.ino
  *
  * Example to give users an understanding of addressing and topology in the mesh network
@@ -911,6 +924,16 @@ public:
  */
 
 /**
+ * @example Network_Priority_TX.ino
+ * An example of handling/prioritizing different types of data passing through the RF24Network
+ */
+
+/**
+ * @example Network_Priority_RX.ino
+ * An example of handling/prioritizing different types of data passing through the RF24Network
+ */
+
+/**
  * @example sensornet.pde
  *
  * Example of a sensor network.
@@ -938,23 +961,17 @@ public:
  * $6 from many sources.  With the RF24Network layer, I hope to cover many
  * common communication scenarios.
  *
- * Please see the @ref Zigbee page for a comparison against the ZigBee protocols
+ * Please see https://tmrh20.blogspot.com/2019/05/comparative-performance-analysis.html for a comparison against the ZigBee protocols
  *
  * @section Features Features
  *
- * <b>Whats new? </b><br> 
- *  @li New: (Dec 8) Merge of RPi and Arduino code. Finally moving closer to a stable release.  Report issues at https://github.com/TMRh20/RF24Network/issues
- *  @li New functionality: (Dec 8) Support for fragmented multicast payloads on both RPi and Arduino
- *  @li New functionality: (Nov 24) Fragmentation & reassembly supported on both RPi and Arduino  
- *  @li Note: structure of network frames is changed, these are only used by external applications like RF24Ethernet and RF24toTUN, and for fragmentation
- *  @li New functionality: User message types 1 through 64 will not receive a network ack
  *
  * The layer provides:
- * @li <b>New</b> (2014): Network ACKs: Efficient acknowledgement of network-wide transmissions, via dynamic radio acks and network protocol acks.
- * @li <b>New</b> (2014): Updated addressing standard for optimal radio transmission.
- * @li <b>New</b> (2014): Extended timeouts and staggered timeout intervals. The new txTimeout variable allows fully automated extended timeout periods via auto-retry/auto-reUse of payloads.
- * @li <b>New</b> (2014): Optimization to the core library provides improvements to reliability, speed and efficiency. See https://tmrh20.github.io/RF24 for more info.
- * @li <b>New</b> (2014): Built in sleep mode using interrupts. (Still under development. (Enable via RF24Network_config.h))
+ * @li Network ACKs: Efficient acknowledgement of network-wide transmissions, via dynamic radio acks and network protocol acks.
+ * @li Updated addressing standard for optimal radio transmission.
+ * @li Extended timeouts and staggered timeout intervals. The new txTimeout variable allows fully automated extended timeout periods via auto-retry/auto-reUse of payloads.
+ * @li Optimization to the core library provides improvements to reliability, speed and efficiency. See https://tmrh20.github.io/RF24 for more info.
+ * @li Built in sleep mode using interrupts. (Still under development. (Enable via RF24Network_config.h))
  * @li Host Addressing.  Each node has a logical address on the local network.
  * @li Message Forwarding.  Messages can be sent from one node to any other, and
  * this layer will get them there no matter how many hops it takes.
@@ -963,7 +980,7 @@ public:
  *
  * The layer does not provide:
  * @li Dynamic address assignment. (See RF24Mesh)
- * @li Layer 4 protocols (TCP/IP - See RF24Ethernet and RF24toTUN)
+ * @li Layer 4 protocols (TCP/IP - See RF24Ethernet and RF24Gateway)
  *
  * @section More How to learn more
  *
