@@ -75,7 +75,6 @@
 * This allows nodes to forward multicast messages to the master node, receive a response, and forward it back to the requester.
 */
 #define NETWORK_ADDR_RESPONSE 128 
-//#define NETWORK_ADDR_CONFIRM 129
 
 /**
 * Messages of type NETWORK_PING will be dropped automatically by the recipient. A NETWORK_ACK or automatic radio-ack will indicate to the sender whether the 

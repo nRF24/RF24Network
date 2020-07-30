@@ -35,10 +35,10 @@
     * ie: A payload of 24 bytes requires 1 packet send. MAX_PAYLOAD_SIZE of 24 is fine.
     * A payload of 25 requires 2 packets, so the MAX_PAYLOAD_SIZE must be 48 or higher.
      
-    * @note: Must be a multiple of 24!!!
+    * @note: Must be a multiple of 24!!! UL is to specify Unsigned Long and prevent compiler warnings
     * @note: If used with RF24Ethernet, this value is used to set the buffer sizes.
     */
-    #define MAX_PAYLOAD_SIZE  144
+    #define MAX_PAYLOAD_SIZE  144UL
     
     /** The size of the main buffer. This is the user-cache, where incoming data is stored.
      * Data is stored using Frames: Header (8-bytes) + Frame_Size (2-bytes) + Data (?-bytes)

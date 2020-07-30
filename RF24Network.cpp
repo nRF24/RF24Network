@@ -96,6 +96,7 @@ void RF24Network::begin(uint8_t _channel, uint16_t _node_address )
     radio.setChannel(_channel);
   }
   //radio.enableDynamicAck();
+  radio.setAutoAck(1);
   radio.setAutoAck(0,0);
   
   #if defined (ENABLE_DYNAMIC_PAYLOADS)
@@ -150,7 +151,7 @@ uint8_t RF24Network::update(void)
   
   #if !defined (RF24_LINUX)
   if(!(networkFlags & FLAG_BYPASS_HOLDS)){
-    if( (networkFlags & FLAG_HOLD_INCOMING) || (next_frame-frame_queue) + 34 > MAIN_BUFFER_SIZE ){
+    if( (networkFlags & FLAG_HOLD_INCOMING) || (next_frame-frame_queue) + 34 > (int16_t)MAIN_BUFFER_SIZE ){
       if(!available()){
         networkFlags &= ~FLAG_HOLD_INCOMING;
       }else{
@@ -196,7 +197,7 @@ uint8_t RF24Network::update(void)
       #endif
 	  
       // Throw it away if it's not a valid address
-      if ( !is_valid_address(header->to_node) ){
+      if ( !is_valid_address(header->to_node) || !is_valid_address(header->from_node) ){
 		continue;
 	  }
 	  
@@ -296,17 +297,16 @@ uint8_t RF24Network::enqueue(RF24NetworkHeader* header) {
   
   bool isFragment = ( frame.header.type == NETWORK_FIRST_FRAGMENT || frame.header.type == NETWORK_MORE_FRAGMENTS || frame.header.type == NETWORK_LAST_FRAGMENT || frame.header.type == NETWORK_MORE_FRAGMENTS_NACK);
   
-  
-  
   // This is sent to itself
-  if (frame.header.from_node == node_address) {    
+  if (frame.header.from_node == node_address) {
     if (isFragment) {
       printf("Cannot enqueue multi-payload frames to self\n");
       result = false;
-    }else{
-    frame_queue.push(frame);
-    result = true;
-	}
+    }else
+    if(frame.header.id > 0){
+      frame_queue.push(frame);
+      result = true;
+    }
   }else  
   if (isFragment)
   {
@@ -318,22 +318,23 @@ uint8_t RF24Network::enqueue(RF24NetworkHeader* header) {
    
     //The header.reserved contains the actual header.type on the last fragment 
     if ( result && frame.header.type == NETWORK_LAST_FRAGMENT) {
-	  IF_SERIAL_DEBUG_FRAGMENTATION(printf("%u: FRG Last fragment received. \n",millis() ););
+      IF_SERIAL_DEBUG_FRAGMENTATION(printf("%u: FRG Last fragment received. \n",millis() ););
       IF_SERIAL_DEBUG(printf_P(PSTR("%u: NET Enqueue assembled frame @%x "),millis(),frame_queue.size()));
 
-	  RF24NetworkFrame *f = &(frameFragmentsCache[ frame.header.from_node ] );
-	  
-	  
-	  result=f->header.type == EXTERNAL_DATA_TYPE ? 2 : 1;
-	  
-	  //Load external payloads into a separate queue on linux
-	  if(result == 2){
-	    external_queue.push( frameFragmentsCache[ frame.header.from_node ] );
-	  }else{
-        frame_queue.push( frameFragmentsCache[ frame.header.from_node ] );
-	  }
+      RF24NetworkFrame *f = &(frameFragmentsCache[ frame.header.from_node ] );
+
+      result=f->header.type == EXTERNAL_DATA_TYPE ? 2 : 1;
+
+      if(f->header.id > 0 && f->message_size > 0){
+      //Load external payloads into a separate queue on linux
+        if(result == 2){
+          external_queue.push( frameFragmentsCache[ frame.header.from_node ] );
+        }else{
+          frame_queue.push( frameFragmentsCache[ frame.header.from_node ] );
+        }
+      }
       frameFragmentsCache.erase( frame.header.from_node );
-	}
+    }
 
   }else{//  if (frame.header.type <= MAX_USER_DEFINED_HEADER_TYPE) {
     //This is not a fragmented payload but a whole frame.
@@ -342,12 +343,11 @@ uint8_t RF24Network::enqueue(RF24NetworkHeader* header) {
     // Copy the current frame into the frame queue
 	result=frame.header.type == EXTERNAL_DATA_TYPE ? 2 : 1;
     //Load external payloads into a separate queue on linux
-	if(result == 2){
-	  external_queue.push( frame );
-	}else{
+    if(result == 2){      
+      external_queue.push( frame );      
+    }else{
       frame_queue.push( frame );
-	}
-	
+    }	
 
   }/* else {
     //Undefined/Unknown header.type received. Drop frame!
@@ -930,8 +930,10 @@ bool RF24Network::write(uint16_t to_node, uint8_t directTo)  // Direct To: 0 = F
   IF_SERIAL_DEBUG(printf_P(PSTR("%lu: MAC Sending to 0%o via 0%o on pipe %x\n\r"),millis(),to_node,conversion.send_node,conversion.send_pipe));
   #endif
   /**Write it*/
+  if( directTo == TX_ROUTED && conversion.send_node == to_node && isAckType){
+    delay(2);
+  }
   ok=write_to_pipe(conversion.send_node, conversion.send_pipe, conversion.multicast);  	
-  
   
     if(!ok){	
     #if defined (RF24_LINUX)
