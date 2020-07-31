@@ -70,7 +70,8 @@
     //#define DUAL_HEAD_RADIO
     //#define ENABLE_SLEEP_MODE  //AVR only
     #define RF24NetworkMulticast
-    #define MAIN_BUFFER_SIZE 96 + 10
+    #define MAX_PAYLOAD_SIZE 72
+    #define MAIN_BUFFER_SIZE (MAX_PAYLOAD_SIZE + FRAME_HEADER_SIZE)
     #define DISABLE_FRAGMENTATION
     // Enable MAX PAYLOAD SIZE if enabling fragmentation
     //#define MAX_PAYLOAD_SIZE  MAIN_BUFFER_SIZE-10
