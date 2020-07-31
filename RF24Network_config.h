@@ -38,14 +38,14 @@
     * @note: Must be a multiple of 24!!! UL is to specify Unsigned Long and prevent compiler warnings
     * @note: If used with RF24Ethernet, this value is used to set the buffer sizes.
     */
-    #define MAX_PAYLOAD_SIZE  144UL
+    #define MAX_PAYLOAD_SIZE  144
     
     /** The size of the main buffer. This is the user-cache, where incoming data is stored.
      * Data is stored using Frames: Header (8-bytes) + Frame_Size (2-bytes) + Data (?-bytes)
      *
      * @note The MAX_PAYLOAD_SIZE is (MAIN_BUFFER_SIZE - 10), and the result must be divisible by 24!!!
      */
-    #define MAIN_BUFFER_SIZE MAX_PAYLOAD_SIZE + 10
+    #define MAIN_BUFFER_SIZE (MAX_PAYLOAD_SIZE + FRAME_HEADER_SIZE)
 
 
     /** Disable user payloads. Saves memory when used with RF24Ethernet or software that uses external data.*/
@@ -95,7 +95,9 @@
 #endif
 
   #if !defined (ARDUINO_ARCH_AVR)
-    #define sprintf_P sprintf    
+    #ifndef sprintf_P
+      #define sprintf_P sprintf
+    #endif    
   #endif
   
     #if defined (SERIAL_DEBUG_MINIMAL)

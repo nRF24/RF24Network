@@ -347,7 +347,7 @@ uint8_t RF24Network::enqueue(RF24NetworkHeader* header) {
       external_queue.push( frame );      
     }else{
       frame_queue.push( frame );
-    }	
+    }
 
   }/* else {
     //Undefined/Unknown header.type received. Drop frame!
@@ -531,7 +531,7 @@ IF_SERIAL_DEBUG_FRAGMENTATION_L2(for(int i=0; i< frag_queue.message_size;i++){ S
 		  return 0;
 		#endif
             
-        if(MAX_PAYLOAD_SIZE - (next_frame-frame_queue) >= frag_queue.message_size){
+        if( (uint16_t)(MAX_PAYLOAD_SIZE) - (next_frame-frame_queue) >= frag_queue.message_size){
           memcpy(next_frame,&frag_queue,10);
           memcpy(next_frame+10,frag_queue.message_buffer,frag_queue.message_size);
           next_frame += (10+frag_queue.message_size);
