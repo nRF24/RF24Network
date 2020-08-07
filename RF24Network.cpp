@@ -214,8 +214,7 @@ uint8_t RF24Network::update(void)
 			
 			if( (returnSysMsgs && header->type > 127) || header->type == NETWORK_ACK ){	
 				IF_SERIAL_DEBUG_ROUTING( printf_P(PSTR("%lu MAC: System payload rcvd %d\n"),millis(),returnVal); );
-				//if( (header->type < 148 || header->type > 150) && header->type != NETWORK_MORE_FRAGMENTS_NACK && header->type != EXTERNAL_DATA_TYPE && header->type!= NETWORK_LAST_FRAGMENT){
-				if( header->type != NETWORK_FIRST_FRAGMENT && header->type != NETWORK_MORE_FRAGMENTS && header->type != NETWORK_MORE_FRAGMENTS_NACK && header->type != EXTERNAL_DATA_TYPE && header->type!= NETWORK_LAST_FRAGMENT){
+				if( header->type != NETWORK_FIRST_FRAGMENT && header->type != NETWORK_MORE_FRAGMENTS && header->type != EXTERNAL_DATA_TYPE && header->type!= NETWORK_LAST_FRAGMENT){
 					return returnVal;
 				}
 			}
@@ -279,7 +278,7 @@ uint8_t RF24Network::enqueue(RF24NetworkHeader* header) {
   
   RF24NetworkFrame frame = RF24NetworkFrame(*header,frame_buffer+sizeof(RF24NetworkHeader),frame_size-sizeof(RF24NetworkHeader)); 
   
-  bool isFragment = ( frame.header.type == NETWORK_FIRST_FRAGMENT || frame.header.type == NETWORK_MORE_FRAGMENTS || frame.header.type == NETWORK_LAST_FRAGMENT || frame.header.type == NETWORK_MORE_FRAGMENTS_NACK);
+  bool isFragment = ( frame.header.type == NETWORK_FIRST_FRAGMENT || frame.header.type == NETWORK_MORE_FRAGMENTS || frame.header.type == NETWORK_LAST_FRAGMENT);
   
   // This is sent to itself
   if (frame.header.from_node == node_address) {
@@ -371,7 +370,7 @@ bool RF24Network::appendFragmentToFrame(RF24NetworkFrame frame) {
 	  return true;
   }else
   
-  if ( frame.header.type == NETWORK_MORE_FRAGMENTS || frame.header.type == NETWORK_MORE_FRAGMENTS_NACK ){
+  if ( frame.header.type == NETWORK_MORE_FRAGMENTS ){
 	
 	if( frameFragmentsCache.count(frame.header.from_node) < 1 ){
 	  return false;
@@ -439,38 +438,33 @@ uint8_t RF24Network::enqueue(RF24NetworkHeader* header)
   
 #if !defined ( DISABLE_FRAGMENTATION ) 
 
-  bool isFragment = header->type == NETWORK_FIRST_FRAGMENT || header->type == NETWORK_MORE_FRAGMENTS || header->type == NETWORK_LAST_FRAGMENT || header->type == NETWORK_MORE_FRAGMENTS_NACK ;
+  bool isFragment = header->type == NETWORK_FIRST_FRAGMENT || header->type == NETWORK_MORE_FRAGMENTS || header->type == NETWORK_LAST_FRAGMENT;
 
   if(isFragment){
 
-	if(header->type == NETWORK_FIRST_FRAGMENT){
-	    // Drop frames exceeding max size and duplicates (MAX_PAYLOAD_SIZE needs to be divisible by 24)
+    if(header->type == NETWORK_FIRST_FRAGMENT){
+        // Drop frames exceeding max size and duplicates (MAX_PAYLOAD_SIZE needs to be divisible by 24)
         if(header->reserved > (uint16_t(MAX_PAYLOAD_SIZE) / max_frame_payload_size) ){
 
-  #if defined (SERIAL_DEBUG_FRAGMENTATION) || defined (SERIAL_DEBUG_MINIMAL)
-			printf_P(PSTR("Frag frame with %d frags exceeds MAX_PAYLOAD_SIZE or out of sequence\n"),header->reserved);
-  #endif
-			frag_queue.header.reserved = 0;
-			return false;
-		}else
-        if(frag_queue.header.id == header->id && frag_queue.header.from_node == header->from_node){
-            return true;
-        }
+          #if defined (SERIAL_DEBUG_FRAGMENTATION) || defined (SERIAL_DEBUG_MINIMAL)
+          printf_P(PSTR("Frag frame with %d frags exceeds MAX_PAYLOAD_SIZE or out of sequence\n"),header->reserved);
+          #endif
+          frag_queue.header.reserved = 0;
+          return false;
+		}        
 		memcpy(&frag_queue,&frame_buffer,8);
 		memcpy(frag_queue.message_buffer,frame_buffer+sizeof(RF24NetworkHeader),message_size);
 		
-//IF_SERIAL_DEBUG_FRAGMENTATION( Serial.print(F("queue first, total frags ")); Serial.println(header->reserved); );
-		//Store the total size of the stored frame in message_size
-	    frag_queue.message_size = message_size;
-		--frag_queue.header.reserved;
-		  
-IF_SERIAL_DEBUG_FRAGMENTATION_L2(  for(int i=0; i<frag_queue.message_size;i++){  Serial.println(frag_queue.message_buffer[i],HEX);  } );
-		
-		return true;		
+        IF_SERIAL_DEBUG_FRAGMENTATION( Serial.print(F("queue first, total frags ")); Serial.println(header->reserved); );
+        //Store the total size of the stored frame in message_size
+        frag_queue.message_size = message_size;
+        --frag_queue.header.reserved;
+        IF_SERIAL_DEBUG_FRAGMENTATION_L2(  for(int i=0; i<frag_queue.message_size;i++){  Serial.println(frag_queue.message_buffer[i],HEX);  } );
+        return true;
 
-	}else // NETWORK_MORE_FRAGMENTS	
-	if(header->type == NETWORK_LAST_FRAGMENT || header->type == NETWORK_MORE_FRAGMENTS || header->type == NETWORK_MORE_FRAGMENTS_NACK){
-		
+    }else // NETWORK_MORE_FRAGMENTS	
+    if(header->type == NETWORK_LAST_FRAGMENT || header->type == NETWORK_MORE_FRAGMENTS){
+
         if(frag_queue.message_size + message_size > MAX_PAYLOAD_SIZE){
           #if defined (SERIAL_DEBUG_FRAGMENTATION) || defined (SERIAL_DEBUG_MINIMAL)
           Serial.print(F("Drop frag ")); Serial.print(header->reserved);          
@@ -479,36 +473,35 @@ IF_SERIAL_DEBUG_FRAGMENTATION_L2(  for(int i=0; i<frag_queue.message_size;i++){ 
           frag_queue.header.reserved=0;
           return false;
         }
-		if(  frag_queue.header.reserved == 0 || (header->type != NETWORK_LAST_FRAGMENT && header->reserved != frag_queue.header.reserved ) || frag_queue.header.id != header->id ){
-			#if defined (SERIAL_DEBUG_FRAGMENTATION) || defined (SERIAL_DEBUG_MINIMAL)
-			Serial.print(F("Drop frag ")); Serial.print(header->reserved);
-			//Serial.print(F(" header id ")); Serial.print(header->id);
-			Serial.println(F(" Out of order "));
-			#endif
-			return false;
-		}
-		
-		memcpy(frag_queue.message_buffer+frag_queue.message_size,frame_buffer+sizeof(RF24NetworkHeader),message_size);
-	    frag_queue.message_size += message_size;
-		
-		if(header->type != NETWORK_LAST_FRAGMENT){
-		  --frag_queue.header.reserved;
-		  return true;
-		}
-		frag_queue.header.reserved = 0;
+        if(  frag_queue.header.reserved == 0 || (header->type != NETWORK_LAST_FRAGMENT && header->reserved != frag_queue.header.reserved ) || frag_queue.header.id != header->id ){
+          #if defined (SERIAL_DEBUG_FRAGMENTATION) || defined (SERIAL_DEBUG_MINIMAL)
+            Serial.print(F("Drop frag ")); Serial.print(header->reserved);
+            Serial.println(F(" Out of order "));
+          #endif
+          return false;
+        }
+
+        memcpy(frag_queue.message_buffer+frag_queue.message_size,frame_buffer+sizeof(RF24NetworkHeader),message_size);
+        frag_queue.message_size += message_size;
+
+        if(header->type != NETWORK_LAST_FRAGMENT){
+          --frag_queue.header.reserved;
+          return true;
+        }
+        frag_queue.header.reserved = 0;
         frag_queue.header.type = header->reserved;
-		
-IF_SERIAL_DEBUG_FRAGMENTATION( printf_P(PSTR("fq 3: %d\n"),frag_queue.message_size); );
-IF_SERIAL_DEBUG_FRAGMENTATION_L2(for(int i=0; i< frag_queue.message_size;i++){ Serial.println(frag_queue.message_buffer[i],HEX); }  );		
-	
-		//Frame assembly complete, copy to main buffer if OK		
+
+        IF_SERIAL_DEBUG_FRAGMENTATION( printf_P(PSTR("fq 3: %d\n"),frag_queue.message_size); );
+        IF_SERIAL_DEBUG_FRAGMENTATION_L2(for(int i=0; i< frag_queue.message_size;i++){ Serial.println(frag_queue.message_buffer[i],HEX); }  );		
+
+        //Frame assembly complete, copy to main buffer if OK		
         if(frag_queue.header.type == EXTERNAL_DATA_TYPE){
-           return 2;
+          return 2;
         }
         #if defined (DISABLE_USER_PAYLOADS)
-		  return 0;
-		#endif
-            
+          return 0;
+        #endif
+        
         if( (uint16_t)(MAX_PAYLOAD_SIZE) - (next_frame-frame_queue) >= frag_queue.message_size){
           memcpy(next_frame,&frag_queue,10);
           memcpy(next_frame+10,frag_queue.message_buffer,frag_queue.message_size);
@@ -519,29 +512,27 @@ IF_SERIAL_DEBUG_FRAGMENTATION_L2(for(int i=0; i< frag_queue.message_size;i++){ S
           }
           #endif
           IF_SERIAL_DEBUG_FRAGMENTATION( printf_P(PSTR("enq size %d\n"),frag_queue.message_size); );
-		  return true;
-		}
+          return true;
+        }
         IF_SERIAL_DEBUG_FRAGMENTATION( printf_P(PSTR("Drop frag payload, queue full\n")); );
         return false;
-	}//If more or last fragments
+    }//If more or last fragments
 
   }else //else is not a fragment
- #endif // End fragmentation enabled
+#endif // End fragmentation enabled
 
   // Copy the current frame into the frame queue
-
 #if !defined( DISABLE_FRAGMENTATION )
-
-	if(header->type == EXTERNAL_DATA_TYPE){
-		memcpy(&frag_queue,&frame_buffer,8);
-		frag_queue.message_buffer = frame_buffer+sizeof(RF24NetworkHeader);
-		frag_queue.message_size = message_size;
-		return 2;
-	}
+    if(header->type == EXTERNAL_DATA_TYPE){
+      memcpy(&frag_queue,&frame_buffer,8);
+      frag_queue.message_buffer = frame_buffer+sizeof(RF24NetworkHeader);
+      frag_queue.message_size = message_size;
+      return 2;
+    }
 #endif		
 #if defined (DISABLE_USER_PAYLOADS)
-	return 0;
- }
+    return 0;
+  }
 #else
   if(message_size + (next_frame-frame_queue) <= MAIN_BUFFER_SIZE){
 	memcpy(next_frame,&frame_buffer,8);
