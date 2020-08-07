@@ -145,22 +145,6 @@ uint8_t RF24Network::update(void)
   uint8_t pipe_num;
   uint8_t returnVal = 0;
   
-  // If bypass is enabled, continue although incoming user data may be dropped
-  // Allows system payloads to be read while user cache is full
-  // Incoming Hold prevents data from being read from the radio, preventing incoming payloads from being acked
-  
-  #if !defined (RF24_LINUX)
-  if(!(networkFlags & FLAG_BYPASS_HOLDS)){
-    if( (networkFlags & FLAG_HOLD_INCOMING) || (next_frame-frame_queue) + 34 > (int16_t)MAIN_BUFFER_SIZE ){
-      if(!available()){
-        networkFlags &= ~FLAG_HOLD_INCOMING;
-      }else{
-        return 0;
-      }
-    }
-  }
-  #endif
-  
   uint32_t timeout = millis();
   
   while ( radio.isValid() && radio.available(&pipe_num) ){
@@ -472,12 +456,6 @@ uint8_t RF24Network::enqueue(RF24NetworkHeader* header)
         if(frag_queue.header.id == header->id && frag_queue.header.from_node == header->from_node){
             return true;
         }
-        
-        if( (header->reserved * 24) > (MAX_PAYLOAD_SIZE - (next_frame-frame_queue)) ){
-          networkFlags |= FLAG_HOLD_INCOMING;
-          radio.stopListening();
-        }
-  		  
 		memcpy(&frag_queue,&frame_buffer,8);
 		memcpy(frag_queue.message_buffer,frame_buffer+sizeof(RF24NetworkHeader),message_size);
 		
@@ -542,10 +520,7 @@ IF_SERIAL_DEBUG_FRAGMENTATION_L2(for(int i=0; i< frag_queue.message_size;i++){ S
           #endif
           IF_SERIAL_DEBUG_FRAGMENTATION( printf_P(PSTR("enq size %d\n"),frag_queue.message_size); );
 		  return true;
-		}else{
-          radio.stopListening();
-          networkFlags |= FLAG_HOLD_INCOMING;          
-        }
+		}
         IF_SERIAL_DEBUG_FRAGMENTATION( printf_P(PSTR("Drop frag payload, queue full\n")); );
         return false;
 	}//If more or last fragments
