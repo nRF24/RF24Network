@@ -1,6 +1,6 @@
 {
 	"name": "RF24Network",
-	"version": "1.0.10",
+	"version": "1.0.11",
 	"keywords": "rf, radio, wireless, spi",
 	"description": "Optimized Network Layer for nRF24L01(+) Radios",
 	"license": "GPL-2.0-only",
