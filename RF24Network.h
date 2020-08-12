@@ -171,7 +171,7 @@
 
 /** Internal defines for handling internal payloads - prevents reading additional data from the radio
  * when buffers are full */
- #define FLAG_HOLD_INCOMING 1
+#define FLAG_HOLD_INCOMING 1
  /** FLAG_BYPASS_HOLDS is mainly for use with RF24Mesh as follows:
   * a: Ensure no data in radio buffers, else exit
   * b: Address is changed to multicast address for renewal
@@ -179,11 +179,9 @@
   * d: Address renewal takes place and is set
   * e: Holds Enabled (bypass flag off)
   */
- #define FLAG_BYPASS_HOLDS 2
- 
- #define FLAG_FAST_FRAG 4
- 
- #define FLAG_NO_POLL 8
+#define FLAG_BYPASS_HOLDS 2
+#define FLAG_FAST_FRAG 4
+#define FLAG_NO_POLL 8
 
 class RF24;
 
@@ -196,34 +194,34 @@ class RF24;
  */
 struct RF24NetworkHeader
 {
-  uint16_t from_node; /**< Logical address where the message was generated */
-  uint16_t to_node; /**< Logical address where the message is going */
-  uint16_t id; /**< Sequential message ID, incremented every time a new frame is constructed */
-  /**
+   uint16_t from_node; /**< Logical address where the message was generated */
+   uint16_t to_node; /**< Logical address where the message is going */
+   uint16_t id; /**< Sequential message ID, incremented every time a new frame is constructed */
+   /**
    * Message Types:
    * User message types 1 through 64 will NOT be acknowledged by the network, while message types 65 through 127 will receive a network ACK.  
    * System message types 192 through 255 will NOT be acknowledged by the network. Message types 128 through 192 will receive a network ACK. <br>
    * <br><br>
    */
-  unsigned char type; /**< <b>Type of the packet. </b> 0-127 are user-defined types, 128-255 are reserved for system */
+   unsigned char type; /**< <b>Type of the packet. </b> 0-127 are user-defined types, 128-255 are reserved for system */
   
-  /**
-  * During fragmentation, it carries the fragment_id, and on the last fragment
-  * it carries the header_type.<br>
-  */
-  unsigned char reserved; /**< *Reserved for system use* */
+   /**
+   * During fragmentation, it carries the fragment_id, and on the last fragment
+   * it carries the header_type.<br>
+   */
+   unsigned char reserved; /**< *Reserved for system use* */
 
-  static uint16_t next_id; /**< The message ID of the next message to be sent (unused)*/
+   static uint16_t next_id; /**< The message ID of the next message to be sent (unused)*/
 
-  /**
+   /**
    * Default constructor
    *
 
    * Simply constructs a blank header
    */
-  RF24NetworkHeader() {}
+   RF24NetworkHeader() {}
 
-  /**
+   /**
    * Send constructor  
    *  
    * @note Now supports automatic fragmentation for very long messages, which can be sent as usual if fragmentation is enabled. 
@@ -246,8 +244,8 @@ struct RF24NetworkHeader
    * user messages. Types 1-64 will not receive a network acknowledgement.
    */
 
-  RF24NetworkHeader(uint16_t _to, unsigned char _type = 0): to_node(_to), id(next_id++), type(_type) {}
-  /**
+   RF24NetworkHeader(uint16_t _to, unsigned char _type = 0): to_node(_to), id(next_id++), type(_type) {}
+   /**
    * Create debugging string
    *
    * Useful for debugging.  Dumps all members into a single string, using
@@ -256,7 +254,7 @@ struct RF24NetworkHeader
    *
    * @return String representation of this object
    */
-  const char* toString(void) const;
+   const char* toString(void) const;
 };
 
 
@@ -275,27 +273,27 @@ struct RF24NetworkHeader
 
  struct RF24NetworkFrame
 {
-  RF24NetworkHeader header; /**< Header which is sent with each message */
-  uint16_t message_size; /**< The size in bytes of the payload length */
+   RF24NetworkHeader header; /**< Header which is sent with each message */
+   uint16_t message_size; /**< The size in bytes of the payload length */
   
-  /**
-  * On Arduino, the message buffer is just a pointer, and can be pointed to any memory location.
-  * On Linux the message buffer is a standard byte array, equal in size to the defined MAX_PAYLOAD_SIZE
-  */
-  #if defined (RF24_LINUX)
-    uint8_t message_buffer[MAX_PAYLOAD_SIZE]; //< Array to store the message
-  #else    
-    uint8_t *message_buffer; //< Pointer to the buffer storing the actual message 
-  #endif
-  /**
+   /**
+   * On Arduino, the message buffer is just a pointer, and can be pointed to any memory location.
+   * On Linux the message buffer is a standard byte array, equal in size to the defined MAX_PAYLOAD_SIZE
+   */
+   #if defined (RF24_LINUX)
+     uint8_t message_buffer[MAX_PAYLOAD_SIZE]; //< Array to store the message
+   #else    
+     uint8_t *message_buffer; //< Pointer to the buffer storing the actual message 
+   #endif
+
+   /**
    * Default constructor
    *
    * Simply constructs a blank frame. Frames are generally used internally. See RF24NetworkHeader.
-   */
-  //RF24NetworkFrame() {}
-  
-  RF24NetworkFrame() {}
-  /**
+   */  
+   RF24NetworkFrame() {}
+
+   /**
    * Constructor - create a network frame with data
    * Frames are constructed and handled differently on Arduino/AVR and Linux devices (defined RF24_LINUX)
    *
@@ -314,21 +312,21 @@ struct RF24NetworkHeader
    *
    * Frames are used internally and by external systems. See RF24NetworkHeader.
    */
-#if defined (RF24_LINUX)   
-  RF24NetworkFrame(RF24NetworkHeader& _header, const void* _message = NULL, uint16_t _len = 0) :
-                  header(_header), message_size(_len) {
-    if (_message && _len) {
-      memcpy(message_buffer,_message,_len);
-    }
-  }
-#else  
-  RF24NetworkFrame(RF24NetworkHeader &_header, uint16_t _message_size):
-                  header(_header), message_size(_message_size){		  
-  }
-#endif  
+   #if defined (RF24_LINUX)   
+     RF24NetworkFrame(RF24NetworkHeader& _header, const void* _message = NULL, uint16_t _len = 0) :
+       header(_header), message_size(_len) {
+       if (_message && _len) {
+         memcpy(message_buffer,_message,_len);
+       }
+     }
+   #else  
+     RF24NetworkFrame(RF24NetworkHeader &_header, uint16_t _message_size):
+       header(_header), message_size(_message_size){		  
+     }
+   #endif  
 
 
-  /**
+   /**
    * Create debugging string
    *
    * Useful for debugging.  Dumps all members into a single string, using
@@ -337,14 +335,14 @@ struct RF24NetworkHeader
    *
    * @return String representation of this object
    */
-  const char* toString(void) const;
+   const char* toString(void) const;
 
 };
 
  
 
 /**
- * 2014-2015 - Optimized Network Layer for RF24 Radios
+ * 2014-2020 - Optimized Network Layer for RF24 Radios
  *
  * This class implements an OSI Network Layer using nRF24L01(+) radios driven
  * by RF24 library.
@@ -353,25 +351,25 @@ struct RF24NetworkHeader
 class RF24Network
 {
 
-  /**@}*/
-  /**
+   /**@}*/
+   /**
    * @name Primary Interface
    *
    *  These are the main methods you need to operate the network
    */
-  /**@{*/
+   /**@{*/
   
 public:
-  /**
+   /**
    * Construct the network
    *
    * @param _radio The underlying radio driver instance
    *
    */
 
-  RF24Network( RF24& _radio );
+   RF24Network( RF24& _radio );
 
-  /**
+   /**
    * Bring up the network using the current radio frequency/channel.
    * Calling begin brings up the network, and configures the address, which designates the location of the node within RF24Network topology.
    * @note Node addresses are specified in Octal format, see <a href=Addressing.html>RF24Network Addressing</a> for more information.
@@ -393,13 +391,12 @@ public:
    * @see begin(uint8_t _channel, uint16_t _node_address )
    * @param _node_address The logical address of this node
    *
-   */
-   
-  inline void begin(uint16_t _node_address){
-	  begin(USE_CURRENT_CHANNEL,_node_address);
-  }
+   */ 
+   inline void begin(uint16_t _node_address){
+     begin(USE_CURRENT_CHANNEL,_node_address);
+   }
 
-  /**
+   /**
    * Main layer loop
    *
    * This function must be called regularly to keep the layer going.  This is where payloads are 
@@ -409,16 +406,16 @@ public:
    * 
    * @return Returns the type of the last received payload.
    */
-  uint8_t update(void);
+   uint8_t update(void);
 
-  /**
+   /**
    * Test whether there is a message available for this node
    *
    * @return Whether there is a message available for this node
    */
-  bool available(void);
+   bool available(void);
 
-  /**
+   /**
    * Read the next available header
    *
    * Reads the next available header without advancing to the next
@@ -428,9 +425,9 @@ public:
    *
    * @param[out] header The header (envelope) of the next message
    */
-  uint16_t peek(RF24NetworkHeader& header);
+   uint16_t peek(RF24NetworkHeader& header);
 
-  /**
+   /**
    * Read the next available payload
    *
    * Reads the next available payload without advancing to the next
@@ -441,9 +438,9 @@ public:
    * @param[out] message Pointer to memory where the message should be placed
    * @param maxlen Amount of bytes to copy to message.
    */
-  void peek(RF24NetworkHeader& header, void* message, uint16_t maxlen);
+   void peek(RF24NetworkHeader& header, void* message, uint16_t maxlen);
 
-  /**
+   /**
    * Read a message
    *
    * @code
@@ -463,9 +460,9 @@ public:
    * @param maxlen The largest message size which can be held in @p message
    * @return The total number of bytes copied into @p message
    */
-  uint16_t read(RF24NetworkHeader& header, void* message, uint16_t maxlen);
+   uint16_t read(RF24NetworkHeader& header, void* message, uint16_t maxlen);
 
-  /**
+   /**
    * Send a message
    *
    * @note RF24Network now supports fragmentation for very long messages, send as normal. Fragmentation
@@ -484,15 +481,15 @@ public:
    * @param len The size of the message
    * @return Whether the message was successfully received
    */
-  bool write(RF24NetworkHeader& header,const void* message, uint16_t len);
+   bool write(RF24NetworkHeader& header,const void* message, uint16_t len);
 
-  /**@}*/
-  /**
+   /**@}*/
+   /**
    * @name Advanced Configuration
    *
    *  For advanced configuration of the network
    */
-  /**@{*/
+   /**@{*/
   
 
    /**
@@ -507,34 +504,34 @@ public:
    * @param _radio1 The second underlying radio driver instance
    */
    
-  RF24Network( RF24& _radio, RF24& _radio1); 
+   RF24Network( RF24& _radio, RF24& _radio1); 
   
-	/**
-	* By default, multicast addresses are divided into levels. 
-	*
-	* Nodes 1-5 share a multicast address, nodes n1-n5 share a multicast address, and nodes n11-n55 share a multicast address.<br>
-	*
-	* This option is used to override the defaults, and create custom multicast groups that all share a single
-	* address. <br> 
-	* The level should be specified in decimal format 1-6 <br>
-	* @see multicastRelay
-	* @param level Levels 1 to 6 are available. All nodes at the same level will receive the same
-	* messages if in range. Messages will be routed in order of level, low to high by default, with the
-	* master node (00) at multicast Level 0
-	*/
-	
-	void multicastLevel(uint8_t level);
+   /**
+   * By default, multicast addresses are divided into levels. 
+   *
+   * Nodes 1-5 share a multicast address, nodes n1-n5 share a multicast address, and nodes n11-n55 share a multicast address.<br>
+   *
+   * This option is used to override the defaults, and create custom multicast groups that all share a single
+   * address. <br> 
+   * The level should be specified in decimal format 1-6 <br>
+   * @see multicastRelay
+   * @param level Levels 1 to 6 are available. All nodes at the same level will receive the same
+   * messages if in range. Messages will be routed in order of level, low to high by default, with the
+   * master node (00) at multicast Level 0
+   */
 
-	/**
-	* Enabling this will allow this node to automatically forward received multicast frames to the next highest
-	* multicast level. Duplicate frames are filtered out, so multiple forwarding nodes at the same level should
-	* not interfere. Forwarded payloads will also be received.
-	* @see multicastLevel
-	*/
-	
-	bool multicastRelay;
+   void multicastLevel(uint8_t level);
 
- /**
+   /**
+   * Enabling this will allow this node to automatically forward received multicast frames to the next highest
+   * multicast level. Duplicate frames are filtered out, so multiple forwarding nodes at the same level should
+   * not interfere. Forwarded payloads will also be received.
+   * @see multicastLevel
+   */
+	
+   bool multicastRelay;
+
+   /**
    * Set up the watchdog timer for sleep mode using the number 0 through 10 to represent the following time periods:<br>
    * wdt_16ms = 0, wdt_32ms, wdt_64ms, wdt_128ms, wdt_250ms, wdt_500ms, wdt_1s, wdt_2s, wdt_4s, wdt_8s
    * @code
@@ -542,7 +539,7 @@ public:
    * @endcode
    * @param prescalar The WDT prescaler to define how often the node will wake up. When defining sleep mode cycles, this time period is 1 cycle.
    */
- void setup_watchdog(uint8_t prescalar);
+   void setup_watchdog(uint8_t prescalar);
 
     /**
    * @note: This value is automatically assigned based on the node address
@@ -554,9 +551,9 @@ public:
    *
    */
 
-  uint32_t txTimeout; /**< Network timeout value */
+   uint32_t txTimeout; /**< Network timeout value */
   
-  /**
+   /**
    * This only affects payloads that are routed by one or more nodes.
    * This specifies how long to wait for an ack from across the network.
    * Radios sending directly to their parent or children nodes do not
@@ -566,15 +563,15 @@ public:
    uint16_t routeTimeout; /**< Timeout for routed payloads */  
   
  
-  /**@}*/
-  /**
+   /**@}*/
+   /**
    * @name Advanced Operation
    *
    *  For advanced operation of the network
    */
-  /**@{*/
+   /**@{*/
 
-  /**
+   /**
    * Return the number of failures and successes for all transmitted payloads, routed or sent directly  
    * @note This needs to be enabled via #define ENABLE_NETWORK_STATS in RF24Network_config.h
    *
@@ -584,7 +581,7 @@ public:
    * @endcode  
    *
    */
-  void failures(uint32_t *_fails, uint32_t *_ok);
+   void failures(uint32_t *_fails, uint32_t *_ok);
   
    #if defined (RF24NetworkMulticast)
   
@@ -637,15 +634,15 @@ public:
    * @param interruptPin: The interrupt number to use (0,1) for pins two and three on Uno,Nano. More available on Mega etc.
    * @return True if sleepNode completed normally, after the specified number of cycles. False if sleep was interrupted
    */
- bool sleepNode( unsigned int cycles, int interruptPin, uint8_t INTERRUPT_MODE=0); //added interrupt mode support (default 0=LOW)
+   bool sleepNode( unsigned int cycles, int interruptPin, uint8_t INTERRUPT_MODE=0); //added interrupt mode support (default 0=LOW)
 
 
-  /**
+   /**
    * This node's parent address
    *
    * @return This node's parent address, or -1 if this is the base
    */
-  uint16_t parent() const;
+   uint16_t parent() const;
   
    /**
    * Provided a node address and a pipe number, will return the RF24Network address of that child pipe for that node
@@ -653,9 +650,9 @@ public:
    uint16_t addressOfPipe( uint16_t node,uint8_t pipeNo );
    
    /**
-    * @note Addresses are specified in octal: 011, 034
-    * @return True if a supplied address is valid
-	*/
+   * @note Addresses are specified in octal: 011, 034
+   * @return True if a supplied address is valid
+   */
    bool is_valid_address( uint16_t node );
 
  /**@}*/
@@ -779,8 +776,6 @@ public:
     
   private:
 
-  uint32_t txTime;
-
   bool write(uint16_t, uint8_t directTo);
   bool write_to_pipe( uint16_t node, uint8_t pipe, bool multicast );
   uint8_t enqueue(RF24NetworkHeader *header);
@@ -789,7 +784,6 @@ public:
   bool is_descendant( uint16_t node );
   
   uint16_t direct_child_route_to( uint16_t node );
-  //uint8_t pipe_to_descendant( uint16_t node );
   void setup_address(void);
   bool _write(RF24NetworkHeader& header,const void* message, uint16_t len, uint16_t writeDirect);
     
@@ -799,7 +793,7 @@ public:
 	bool multicast;
   };
   
-  bool logicalToPhysicalAddress(logicalToPhysicalStruct *conversionInfo);
+  void logicalToPhysicalAddress(logicalToPhysicalStruct *conversionInfo);
   
   
   RF24& radio; /**< Underlying radio driver, provides link/physical layers */
@@ -810,7 +804,6 @@ public:
   uint8_t multicast_level;  
 #endif
   uint16_t node_address; /**< Logical node address of this unit, 1 .. UINT_MAX */
-  //const static int frame_size = 32; /**< How large is each frame over the air */
   uint8_t frame_size;
   const static unsigned int max_frame_payload_size = MAX_FRAME_SIZE-sizeof(RF24NetworkHeader);
 
@@ -819,16 +812,8 @@ public:
 	std::map< uint16_t, RF24NetworkFrame> frameFragmentsCache;
     bool appendFragmentToFrame(RF24NetworkFrame frame);
   
-  #else
-    #if  defined(__AVR_ATtiny25__) || defined(__AVR_ATtiny45__) || defined(__AVR_ATtiny85__) || defined(__AVR_ATtiny24__) || defined(__AVR_ATtiny44__) || defined(__AVR_ATtiny84__)
-	  #if !defined (NUM_USER_PAYLOADS)
-		#define NUM_USER_PAYLOADS 3
-	  #endif
-    #endif
-	#if !defined (NUM_USER_PAYLOADS)
-	  #define NUM_USER_PAYLOADS 5
-	#endif
-	  
+  #else // Not Linux:
+
 	#if defined (DISABLE_USER_PAYLOADS)
     uint8_t frame_queue[1]; /**< Space for a small set of frames that need to be delivered to the app layer */
 	#else
@@ -842,19 +827,21 @@ public:
       uint8_t frag_queue_message_buffer[MAX_PAYLOAD_SIZE]; //frame size + 1 
     #endif
   
-  #endif
-  
-  //uint8_t frag_queue[MAX_PAYLOAD_SIZE + 11];
-  //RF24NetworkFrame frag_queue;
+  #endif // Linux/Not Linux
   
   uint16_t parent_node; /**< Our parent's node address */
   uint8_t parent_pipe; /**< The pipe our parent uses to listen to us */
   uint16_t node_mask; /**< The bits which contain signfificant node address information */
+  uint64_t pipe_address( uint16_t node, uint8_t pipe );
   
   #if defined ENABLE_NETWORK_STATS
-  static uint32_t nFails;
-  static uint32_t nOK;
-  #endif  
+  uint32_t nFails;
+  uint32_t nOK;
+  #endif
+  
+  #if defined (RF24NetworkMulticast)
+  uint16_t levelToAddress( uint8_t level );
+  #endif
   
 public:
 
@@ -1121,8 +1108,7 @@ public:
  * |----------------------|-------------|
  * |<b> #define RF24NetworkMulticast </b> | This option allows nodes to send and receive multicast payloads. Nodes with multicast enabled can also be configured to relay multicast payloads on to further multicast levels. See multicastRelay |
  * | <b> #define DISABLE_FRAGMENTATION </b> | Fragmentation is enabled by default, and uses an additional 144 bytes of memory. |
- * | <b> #define MAX_PAYLOAD_SIZE 144 </b> | The maximum size of payloads defaults to 144 bytes. If used with RF24toTUN and two Raspberry Pi, set this to 1514 (TAP) or 1500 (TUN) |
- * | <b> #define NUM_USER_PAYLOADS 5 </b> | This is the number of 24-byte payloads the network layer will cache for the user. If using fragmentation, this number * 24 must be larger than MAX_PAYLOAD_SIZE |
+ * | <b> #define MAX_PAYLOAD_SIZE 144 </b> | The maximum size of payloads defaults to 144 bytes. If used with RF24toTUN and two Raspberry Pi, set this to 1500 |
  * | <b> #define DISABLE_USER_PAYLOADS </b> | This option will disable user-caching of payloads entirely. Use with RF24Ethernet to reduce memory usage. (TCP/IP is an external data type, and not cached) |
  * | <b> #define ENABLE_SLEEP_MODE </b> | Uncomment this option to enable sleep mode for AVR devices. (ATTiny,Uno, etc) |
  * | **#define ENABLE_NETWORK_STATS** | Enable counting of all successful or failed transmissions, routed or sent directly |
