@@ -361,11 +361,7 @@ bool RF24Network::appendFragmentToFrame(RF24NetworkFrame frame) {
 	      return false;
 		}
 	  }
-	  if(frame.header.reserved > (uint16_t(MAX_PAYLOAD_SIZE) / max_frame_payload_size) ){
-		IF_SERIAL_DEBUG_FRAGMENTATION( printf("%u FRG Too many fragments in payload %u, dropping...",millis(),frame.header.reserved); );
-		// If there are more fragments than we can possibly handle, return
-		return false;
-	  }
+
 	  frameFragmentsCache[ frame.header.from_node ] = frame;
 	  return true;
   }else
@@ -376,6 +372,12 @@ bool RF24Network::appendFragmentToFrame(RF24NetworkFrame frame) {
 	  return false;
     }	
 	RF24NetworkFrame *f = &(frameFragmentsCache[ frame.header.from_node ]);	
+	
+    if( f->message_size + frame.message_size > MAX_PAYLOAD_SIZE){
+		IF_SERIAL_DEBUG_FRAGMENTATION( printf("%u FRG Frame of size %u plus enqueued frame of size %u exceeds max payload size \n",millis(),frame.message_size,f->message_size); );
+		return false;
+	}
+    
 	if( f->header.reserved - 1 == frame.header.reserved && f->header.id == frame.header.id){	
       // Cache the fragment
       memcpy(f->message_buffer+f->message_size, frame.message_buffer, frame.message_size);
@@ -443,16 +445,8 @@ uint8_t RF24Network::enqueue(RF24NetworkHeader* header)
   if(isFragment){
 
     if(header->type == NETWORK_FIRST_FRAGMENT){
-        // Drop frames exceeding max size and duplicates (MAX_PAYLOAD_SIZE needs to be divisible by 24)
-        if(header->reserved > (uint16_t(MAX_PAYLOAD_SIZE) / max_frame_payload_size) ){
 
-          #if defined (SERIAL_DEBUG_FRAGMENTATION) || defined (SERIAL_DEBUG_MINIMAL)
-          printf_P(PSTR("Frag frame with %d frags exceeds MAX_PAYLOAD_SIZE or out of sequence\n"),header->reserved);
-          #endif
-          frag_queue.header.reserved = 0;
-          return false;
-		}        
-		memcpy(&frag_queue,&frame_buffer,8);
+		memcpy(&frag_queue,&frame_buffer,sizeof(RF24NetworkHeader));
 		memcpy(frag_queue.message_buffer,frame_buffer+sizeof(RF24NetworkHeader),message_size);
 		
         IF_SERIAL_DEBUG_FRAGMENTATION( Serial.print(F("queue first, total frags ")); Serial.println(header->reserved); );
@@ -467,7 +461,7 @@ uint8_t RF24Network::enqueue(RF24NetworkHeader* header)
 
         if(frag_queue.message_size + message_size > MAX_PAYLOAD_SIZE){
           #if defined (SERIAL_DEBUG_FRAGMENTATION) || defined (SERIAL_DEBUG_MINIMAL)
-          Serial.print(F("Drop frag ")); Serial.print(header->reserved);          
+          Serial.print(F("Drop frag ")); Serial.print(header->reserved);
           Serial.println(F(" Size exceeds max"));
           #endif
           frag_queue.header.reserved=0;
@@ -1203,15 +1197,11 @@ uint8_t RF24Network::pipe_to_descendant( uint16_t node )
 bool RF24Network::is_valid_address( uint16_t node )
 {
   bool result = true;
-
+  if(node == 0100){ return result; }
   while(node)
   {
     uint8_t digit = node & 0x07;
-	#if !defined (RF24NetworkMulticast)
     if (digit < 1 || digit > 5)
-	#else
-	if (digit < 0 || digit > 5)	//Allow our out of range multicast address
-	#endif
     {
       result = false;
       IF_SERIAL_DEBUG_MINIMAL(printf_P(PSTR("*** WARNING *** Invalid address 0%o\n\r"),node););

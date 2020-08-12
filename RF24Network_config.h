@@ -30,20 +30,13 @@
 
     /** Maximum size of fragmented network frames and fragmentation cache. 
     *
-    * @note: 
-    * The size of fragmented data is initialy indicated by the number of packets to be sent (Max 24 bytes data per packet)
-    * ie: A payload of 24 bytes requires 1 packet send. MAX_PAYLOAD_SIZE of 24 is fine.
-    * A payload of 25 requires 2 packets, so the MAX_PAYLOAD_SIZE must be 48 or higher.
-     
-    * @note: Must be a multiple of 24!!! UL is to specify Unsigned Long and prevent compiler warnings
+    * @note: This buffer can now be any size > 24. Previously need to be a multiple of 24.
     * @note: If used with RF24Ethernet, this value is used to set the buffer sizes.
     */
     #define MAX_PAYLOAD_SIZE  144
     
     /** The size of the main buffer. This is the user-cache, where incoming data is stored.
      * Data is stored using Frames: Header (8-bytes) + Frame_Size (2-bytes) + Data (?-bytes)
-     *
-     * @note The MAX_PAYLOAD_SIZE is (MAIN_BUFFER_SIZE - 10), and the result must be divisible by 24!!!
      */
     #define MAIN_BUFFER_SIZE (MAX_PAYLOAD_SIZE + FRAME_HEADER_SIZE)
 
