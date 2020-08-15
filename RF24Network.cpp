@@ -214,6 +214,7 @@ uint8_t RF24Network::update(void)
 
       if( header->to_node == 0100){
         if(header->type == NETWORK_POLL  ){
+          returnVal = 0;
           if( !(networkFlags & FLAG_NO_POLL) && node_address != NETWORK_DEFAULT_ADDRESS ){
             header->to_node = header->from_node;
             header->from_node = node_address;			
@@ -240,9 +241,11 @@ uint8_t RF24Network::update(void)
         
       }else{
         write(header->to_node,1);	//Send it on, indicate it is a routed payload
+        returnVal = 0;
       }
     #else
       write(header->to_node,1);	//Send it on, indicate it is a routed payload
+      returnVal = 0;
     #endif
     }
 
