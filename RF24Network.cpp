@@ -184,8 +184,6 @@ uint8_t RF24Network::update(void)
         if(requester != node_address){
           header->to_node = requester;
           write(header->to_node,USER_TX_TO_PHYSICAL_ADDRESS);
-          delay(10);
-          write(header->to_node,USER_TX_TO_PHYSICAL_ADDRESS);
           continue;
         }
       }
@@ -1150,7 +1148,7 @@ uint16_t RF24Network::direct_child_route_to( uint16_t node )
 bool RF24Network::is_valid_address( uint16_t node )
 {
   bool result = true;
-  if(node == 0100){ return result; }
+  if(node == 0100 || node == 010){ return result; }
   while(node)
   {
     uint8_t digit = node & 0x07;
