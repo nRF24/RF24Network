@@ -949,6 +949,11 @@ public:
  *
  * Please see https://tmrh20.blogspot.com/2019/05/comparative-performance-analysis.html for a comparison against the ZigBee protocols
  *
+ * @section News News
+ *
+ * **Aug 2020**
+ * - Many recent bug fixes, mainly affecting stability and reliability
+ *
  * @section Features Features
  *
  *
