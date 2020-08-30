@@ -238,12 +238,16 @@ uint8_t RF24Network::update(void)
         }
         
       }else{
+        if(node_address != NETWORK_DEFAULT_ADDRESS){
+          write(header->to_node,1);	//Send it on, indicate it is a routed payload
+          returnVal = 0;
+        }
+      }
+    #else
+      if(node_address != NETWORK_DEFAULT_ADDRESS){
         write(header->to_node,1);	//Send it on, indicate it is a routed payload
         returnVal = 0;
       }
-    #else
-      write(header->to_node,1);	//Send it on, indicate it is a routed payload
-      returnVal = 0;
     #endif
     }
 
@@ -1149,18 +1153,27 @@ bool RF24Network::is_valid_address( uint16_t node )
 {
   bool result = true;
   if(node == 0100 || node == 010){ return result; }
+  uint8_t count = 0;
+  #if defined (SERIAL_DEBUG_MINIMAL)
+  uint16_t origNode = node;
+  #endif
   while(node)
   {
     uint8_t digit = node & 0x07;
     if (digit < 1 || digit > 5)
     {
       result = false;
-      IF_SERIAL_DEBUG_MINIMAL(printf_P(PSTR("*** WARNING *** Invalid address 0%o\n\r"),node););
+      IF_SERIAL_DEBUG_MINIMAL(printf_P(PSTR("*** WARNING *** Invalid address 0%o\n\r"),origNode););
       break;
     }
     node >>= 3;
+    count++;
   }
-
+   
+  if(count > 4){
+    IF_SERIAL_DEBUG_MINIMAL(printf_P(PSTR("*** WARNING *** Invalid address 0%o\n\r"),origNode););
+    return false;
+  }
   return result;
 }
 
