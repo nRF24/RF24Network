@@ -961,7 +961,7 @@ public:
  * @li Network ACKs: Efficient acknowledgement of network-wide transmissions, via dynamic radio acks and network protocol acks.
  * @li Updated addressing standard for optimal radio transmission.
  * @li Extended timeouts and staggered timeout intervals. The new txTimeout variable allows fully automated extended timeout periods via auto-retry/auto-reUse of payloads.
- * @li Optimization to the core library provides improvements to reliability, speed and efficiency. See https://tmrh20.github.io/RF24 for more info.
+ * @li Optimization to the core library provides improvements to reliability, speed and efficiency. See https://nRF24.github.io/RF24 for more info.
  * @li Built in sleep mode using interrupts. (Still under development. (Enable via RF24Network_config.h))
  * @li Host Addressing.  Each node has a logical address on the local network.
  * @li Message Forwarding.  Messages can be sent from one node to any other, and
