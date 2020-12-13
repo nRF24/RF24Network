@@ -17,7 +17,6 @@
 
     /********** USER CONFIG - non ATTiny **************/
 
-    //#define DUAL_HEAD_RADIO
     //#define ENABLE_SLEEP_MODE  //AVR only
     #define RF24NetworkMulticast
 
@@ -61,7 +60,6 @@
 
   #else // Different set of defaults for ATTiny - fragmentation is disabled and user payloads are set to 3 max
     /********** USER CONFIG - ATTiny **************/
-    //#define DUAL_HEAD_RADIO
     //#define ENABLE_SLEEP_MODE  //AVR only
     #define RF24NetworkMulticast
     #define MAX_PAYLOAD_SIZE 72

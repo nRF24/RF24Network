@@ -41,25 +41,12 @@ uint16_t RF24NetworkHeader::next_id = 1;
 
 /******************************************************************/
 #if defined (RF24_LINUX)
-  #if !defined (DUAL_HEAD_RADIO)
   RF24Network::RF24Network( RF24& _radio ): radio(_radio), frame_size(MAX_FRAME_SIZE)
-  #else
-  RF24Network::RF24Network( RF24& _radio, RF24& _radio1 ): radio(_radio), radio1(_radio1),frame_size(MAX_FRAME_SIZE)
-  #endif
 {
-  networkFlags=0; returnSysMsgs=0; multicastRelay=0;
-}
-#elif !defined (DUAL_HEAD_RADIO)
-RF24Network::RF24Network( RF24& _radio ): radio(_radio), next_frame(frame_queue)
-{
-  #if !defined ( DISABLE_FRAGMENTATION )
-  frag_queue.message_buffer=&frag_queue_message_buffer[0];
-  frag_ptr = &frag_queue;
-  #endif
   networkFlags=0; returnSysMsgs=0; multicastRelay=0;
 }
 #else
-RF24Network::RF24Network( RF24& _radio, RF24& _radio1 ): radio(_radio), radio1(_radio1), next_frame(frame_queue)
+RF24Network::RF24Network( RF24& _radio ): radio(_radio), next_frame(frame_queue)
 {
   #if !defined ( DISABLE_FRAGMENTATION )
   frag_queue.message_buffer=&frag_queue_message_buffer[0];
@@ -98,13 +85,6 @@ void RF24Network::begin(uint8_t _channel, uint16_t _node_address )
   radio.setRetries(retryVar, 5); // max about 85ms per attempt
   txTimeout = 25;
   routeTimeout = txTimeout*3; // Adjust for max delay per node within a single chain
-
-
-#if defined (DUAL_HEAD_RADIO)
-  radio1.setChannel(_channel);
-  radio1.enableDynamicAck();
-  radio1.enableDynamicPayloads();
-#endif
 
   // Setup our address helper cache
   setup_address();
@@ -705,9 +685,7 @@ bool RF24Network::write(RF24NetworkHeader& header,const void* message, uint16_t 
 
   if(header.to_node != 0100){
     networkFlags |= FLAG_FAST_FRAG;
-	#if !defined (DUAL_HEAD_RADIO)
 	radio.stopListening();
-	#endif
   }
 
   uint8_t retriesPerFrag = 0;
@@ -762,15 +740,12 @@ bool RF24Network::write(RF24NetworkHeader& header,const void* message, uint16_t 
 
   }
   header.type = type;
-  #if !defined (DUAL_HEAD_RADIO)
   if(networkFlags & FLAG_FAST_FRAG){
     ok = radio.txStandBy(txTimeout);
     radio.startListening();
     radio.setAutoAck(0,0);
   }
   networkFlags &= ~FLAG_FAST_FRAG;
-  #endif
-
 
   //Return true if all the chunks where sent successfully
 
@@ -904,7 +879,6 @@ bool RF24Network::write(uint16_t to_node, uint8_t directTo)  // Direct To: 0 = F
 
 
 	if( ok && conversion.send_node != to_node && (directTo==0 || directTo==3) && isAckType){
-	    #if !defined (DUAL_HEAD_RADIO)
           // Now, continue listening
 		  if(networkFlags & FLAG_FAST_FRAG){
 			 radio.txStandBy(txTimeout);
@@ -912,7 +886,6 @@ bool RF24Network::write(uint16_t to_node, uint8_t directTo)  // Direct To: 0 = F
              radio.setAutoAck(0,0);
 		  }
           radio.startListening();
-        #endif
 		uint32_t reply_time = millis();
 
 		while( update() != NETWORK_ACK){
@@ -931,10 +904,9 @@ bool RF24Network::write(uint16_t to_node, uint8_t directTo)  // Direct To: 0 = F
 		}
     }
     if( !(networkFlags & FLAG_FAST_FRAG) ){
-	   #if !defined (DUAL_HEAD_RADIO)
          // Now, continue listening
          radio.startListening();
-       #endif
+
 	}
 
 #if defined ENABLE_NETWORK_STATS
@@ -1001,7 +973,6 @@ bool RF24Network::write_to_pipe( uint16_t node, uint8_t pipe, bool multicast )
 {
   bool ok = false;
 
-  #if !defined (DUAL_HEAD_RADIO)
   // Open the correct pipe for writing.
   // First, stop listening so we can talk
 
@@ -1020,12 +991,6 @@ bool RF24Network::write_to_pipe( uint16_t node, uint8_t pipe, bool multicast )
     radio.setAutoAck(0,0);
   }
 
-#else
-  radio1.openWritingPipe(pipe_address( node, pipe ));
-  radio1.writeFast(frame_buffer, frame_size);
-  ok = radio1.txStandBy(txTimeout,multicast);
-
-#endif
 
 /*  #if defined (__arm__) || defined (RF24_LINUX)
   IF_SERIAL_DEBUG(printf_P(PSTR("%u: MAC Sent on %x %s\n\r"),millis(),(uint32_t)out_pipe,ok?PSTR("ok"):PSTR("failed")));

@@ -490,20 +490,6 @@ public:
 
 
    /**
-   * Construct the network in dual head mode using two radio modules.
-   * @note Not working on RPi. Radios will share MISO, MOSI and SCK pins, but require separate CE,CS pins.
-   * @code
-   * 	RF24 radio(7,8);
-   * 	RF24 radio1(4,5);
-   * 	RF24Network(radio.radio1);
-   * @endcode
-   * @param _radio The underlying radio driver instance
-   * @param _radio1 The second underlying radio driver instance
-   */
-
-   RF24Network( RF24& _radio, RF24& _radio1);
-
-   /**
    * By default, multicast addresses are divided into levels.
    *
    * Nodes 1-5 share a multicast address, nodes n1-n5 share a multicast address, and nodes n11-n55 share a multicast address.<br>
@@ -802,9 +788,7 @@ public:
 
 
   RF24& radio; /**< Underlying radio driver, provides link/physical layers */
-#if defined (DUAL_HEAD_RADIO)
-  RF24& radio1;
-#endif
+
 #if defined (RF24NetworkMulticast)
   uint8_t multicast_level;
 #endif
