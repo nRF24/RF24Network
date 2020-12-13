@@ -591,8 +591,6 @@ uint16_t RF24Network::read(RF24NetworkHeader& header,void* message, uint16_t max
   uint16_t bufsize = 0;
 
  #if defined (RF24_LINUX)
-   if (available())
-   {
     RF24NetworkFrame frame = frame_queue.front();
 
     // How much buffer size should we actually copy?
@@ -606,10 +604,8 @@ uint16_t RF24Network::read(RF24NetworkHeader& header,void* message, uint16_t max
     IF_SERIAL_DEBUG(printf_P(PSTR("%u: NET read %s\n\r"),millis(),header.toString()));
 
     frame_queue.pop();
-  }
+
 #else
-  if (available())
-  {
 
 	memcpy(&header,frame_queue,8);
     memcpy(&bufsize,frame_queue+8,2);
@@ -634,7 +630,7 @@ uint16_t RF24Network::read(RF24NetworkHeader& header,void* message, uint16_t max
     #endif
     memmove(frame_queue,frame_queue+bufsize+10+padding,sizeof(frame_queue)- bufsize);
 	//IF_SERIAL_DEBUG(printf_P(PSTR("%lu: NET Received %s\n\r"),millis(),header.toString()));
-  }
+
 #endif
   return bufsize;
 }
