@@ -111,13 +111,12 @@ void RF24Network::failures(uint32_t *_fails, uint32_t *_ok){
 
 uint8_t RF24Network::update(void)
 {
-  // if there is data ready
-  uint8_t pipe_num;
+
   uint8_t returnVal = 0;
 
   uint32_t timeout = millis();
 
-  while ( radio.isValid() && radio.available(&pipe_num) ){
+  while ( radio.available() ){
     if(millis() - timeout > 1000){
       #if defined FAILURE_HANDLING
         radio.failureDetected = 1;
@@ -142,13 +141,13 @@ uint8_t RF24Network::update(void)
     }
 
     #if defined (RF24_LINUX)
-      IF_SERIAL_DEBUG(printf_P("%u: MAC Received on %u %s\n\r",millis(),pipe_num,header->toString()));
+      IF_SERIAL_DEBUG(printf_P("%u: MAC Received %s\n\r",millis(),header->toString()));
       if (frame_size) {
         IF_SERIAL_DEBUG_FRAGMENTATION_L2(printf("%u: FRG Rcv frame size %i\n",millis(),frame_size););
         IF_SERIAL_DEBUG_FRAGMENTATION_L2(printf("%u: FRG Rcv frame ",millis()); const char* charPtr = reinterpret_cast<const char*>(frame_buffer); for (uint16_t i = 0; i < frame_size; i++) { printf("%02X ", charPtr[i]); }; printf("\n\r"));
       }
 	#else
-      IF_SERIAL_DEBUG(printf_P(PSTR("%lu: MAC Received on %u %s\n\r"),millis(),pipe_num,header->toString()));
+      IF_SERIAL_DEBUG(printf_P(PSTR("%lu: MAC Received %s\n\r"),millis(),header->toString()));
       IF_SERIAL_DEBUG(const uint16_t* i = reinterpret_cast<const uint16_t*>(frame_buffer + sizeof(RF24NetworkHeader));printf_P(PSTR("%lu: NET message %04x\n\r"),millis(),*i));
     #endif
 
