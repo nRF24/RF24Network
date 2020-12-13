@@ -371,7 +371,7 @@ public:
    /**
    * Bring up the network using the current radio frequency/channel.
    * Calling begin brings up the network, and configures the address, which designates the location of the node within RF24Network topology.
-   * @note Node addresses are specified in Octal format, see <a href=Addressing.html>RF24Network Addressing</a> for more information.
+   * @note Node addresses are specified in Octal format, see [RF24Network Addressing](Addressing.html) for more information.
    * @warning Be sure to 'begin' the radio first.
    *
    * **Example 1:** Begin on current radio channel with address 0 (master node)
@@ -400,8 +400,6 @@ public:
    *
    * This function must be called regularly to keep the layer going.  This is where payloads are
    * re-routed, received, and all the action happens.
-   *
-   * @see
    *
    * @return Returns the type of the last received payload.
    */
@@ -930,8 +928,8 @@ public:
 /**
  * @mainpage Network Layer for RF24 Radios
  *
- * This class implements an <a href="http://en.wikipedia.org/wiki/Network_layer">OSI Network Layer</a> using nRF24L01(+) radios driven
- * by the newly optimized <a href="http://tmrh20.github.com/RF24/">RF24</a> library fork.
+ * This class implements an [OSI Network Layer](http://en.wikipedia.org/wiki/Network_layer) using nRF24L01(+) radios driven
+ * by the newly optimized [RF24 library fork](http://nRF24.github.com/RF24/).
  *
  * @section Purpose Purpose/Goal
  *
@@ -956,13 +954,12 @@ public:
  *
  * @section Features Features
  *
- *
  * The layer provides:
  * @li Network ACKs: Efficient acknowledgement of network-wide transmissions, via dynamic radio acks and network protocol acks.
  * @li Updated addressing standard for optimal radio transmission.
  * @li Extended timeouts and staggered timeout intervals. The new txTimeout variable allows fully automated extended timeout periods via auto-retry/auto-reUse of payloads.
  * @li Optimization to the core library provides improvements to reliability, speed and efficiency. See https://nRF24.github.io/RF24 for more info.
- * @li Built in sleep mode using interrupts. (Still under development. (Enable via RF24Network_config.h))
+ * @li Built in sleep mode using interrupts. (Still under development -- enable via RF24Network_config.h)
  * @li Host Addressing.  Each node has a logical address on the local network.
  * @li Message Forwarding.  Messages can be sent from one node to any other, and
  * this layer will get them there no matter how many hops it takes.
@@ -975,24 +972,25 @@ public:
  *
  * @section More How to learn more
  *
- * @li <a href="classRF24Network.html">RF24Network Class Documentation</a>
- * @li <a href="AdvancedConfig.html"> Advanced Configuration Options</a>
- * @li <a href="Addressing.html"> Addressing format</a>
- * @li <a href="Tuning.html"> Topology and Overview</a>
- * @li <a href="https://github.com/TMRh20/RF24Network/archive/Development.zip">Download Current Development Package</a>
- * @li <a href="examples.html">Examples Page</a>.  Start with <a href="helloworld_rx_8ino-example.html">helloworld_rx</a> and <a href="helloworld_tx_8ino-example.html">helloworld_tx</a>.
+ * - [RF24Network Class Documentation](classRF24Network.html)
+ * - [Advanced Configuration Options](AdvancedConfig.html)
+ * - [Addressing format](Addressing.html)
+ * - [Topology and Overview](Tuning.html)
+ * - [Download Current Development Package](https://github.com/TMRh20/RF24Network/archive/Development.zip)
+ * - [Examples Page](examples.html).  Start with [helloworld_rx](helloworld_rx_8ino-example.html) and [helloworld_tx](helloworld_tx_8ino-example.html).
  *
  * <b> Additional Information & Add-ons </b>
- * @li <a href="https://github.com/TMRh20/RF24Mesh">RF24Mesh: Dynamic Mesh Layer for RF24Network Dev</a>
- * @li <a href="https://github.com/TMRh20/RF24Ethernet">RF24Ethernet: TCP/IP over RF24Network</a>
- * @li <a href="http://tmrh20.blogspot.com/2014/03/high-speed-data-transfers-and-wireless.html">My Blog: RF24 Optimization Overview</a>
- * @li <a href="http://tmrh20.blogspot.com/2014/03/arduino-radiointercomwireless-audio.html">My Blog: RF24 Wireless Audio</a>
- * @li <a href="http://maniacbug.github.com/RF24/">RF24: Original Author</a>
+ * - [RF24Mesh: Dynamic Mesh Layer for RF24Network Dev](https://github.com/TMRh20/RF24Mesh)
+ * - [RF24Ethernet: TCP/IP over RF24Network](https://github.com/TMRh20/RF24Ethernet)
+ * - [My Blog: RF24 Optimization Overview](http://tmrh20.blogspot.com/2014/03/high-speed-data-transfers-and-wireless.html)
+ * - [My Blog: RF24 Wireless Audio](http://tmrh20.blogspot.com/2014/03/arduino-radiointercomwireless-audio.html)
+ * - [RF24: Original Author](http://maniacbug.github.com/RF24/)
+ *
  * @section MeshTopology Topology for Mesh Networks using nRF24L01(+)
  *
  * This network layer takes advantage of the fundamental capability of the nRF24L01(+) radio to
  * listen actively to up to 6 other radios at once. The network is arranged in a
- * <a href="http://en.wikipedia.org/wiki/Network_Topology#Tree">Tree Topology</a>, where
+ * [Tree Topology](http://en.wikipedia.org/wiki/Network_Topology#Tree), where
  * one node is the base, and all other nodes are children either of that node, or of another.
  * Unlike a true mesh network, multiple nodes are not connected together, so there is only one
  * path to any given node.
@@ -1003,11 +1001,11 @@ public:
  * describes the position of the node within the tree.  The address is an octal number.  Each
  * digit in the address represents a position in the tree further from the base.
  *
- * @li Node 00 is the base node.
- * @li Nodes 01-05 are nodes whose parent is the base.
- * @li Node 021 is the second child of node 01.
- * @li Node 0321 is the third child of node 021, an so on.
- * @li The largest node address is 05555, so up to 781 nodes are allowed on a single channel.
+ * - Node 00 is the base node.
+ * - Nodes 01-05 are nodes whose parent is the base.
+ * - Node 021 is the second child of node 01.
+ * - Node 0321 is the third child of node 021, an so on.
+ * - The largest node address is 05555, so up to 781 nodes are allowed on a single channel.
  * An example topology is shown below, with 5 nodes in direct communication with the master node,
  * and multiple leaf nodes spread out at a distance, using intermediate nodes to reach other nodes.
  *
@@ -1045,7 +1043,7 @@ public:
  * case where the nodes are operating on batteries and need to sleep. This greatly decreases
  * the power requirements for a sensor network. The leaf nodes can sleep most of the time,
  * and wake every few minutes to send in a reading. Routing nodes can be triggered to wake up
- * whenever a payload is received See sleepNode() in the class documentation, and RFNetwork_config.h
+ * whenever a payload is received See RF24Network::sleepNode() in the class documentation, and RF24Network_config.h
  * to enable sleep mode.
  *
  *
@@ -1059,7 +1057,7 @@ public:
  *
  * RF24Network uses a simple method of data compression to store the addresses using only 2 bytes, in a format designed to represent the
  * network topology in an intuitive way.
- * See the <a href="Tuning.html"> Topology and Overview</a> page for more info regarding topology.
+ * See the [Topology and Overview](Tuning.html) page for more info regarding topology.
  *
  * @section Octal_Binary Decimal, Octal and Binary formats
  *
@@ -1072,18 +1070,13 @@ public:
  * The above example is exactly how RF24Network manages the addresses, but they are represented in Octal format.
  *
  * <b>Decimal, Octal and Binary</b>
- * <table>
- * <tr bgcolor="#a3b4d7" >
- * <td> Decimal </td> <td> Binary </td><td> Decimal </td> <td> Binary </td><td> Decimal </td> <td> Binary </td>
- * </tr><tr>
- * <td> 1 </td> <td> 00000001 </td><td> 11 </td> <td> 00001011 </td><td> 111 </td> <td> 01101111 </td>
- * </tr><tr bgcolor="#a3b4d7" >
- * <td> Octal </td> <td> Binary </td><td> Octal </td> <td> Binary </td><td> Octal </td> <td> Binary </td>
- * </tr><tr>
- * <td> 1 </td> <td> 00000001 </td><td> 011 </td> <td> 00001001 </td><td> 0111 </td> <td> 1001001 </td>
- * </tr>
- * </table>
- *
+ * | Decimal | Octal |  Binary  |
+ * |:-------:|:-----:|:--------:|
+ * | 1       |  01   | 00000001 |
+ * | 11      |  013  | 00001011 |
+ * | 9       |  011  | 00001001 |
+ * | 73      |  0111 | 01001001 |
+ * | 111     |  0157 | 01101111 |
  *
  * Since the numbers 0-7 can be represented in exactly three bits, each digit is represented by exactly 3 bits when viewed in octal format.
  * This allows a very simple method of managing addresses via masking and bit shifting.
@@ -1093,13 +1086,13 @@ public:
  * When using Arduino devices, octal addresses can be printed in the following manner:
  * @code
  * uint16_t address = 0111;
- * Serial.println(address,OCT);
+ * Serial.println(address, OCT);
  * @endcode
  *
  * Printf can also be used, if enabled, or if using linux/RPi
  * @code
  * uint16_t address = 0111;
- * printf("0%o\n",address);
+ * printf("0%o\n", address);
  * @endcode
  *
  * See http://www.cplusplus.com/doc/hex/ for more information<br>
@@ -1118,10 +1111,10 @@ public:
  * | `#define ENABLE_SLEEP_MODE` | Uncomment this option to enable sleep mode for AVR devices. (ATTiny,Uno, etc) |
  * | `#define ENABLE_NETWORK_STATS` | Enable counting of all successful or failed transmissions, routed or sent directly |
  *
- ** @page Tuning Performance and Data Loss: Tuning the Network
+ * @page Tuning Performance and Data Loss: Tuning the Network
  * Tips and examples for tuning the network and general operation.
  *
- *  <img src="tmrh20/topologyImage.jpg" alt="Topology" height="75%" width="75%">
+ * @image html "images/topologyImage.jpg" height=75% width=75%
  *
  * @section General Understanding Radio Communication and Topology
  * When a transmission takes place from one radio module to another, the receiving radio will communicate
