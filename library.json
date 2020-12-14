@@ -1,6 +1,6 @@
 {
 	"name": "RF24Network",
-	"version": "1.0.13",
+	"version": "1.0.14",
 	"keywords": "rf, radio, wireless, spi",
 	"description": "OSI Layer 3 Networking for nrf24L01(+) devices.",
 	"license": "GPL-2.0-only",
