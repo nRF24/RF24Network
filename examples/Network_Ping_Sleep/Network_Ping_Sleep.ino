@@ -40,7 +40,6 @@
 #include <RF24.h>
 #include <RF24Network.h>
 
-#define ENABLE_SLEEP_MODE // needed to expose the RF24Network::setup_watchdog() and RF24Network::sleepNode() definitions
 
 /***********************************************************************
 ************* Set the Node Address *************************************

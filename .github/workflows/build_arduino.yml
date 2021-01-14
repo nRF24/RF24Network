@@ -87,7 +87,13 @@ jobs:
         uses: arduino/compile-sketches@main
         with:
           sketch-paths: |
-            - examples/Network_Ping_Sleep
+            - examples/helloworld_rx
+            - examples/helloworld_rx_advanced
+            - examples/helloworld_tx_advanced
+            - examples/helloworld_tx
+            - examples/Network_Ping
+            - examples/Network_Priority_RX
+            - examples/Network_Priority_TX
           libraries: |
             - name: RF24
             - source-path: ./
