@@ -87,4 +87,7 @@ jobs:
       - name: Compile examples
         uses: arduino/compile-sketches@main
         with:
+          libraries: |
+            - name: RF24
+            - source-path: ./
           fqbn: ${{ matrix.fqbn }}
