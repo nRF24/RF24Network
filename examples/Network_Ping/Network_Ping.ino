@@ -220,13 +220,13 @@ void handle_T(RF24NetworkHeader& header) {
   unsigned long message;                                                                      // The 'T' message is just a ulong, containing the time
   network.read(header, &message, sizeof(unsigned long));
   Serial.print(millis());
-  Serial.print(F(": APP Received ");
-               Serial.print(message);
-               Serial.print(" from ");
-               Serial.println(header.from_node);
+  Serial.print(F(": APP Received "));
+  Serial.print(message);
+  Serial.print(F(" from "));
+  Serial.println(header.from_node);
 
-               if (header.from_node != this_node || header.from_node > 00)                                // If this message is from ourselves or the base, don't bother adding it to the active nodes.
-               add_node(header.from_node);
+  if (header.from_node != this_node || header.from_node > 00)                                // If this message is from ourselves or the base, don't bother adding it to the active nodes.
+    add_node(header.from_node);
 }
 
 /**
@@ -237,12 +237,12 @@ void handle_N(RF24NetworkHeader& header) {
 
   network.read(header, &incoming_nodes, sizeof(incoming_nodes));
   Serial.print(millis());
-  Serial.print(F(": APP Received nodes from ");
-               Serial.println(header.from_node);
+  Serial.print(F(": APP Received nodes from "));
+  Serial.println(header.from_node);
 
-               int i = 0;
-               while ( i < max_active_nodes && incoming_nodes[i] > 00 )
-               add_node(incoming_nodes[i++]);
+  int i = 0;
+  while ( i < max_active_nodes && incoming_nodes[i] > 00 )
+    add_node(incoming_nodes[i++]);
 }
 
 /**
