@@ -26,6 +26,7 @@ jobs:
       - name: Checkout RF24
         uses: actions/checkout@v2
         with:
+          fetch-depth: 0
           path: RF24
           ref: ${{ steps.latest_rf24_ver.outputs.release }}
       - name: provide toolchain
