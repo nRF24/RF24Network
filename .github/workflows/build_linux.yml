@@ -1,0 +1,58 @@
+name: Linux build
+
+on: [pull_request, push]
+
+jobs:
+  build_linux:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+
+      matrix:
+        config-options:
+          - "--soc=BCM2835 --driver=RPi"
+          - "--soc=BCM2836 --driver=RPi"
+          - "--soc=BCM2835 --driver=wiringPi --extra-cflags=-I/usr/local/include"
+          - "--driver=SPIDEV"
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: get latest RF24 release tag
+        id: latest_rf24_ver
+        uses: pozetroninc/github-action-get-latest-release@master
+        with:
+          repository: nRF24/RF24
+          excludes: prerelease, draft
+      - name: Checkout RF24
+        uses: actions/checkout@v2
+        with:
+          - path: RF24
+          - ref: ${{ steps.latest_rf24_ver.outputs.release }}
+      - name: provide toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install binutils-arm-linux-gnueabi gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf
+          arm-linux-gnueabihf-gcc -v
+          arm-linux-gnueabihf-g++ -v
+      - name: provide WiringPi
+        if: ${{ matrix.config-options == '--soc=BCM2835 --driver=wiringPi --extra-cflags=-I/usr/local/include' }}
+        run: |
+          git clone https://github.com/CoRfr/WiringPi
+          cd WiringPi/wiringPi
+          CC="arm-linux-gnueabihf-gcc -marm -mtune=arm1176jzf-s -mfpu=vfp -mfloat-abi=hard" V=1 make -j5
+          sudo make install
+      - name: configure, make, & install RF24
+        run: |
+          cd RF24
+          ./configure ${{ matrix.config-options }}
+          make
+          sudo make install
+      - name: make RF24Network
+        run: make
+      - name: install RF24Network
+        run: sudo make install
+      - name: make RF24Network examples
+        run: |
+          cd examples_RPi
+          make
+          file helloworld_rx
