@@ -23,12 +23,6 @@ jobs:
         with:
           repository: nRF24/RF24
           excludes: prerelease, draft
-      - name: Checkout RF24
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-          path: RF24
-          ref: ${{ steps.latest_rf24_ver.outputs.release }}
       - name: provide toolchain
         run: |
           sudo apt-get update
@@ -42,8 +36,9 @@ jobs:
           cd WiringPi/wiringPi
           CC="arm-linux-gnueabihf-gcc -marm -mtune=arm1176jzf-s -mfpu=vfp -mfloat-abi=hard" V=1 make -j5
           sudo make install
-      - name: configure, make, & install RF24
+      - name: checkout, configure, make, & install RF24 lib
         run: |
+          git clone https://github.com/nRF24/RF24.git --branch ${{ steps.latest_rf24_ver.outputs.release }}
           cd RF24
           ./configure ${{ matrix.config-options }}
           make
