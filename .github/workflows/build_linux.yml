@@ -43,8 +43,7 @@ jobs:
           ./configure ${{ matrix.config-options }}
           make
           sudo make install
-          ls /usr/local/lib
-          ls /usr/local/include/RF24
+          file /usr/local/lib/librf24-bcm.so.1.3.11
       - name: make RF24Network
         run: make
       - name: install RF24Network
