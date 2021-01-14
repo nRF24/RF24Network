@@ -43,6 +43,8 @@ jobs:
           ./configure ${{ matrix.config-options }}
           make
           sudo make install
+          ls /usr/local/lib
+          ls usr/local/include/RF24
       - name: make RF24Network
         run: make
       - name: install RF24Network
