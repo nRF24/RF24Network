@@ -40,9 +40,11 @@
 #include <RF24.h>
 #include <RF24Network.h>
 
+#define ENABLE_SLEEP_MODE // needed to expose the RF24Network::setup_watchdog() and RF24Network::sleepNode() definitions
+
 /***********************************************************************
 ************* Set the Node Address *************************************
-/***********************************************************************/
+************************************************************************/
 
 // These are the Octal addresses that will be assigned
 const uint16_t node_address_set[10] = { 00, 02, 05, 012, 015, 022, 025, 032, 035, 045 };
@@ -60,21 +62,21 @@ uint8_t NODE_ADDRESS = 1; // Use numbers 0 through 9 to select an address from t
 /***********************************************************************/
 
 
-RF24 radio(7, 8);                                   // CE & CS pins to use (Using 7,8 on Uno,Nano)
+RF24 radio(7, 8);                         // CE & CS pins to use (Using 7,8 on Uno,Nano)
 RF24Network network(radio);
 
-uint16_t this_node;                                  // Our node address
+uint16_t this_node;                       // Our node address
 
-const unsigned long interval = 1000; // ms           // Delay manager to send pings regularly. Because of sleepNode(), this is largely irrelevant.
+const unsigned long interval = 1000;      // Delay manager to send pings regularly (in ms). Because of sleepNode(), this is largely irrelevant.
 unsigned long last_time_sent;
 
-const short max_active_nodes = 10;                    // Array of nodes we are aware of
+const short max_active_nodes = 10;        // Array of nodes we are aware of
 uint16_t active_nodes[max_active_nodes];
 short num_active_nodes = 0;
 short next_ping_node_index = 0;
 
 
-bool send_T(uint16_t to);                              // Prototypes for functions to send & handle messages
+bool send_T(uint16_t to);                 // Prototypes for functions to send & handle messages
 bool send_N(uint16_t to);
 void handle_T(RF24NetworkHeader& header);
 void handle_N(RF24NetworkHeader& header);
@@ -114,15 +116,15 @@ void setup() {
 
 void loop() {
 
-  network.update();                                      // Pump the network regularly
+  network.update();             // Pump the network regularly
 
-  while (network.available()) {                      // Is there anything ready for us?
+  while (network.available()) { // Is there anything ready for us?
 
-    RF24NetworkHeader header;                            // If so, take a look at it
+    RF24NetworkHeader header;   // If so, take a look at it
     network.peek(header);
 
 
-    switch (header.type) {                             // Dispatch the message to the correct handler.
+    switch (header.type) {      // Dispatch the message to the correct handler.
       case 'T':
         handle_T(header);
         break;
@@ -147,52 +149,54 @@ void loop() {
 
   /***************************** CALLING THE NEW SLEEP FUNCTION ************************/
 
-  if (millis() - sleepTimer > awakeTime && NODE_ADDRESS) { // Want to make sure the Arduino stays awake for a little while when data comes in. Do NOT sleep if master node.
+  if (millis() - sleepTimer > awakeTime && NODE_ADDRESS) {
+    // Want to make sure the Arduino stays awake for a little while when data comes in.
+    // Do NOT sleep if master node.
     Serial.println(F("Sleep"));
-    sleepTimer = millis();                           // Reset the timer value
-    delay(100);                                      // Give the Serial print some time to finish up
-    radio.stopListening();                           // Switch to PTX mode. Payloads will be seen as ACK payloads, and the radio will wake up
-    network.sleepNode(8, 0);                         // Sleep the node for 8 cycles of 1second intervals
+    sleepTimer = millis();      // Reset the timer value
+    delay(100);                 // Give the Serial print some time to finish up
+    radio.stopListening();      // Switch to PTX mode. Payloads will be seen as ACK payloads, and the radio will wake up
+    network.sleepNode(8, 0);    // Sleep the node for 8 cycles of 1second intervals
     Serial.println(F("Awake"));
   }
 
   //Examples:
-  // network.sleepNode( cycles, interrupt-pin );
-  // network.sleepNode(0,0);         // The WDT is configured in this example to sleep in cycles of 1 second. This will sleep 1 second, or until a payload is received
-  // network.sleepNode(1,255);       // Sleep this node for 1 second. Do not wake up until then, even if a payload is received ( no interrupt ) Payloads will be lost.
+  // network.sleepNode(cycles, interrupt-pin);
+  // network.sleepNode(0, 0);         // The WDT is configured in this example to sleep in cycles of 1 second. This will sleep 1 second, or until a payload is received
+  // network.sleepNode(1, 255);       // Sleep this node for 1 second. Do not wake up until then, even if a payload is received ( no interrupt ) Payloads will be lost.
 
   /****  end sleep section ***/
 
 
-  unsigned long now = millis();                         // Send a ping to the next node every 'interval' ms
+  unsigned long now = millis();                      // Send a ping to the next node every 'interval' ms
   if (now - last_time_sent >= interval) {
     last_time_sent = now;
 
-    uint16_t to = 00;                                   // Who should we send to? By default, send to base
+    uint16_t to = 00;                                // Who should we send to? By default, send to base
 
-    if (num_active_nodes) {                           // Or if we have active nodes,
-      to = active_nodes[next_ping_node_index++];      // Send to the next active node
+    if (num_active_nodes) {                          // Or if we have active nodes,
+      to = active_nodes[next_ping_node_index++];     // Send to the next active node
       if (next_ping_node_index > num_active_nodes) { // Have we rolled over?
-        next_ping_node_index = 0;                   // Next time start at the beginning
-        to = 00;                                    // This time, send to node 00.
+        next_ping_node_index = 0;                    // Next time start at the beginning
+        to = 00;                                     // This time, send to node 00.
       }
     }
 
     bool ok;
 
-    if (this_node > 00 || to == 00) {                   // Normal nodes send a 'T' ping
+    if (this_node > 00 || to == 00) {                // Normal nodes send a 'T' ping
       ok = send_T(to);
-    } else {                                               // Base node sends the current active nodes out
+    } else {                                         // Base node sends the current active nodes out
       ok = send_N(to);
     }
 
-    if (ok) {                                             // Notify us of the result
+    if (ok) {                                        // Notify us of the result
       Serial.print(millis());
       Serial.println(F(": APP Send ok"));
     } else {
       Serial.print(millis());
       Serial.println(F(": APP Send failed"));
-      last_time_sent -= 100;                            // Try sending at a different time next time
+      last_time_sent -= 100;                         // Try sending at a different time next time
     }
   }
 }
@@ -235,7 +239,7 @@ bool send_N(uint16_t to) {
  */
 void handle_T(RF24NetworkHeader& header) {
 
-  unsigned long message;                                                                      // The 'T' message is just a ulong, containing the time
+  unsigned long message;                                      // The 'T' message is just a ulong, containing the time
   network.read(header, &message, sizeof(unsigned long));
   Serial.print(millis());
   Serial.print(F(": APP Received "));
@@ -243,7 +247,7 @@ void handle_T(RF24NetworkHeader& header) {
   Serial.print(F(" from "));
   Serial.print(header.from_node);
 
-  if (header.from_node != this_node || header.from_node > 00)                                // If this message is from ourselves or the base, don't bother adding it to the active nodes.
+  if (header.from_node != this_node || header.from_node > 00) // If this message is from ourselves or the base, don't bother adding it to the active nodes.
     add_node(header.from_node);
 }
 
