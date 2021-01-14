@@ -131,9 +131,9 @@ void loop() {
         break;
       default:
         Serial.print(F("*** WARNING *** Unknown message type "));
-                     Serial.println(header.type);
-                     network.read(header, 0, 0);
-                     break;
+        Serial.println(header.type);
+        network.read(header, 0, 0);
+        break;
     };
   }
 
