@@ -130,7 +130,7 @@ void loop() {
         handle_N(header);
         break;
       default:
-        Serial.print(F("*** WARNING *** Unknown message type ");
+        Serial.print(F("*** WARNING *** Unknown message type "));
                      Serial.println(header.type);
                      network.read(header, 0, 0);
                      break;

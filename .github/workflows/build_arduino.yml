@@ -29,7 +29,56 @@ jobs:
             - '*.h'
           target-paths: |
             - examples
-  build:
+  build-avr-sleep:
+    needs: check_formatting
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+
+      matrix:
+        fqbn:
+          - "arduino:avr:yun"
+          - "arduino:avr:uno"
+          - "arduino:avr:diecimila"
+          - "arduino:avr:nano"
+          - "arduino:avr:mega"
+          - "arduino:avr:megaADK"
+          - "arduino:avr:leonardo"
+          - "arduino:avr:micro"
+          - "arduino:avr:esplora"
+          - "arduino:avr:mini"
+          - "arduino:avr:ethernet"
+          - "arduino:avr:fio"
+          - "arduino:avr:bt"
+          # - "arduino:avr:LilyPad"  # board not found
+          - "arduino:avr:LilyPadUSB"
+          - "arduino:avr:pro"
+          - "arduino:avr:atmegang"
+          - "arduino:avr:robotControl"
+          # - "arduino:avr:gemma"  # does not support SPI
+          - "arduino:avr:circuitplay32u4cat"
+          - "arduino:avr:yunmini"
+          - "arduino:avr:chiwawa"
+          - "arduino:avr:one"
+          - "arduino:avr:unowifi"
+          - "arduino:megaavr:uno2018"
+          # - "arduino:megaavr:nano4809"  # board not found
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Compile examples
+        uses: arduino/compile-sketches@main
+        with:
+          sketch-paths: |
+            - examples/Network_Ping_Sleep
+          libraries: |
+            - name: RF24
+            - source-path: ./
+          fqbn: ${{ matrix.fqbn }}
+
+  build-all-non-sleep:
     needs: check_formatting
     runs-on: ubuntu-latest
 
@@ -83,10 +132,17 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-
       - name: Compile examples
         uses: arduino/compile-sketches@main
         with:
+          sketch-paths: |
+            - examples/helloworld_rx
+            - examples/helloworld_rx_advanced
+            - examples/helloworld_tx_advanced
+            - examples/helloworld_tx
+            - examples/Network_Ping
+            - examples/Network_Priority_RX
+            - examples/Network_Priority_TX
           libraries: |
             - name: RF24
             - source-path: ./
