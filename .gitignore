@@ -11,3 +11,4 @@ version.h
 *.orig
 *.bak
 PINS_*/
+*.exe
