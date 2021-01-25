@@ -11,7 +11,7 @@
 #ifndef __RF24NETWORK_CONFIG_H__
 #define __RF24NETWORK_CONFIG_H__
 
-#define NETWORK_DEFAULT_ADDRESS 04444
+    #define NETWORK_DEFAULT_ADDRESS 04444
 
     #if !defined(__AVR_ATtiny85__) && !defined(__AVR_ATtiny84__)
 
@@ -77,15 +77,15 @@
 
 #ifdef __cplusplus
 
-#if (defined (__linux) || defined (linux)) && !defined (__ARDUINO_X86__)
+    #if (defined (__linux) || defined (linux)) && !defined (__ARDUINO_X86__)
         #include <RF24/RF24_config.h>
 
-//ATXMega
-#elif defined(XMEGA)
-    #include "../../rf24lib/rf24lib/RF24_config.h"
-#else
+    //ATXMega
+    #elif defined(XMEGA)
+        #include "../../rf24lib/rf24lib/RF24_config.h"
+    #else
         #include <RF24_config.h>
-#endif
+    #endif
 
     #if !defined (ARDUINO_ARCH_AVR)
         #ifndef sprintf_P
@@ -93,29 +93,29 @@
         #endif
     #endif
 
-        #if defined (SERIAL_DEBUG_MINIMAL)
-            #define IF_SERIAL_DEBUG_MINIMAL(x) ({x;})
-        #else
-            #define IF_SERIAL_DEBUG_MINIMAL(x)
-        #endif
+    #if defined (SERIAL_DEBUG_MINIMAL)
+        #define IF_SERIAL_DEBUG_MINIMAL(x) ({x;})
+    #else
+        #define IF_SERIAL_DEBUG_MINIMAL(x)
+    #endif
 
-        #if defined (SERIAL_DEBUG_FRAGMENTATION)
-            #define IF_SERIAL_DEBUG_FRAGMENTATION(x) ({x;})
-        #else
-            #define IF_SERIAL_DEBUG_FRAGMENTATION(x)
-        #endif
+    #if defined (SERIAL_DEBUG_FRAGMENTATION)
+        #define IF_SERIAL_DEBUG_FRAGMENTATION(x) ({x;})
+    #else
+        #define IF_SERIAL_DEBUG_FRAGMENTATION(x)
+    #endif
 
-        #if defined (SERIAL_DEBUG_FRAGMENTATION_L2)
-            #define IF_SERIAL_DEBUG_FRAGMENTATION_L2(x) ({x;})
-        #else
-            #define IF_SERIAL_DEBUG_FRAGMENTATION_L2(x)
-        #endif
+    #if defined (SERIAL_DEBUG_FRAGMENTATION_L2)
+        #define IF_SERIAL_DEBUG_FRAGMENTATION_L2(x) ({x;})
+    #else
+        #define IF_SERIAL_DEBUG_FRAGMENTATION_L2(x)
+    #endif
 
-        #if defined (SERIAL_DEBUG_ROUTING)
-            #define IF_SERIAL_DEBUG_ROUTING(x) ({x;})
-        #else
-            #define IF_SERIAL_DEBUG_ROUTING(x)
-        #endif
+    #if defined (SERIAL_DEBUG_ROUTING)
+        #define IF_SERIAL_DEBUG_ROUTING(x) ({x;})
+    #else
+        #define IF_SERIAL_DEBUG_ROUTING(x)
+    #endif
 
 
 #endif //RF24_CONFIG_H
