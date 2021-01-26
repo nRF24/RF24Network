@@ -39,8 +39,9 @@ volatile bool wasInterrupted;
 #endif
 uint16_t RF24NetworkHeader::next_id = 1;
 
-/******************************************************************/
 #if defined(RF24_LINUX)
+/******************************************************************/
+
 RF24Network::RF24Network(RF24 &_radio) : radio(_radio), frame_size(MAX_FRAME_SIZE)
 {
     networkFlags = 0;
@@ -100,9 +101,9 @@ void RF24Network::begin(uint8_t _channel, uint16_t _node_address)
     radio.startListening();
 }
 
+#if defined ENABLE_NETWORK_STATS
 /******************************************************************/
 
-#if defined ENABLE_NETWORK_STATS
 void RF24Network::failures(uint32_t *_fails, uint32_t *_ok)
 {
     *_fails = nFails;
@@ -384,11 +385,9 @@ bool RF24Network::appendFragmentToFrame(RF24NetworkFrame frame)
 }
 
 /******************************************************************/
-/******************************************************************/
 
 #else // Not defined RF24_Linux
 
-/******************************************************************/
 /******************************************************************/
 
 uint8_t RF24Network::enqueue(RF24NetworkHeader *header)
@@ -625,6 +624,7 @@ uint16_t RF24Network::read(RF24NetworkHeader &header, void *message, uint16_t ma
 
 #if defined RF24NetworkMulticast
 /******************************************************************/
+
 bool RF24Network::multicast(RF24NetworkHeader &header, const void *message, uint16_t len, uint8_t level)
 {
     // Fill out the header
@@ -635,12 +635,14 @@ bool RF24Network::multicast(RF24NetworkHeader &header, const void *message, uint
 #endif
 
 /******************************************************************/
+
 bool RF24Network::write(RF24NetworkHeader &header, const void *message, uint16_t len)
 {
     return write(header, message, len, 070);
 }
 
 /******************************************************************/
+
 bool RF24Network::write(RF24NetworkHeader &header, const void *message, uint16_t len, uint16_t writeDirect)
 {
 
@@ -741,6 +743,7 @@ bool RF24Network::write(RF24NetworkHeader &header, const void *message, uint16_t
 
 #endif //Fragmentation enabled
 }
+
 /******************************************************************/
 
 bool RF24Network::_write(RF24NetworkHeader &header, const void *message, uint16_t len, uint16_t writeDirect)
@@ -1063,6 +1066,7 @@ void RF24Network::setup_address(void)
 }
 
 /******************************************************************/
+
 uint16_t RF24Network::addressOfPipe(uint16_t node, uint8_t pipeNo)
 {
     //Say this node is 013 (1011), mask is 077 or (00111111)
@@ -1117,8 +1121,9 @@ bool RF24Network::is_valid_address(uint16_t node)
     return result;
 }
 
-/******************************************************************/
 #if defined(RF24NetworkMulticast)
+/******************************************************************/
+
 void RF24Network::multicastLevel(uint8_t level)
 {
     multicast_level = level;
