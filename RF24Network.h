@@ -185,24 +185,24 @@ class RF24;
  */
 struct RF24NetworkHeader
 {
-    uint16_t from_node; /**< Logical address where the message was generated */
-    uint16_t to_node;   /**< Logical address where the message is going */
-    uint16_t id;        /**< Sequential message ID, incremented every time a new frame is constructed */
+    uint16_t from_node; /** Logical address where the message was generated */
+    uint16_t to_node;   /** Logical address where the message is going */
+    uint16_t id;        /** Sequential message ID, incremented every time a new frame is constructed */
     /**
      * Message Types:
      * User message types 1 through 64 will NOT be acknowledged by the network, while message types 65 through 127 will receive a network ACK.
      * System message types 192 through 255 will NOT be acknowledged by the network. Message types 128 through 192 will receive a network ACK. <br>
      * <br><br>
      */
-    unsigned char type; /**< <b>Type of the packet. </b> 0-127 are user-defined types, 128-255 are reserved for system */
+    unsigned char type; /** <b>Type of the packet.</b> 0-127 are user-defined types, 128-255 are reserved for system */
 
     /**
      * During fragmentation, it carries the fragment_id, and on the last fragment
      * it carries the header_type.<br>
      */
-    unsigned char reserved; /**< *Reserved for system use* */
+    unsigned char reserved; /** *Reserved for system use* */
 
-    static uint16_t next_id; /**< The message ID of the next message to be sent (unused)*/
+    static uint16_t next_id; /** The message ID of the next message to be sent (unused)*/
 
     /**
      * Default constructor
@@ -222,11 +222,11 @@ struct RF24NetworkHeader
      * Use this constructor to create a header and then send a message
      *
      * @code
-     *  uint16_t recipient_address = 011;
+     * uint16_t recipient_address = 011;
      *
-     *  RF24NetworkHeader header(recipient_address,'t');
+     * RF24NetworkHeader header(recipient_address, 't');
      *
-     *  network.write(header,&message,sizeof(message));
+     * network.write(header, &message, sizeof(message));
      * @endcode
      *
      * @param _to The Octal format, logical node address where the message is going
@@ -238,8 +238,8 @@ struct RF24NetworkHeader
     /**
      * Create debugging string
      *
-     * Useful for debugging.  Dumps all members into a single string, using
-     * internal static memory.  This memory will get overridden next time
+     * Useful for debugging. Dumps all members into a single string, using
+     * internal static memory. This memory will get overridden next time
      * you call the method.
      *
      * @return String representation of this object
@@ -259,8 +259,8 @@ struct RF24NetworkHeader
  */
 struct RF24NetworkFrame
 {
-    RF24NetworkHeader header; /**< Header which is sent with each message */
-    uint16_t message_size;    /**< The size in bytes of the payload length */
+    RF24NetworkHeader header; /** Header which is sent with each message */
+    uint16_t message_size;    /** The size in bytes of the payload length */
 
     /**
      * On Arduino, the message buffer is just a pointer, and can be pointed to any memory location.
@@ -509,7 +509,7 @@ public:
      * Set to 0 to use the normal auto retry period defined by radio.setRetries()
      *
      */
-    uint32_t txTimeout; /**< Network timeout value */
+    uint32_t txTimeout; /** Network timeout value */
 
     /**
      * This only affects payloads that are routed by one or more nodes.
@@ -517,7 +517,7 @@ public:
      * Radios sending directly to their parent or children nodes do not
      * utilize this value.
      */
-    uint16_t routeTimeout; /**< Timeout for routed payloads */
+    uint16_t routeTimeout; /** Timeout for routed payloads */
 
     /**@}*/
     /**
@@ -754,12 +754,12 @@ private:
 
     void logicalToPhysicalAddress(logicalToPhysicalStruct *conversionInfo);
 
-    RF24 &radio; /**< Underlying radio driver, provides link/physical layers */
+    RF24 &radio; /** Underlying radio driver, provides link/physical layers */
 
     #if defined(RF24NetworkMulticast)
     uint8_t multicast_level;
     #endif
-    uint16_t node_address; /**< Logical node address of this unit, 1 .. UINT_MAX */
+    uint16_t node_address; /** Logical node address of this unit, 1 .. UINT_MAX */
     uint8_t frame_size;
     const static unsigned int max_frame_payload_size = MAX_FRAME_SIZE - sizeof(RF24NetworkHeader);
 
@@ -770,12 +770,12 @@ private:
     #else // Not Linux:
 
     #if defined(DISABLE_USER_PAYLOADS)
-    uint8_t frame_queue[1]; /**< Space for a small set of frames that need to be delivered to the app layer */
+    uint8_t frame_queue[1]; /** Space for a small set of frames that need to be delivered to the app layer */
     #else
-    uint8_t frame_queue[MAIN_BUFFER_SIZE]; /**< Space for a small set of frames that need to be delivered to the app layer */
+    uint8_t frame_queue[MAIN_BUFFER_SIZE]; /** Space for a small set of frames that need to be delivered to the app layer */
     #endif
 
-    uint8_t *next_frame; /**< Pointer into the @p frame_queue where we should place the next received frame */
+    uint8_t *next_frame; /** Pointer into the @p frame_queue where we should place the next received frame */
 
     #if !defined(DISABLE_FRAGMENTATION)
     RF24NetworkFrame frag_queue;
@@ -784,9 +784,9 @@ private:
 
     #endif // Linux/Not Linux
 
-    uint16_t parent_node; /**< Our parent's node address */
-    uint8_t parent_pipe;  /**< The pipe our parent uses to listen to us */
-    uint16_t node_mask;   /**< The bits which contain signfificant node address information */
+    uint16_t parent_node; /** Our parent's node address */
+    uint8_t parent_pipe;  /** The pipe our parent uses to listen to us */
+    uint16_t node_mask;   /** The bits which contain signfificant node address information */
     uint64_t pipe_address(uint16_t node, uint8_t pipe);
 
     #if defined ENABLE_NETWORK_STATS
