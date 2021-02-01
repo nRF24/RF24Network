@@ -138,7 +138,7 @@
  * Used by RF24Mesh
  *
  * Messages of this type are used to request information from the master node, generally via a unicast (direct) write.
- * Any (non-master) node receiving a message of this type will manually forward it to the master node using an normal network write.
+ * Any (non-master) node receiving a message of this type will manually forward it to the master node using a normal network write.
  */
 #define NETWORK_REQ_ADDRESS 195
 //#define NETWORK_ADDR_LOOKUP 196
