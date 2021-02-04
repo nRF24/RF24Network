@@ -76,7 +76,6 @@ def slave(timeout=6):
         until exiting function.
     """
     radio.startListening()  # put radio in RX mode
-
     start_timer = time.monotonic()
     while (time.monotonic() - start_timer) < timeout:
         network.update()
@@ -135,7 +134,7 @@ if __name__ == "__main__":
     if not radio.begin():
         raise RuntimeError("radio hardware is not responding")
 
-    print(sys.argv[0])  # print example name
+    print("network " + sys.argv[0])  # print example name
 
     # to use different addresses on a pair of radios, we need a variable to
     # uniquely identify which address this radio will use to transmit
