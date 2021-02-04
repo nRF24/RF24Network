@@ -83,9 +83,12 @@ def slave(timeout=6):
         while network.available():
             header, payload = network.read(8)
             print("payload length ", len(payload))
-            ms, number = struct.unpack("<LL", bytes(payload))
+            millis, number = struct.unpack("<LL", bytes(payload))
             print(
-                "Received payload ", number, " at ", ms, " from ", oct(header.from_node)
+                "Received payload ", number,
+                "at", millis,
+                "from", oct(header.from_node),
+                "to", oct(header.to_node),
             )
             start_timer = time.monotonic()  # reset timer
         time.sleep(0.05)  # wait 50 ms
