@@ -1,7 +1,8 @@
 # Performance and Data Loss: Tuning the Network
 Tips and examples for tuning the network and general operation.
 
-![@image html topologyImage.jpg height=75% width=75%]("http://github.com/nRF24/RF24Network/blob/master/images/topologyImage.jpg")
+Observe:
+[![topologyImage.jpg](http://github.com/nRF24/RF24Network/blob/master/images/topologyImage.jpg)](http://github.com/nRF24/RF24Network/blob/master/images/topologyImage.jpg)
 
 ## Understanding Radio Communication and Topology
 When a transmission takes place from one radio module to another, the receiving radio will communicate
