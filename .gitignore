@@ -1,7 +1,8 @@
 16000000/
 8000000/
 out/
-docs/
+docs/html/
+docs/xml/
 .*.swp
 .*.swo
 Session.vim
