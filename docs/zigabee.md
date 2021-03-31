@@ -7,7 +7,7 @@ ZigBee is a much more robust, feature-rich set of protocols, with many different
 providing compatible chips.
 
 RF24Network is cheap.  While ZigBee radios are well over $20, nRF24L01 modules can be found
-for under $2.  My personal favorite is [MDFly RF-IS2401](http://www.mdfly.com/index.php?main_page=product_info&products_id=82).
+for under $2.
 
 ## Similiarities & Differences
 Here are some comparisons between RF24Network and ZigBee.
