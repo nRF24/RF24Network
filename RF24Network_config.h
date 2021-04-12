@@ -11,7 +11,9 @@
 #ifndef __RF24NETWORK_CONFIG_H__
 #define __RF24NETWORK_CONFIG_H__
 
-    #define NETWORK_DEFAULT_ADDRESS 04444
+    #ifndef NETWORK_DEFAULT_ADDRESS
+        #define NETWORK_DEFAULT_ADDRESS 04444
+    #endif // NETWORK_DEFAULT_ADDRESS
 
     #if !defined(__AVR_ATtiny85__) && !defined(__AVR_ATtiny84__)
 
@@ -33,7 +35,9 @@
          * @note: This buffer can now be any size > 24. Previously need to be a multiple of 24.
          * @note: If used with RF24Ethernet, this value is used to set the buffer sizes.
          */
-        #define MAX_PAYLOAD_SIZE  144
+        #ifndef MAX_PAYLOAD_SIZE
+            #define MAX_PAYLOAD_SIZE  144
+        #endif // MAX_PAYLOAD_SIZE
 
         /** The size of the main buffer. This is the user-cache, where incoming data is stored.
          * Data is stored using Frames: Header (8-bytes) + Frame_Size (2-bytes) + Data (?-bytes)
