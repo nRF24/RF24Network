@@ -14,3 +14,4 @@ version.h
 PINS_*/
 *.exe
 build/
+.vscode/
