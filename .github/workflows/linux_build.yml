@@ -32,7 +32,6 @@ jobs:
             usr_dir: "local"
 
     steps:
-      - uses: actions/checkout@v1
       - name: install rpmbuild
         run: sudo apt-get install rpm
 
@@ -67,8 +66,6 @@ jobs:
           ref: rp2xxx
 
       - name: build & install RF24
-        if: ${{ matrix.toolchain.compiler == 'default' }}
-        working-directory: ${{ github.workspace }}/RF24
         run: |
           mkdir build
           cd build
@@ -76,6 +73,9 @@ jobs:
           -D CMAKE_INSTALL_PREFIX=/usr/${{ matrix.toolchain.usr_dir }} \
           -D CMAKE_TOOLCHAIN_FILE=cmake/toolchains/${{ matrix.toolchain.compiler }}.cmake
           sudo make install
+
+      - name: Chaeckout RF24Network repo
+        uses: actions/checkout@v1
 
       - name: create CMake build environment
         run: cmake -E make_directory ${{ github.workspace }}/build

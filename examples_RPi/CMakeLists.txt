@@ -16,7 +16,7 @@ include(../cmake/detectCPU.cmake) # sets the variable SOC accordingly
 find_library(RF24 rf24 REQUIRED)
 message(STATUS "using RF24 library: ${RF24}")
 
-find_library(RF24Network rf24 REQUIRED)
+find_library(RF24Network rf24network REQUIRED)
 message(STATUS "using RF24Network library: ${RF24Network}")
 
 foreach(example ${EXAMPLES_LIST})
