@@ -15,4 +15,4 @@ PINS_*/
 *.exe
 build/
 .vscode/
-*CMakeUserPresets.json
+*CMakeUserPresets*.json

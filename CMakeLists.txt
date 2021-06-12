@@ -56,39 +56,39 @@ message(STATUS "using RF24 library: ${RF24}")
 ###########################
 add_library(${LibTargetName} SHARED
     RF24Network.cpp
-    )
+)
 target_include_directories(${LibTargetName} PUBLIC
     ${CMAKE_CURRENT_LIST_DIR}
-    )
+)
 
 target_link_libraries(${LibTargetName} INTERFACE
     project_options
     project_warnings
     SHARED ${RF24}
-    )
+)
 
 set_target_properties(
     ${LibTargetName}
     PROPERTIES
     SOVERSION ${${LibName}_VERSION_MAJOR}
     VERSION ${${LibName}_VERSION_STRING}
-    )
+)
 
 ###########################
 # target install rules for the RF24Log lib
 ###########################
 install(TARGETS ${LibTargetName}
     DESTINATION lib
-    )
+)
 
 install(FILES
         RF24Network.h
         RF24Network_config.h
     DESTINATION include/RF24Network
-    )
+)
 
 # CMAKE_CROSSCOMPILING is only TRUE when CMAKE_TOOLCHAIN_FILE is specified via CLI
-if(CMAKE_HOST_UNIX AND "${CMAKE_CROSSCOMPILING}" STREQUAL "FALSE")
+if("${CMAKE_CROSSCOMPILING}" STREQUAL "FALSE")
     install(CODE "message(STATUS \"Updating ldconfig\")")
     install(CODE "execute_process(COMMAND ldconfig)")
 endif()
