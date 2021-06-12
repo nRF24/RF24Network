@@ -121,7 +121,7 @@ jobs:
       - name: Save artifact
         uses: actions/upload-artifact@v2
         with:
-          name: "pkg_RF24Mesh"
+          name: "pkg_RF24Network"
           path: |
             ${{ github.workspace }}/build/pkgs/*.deb
             ${{ github.workspace }}/build/pkgs/*.rpm
