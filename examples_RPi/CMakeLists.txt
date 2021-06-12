@@ -5,7 +5,7 @@ set(EXAMPLES_LIST
     helloworld_rx
     helloworld_tx
     rx-test
-    )
+)
 
 project(RF24LogExamples)
 add_compile_options(-Ofast -Wall) # passing the compiler a `-pthread` flag doesn't work here
