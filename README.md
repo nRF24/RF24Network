@@ -1,3 +1,6 @@
+[![Linux build](https://github.com/nRF24/RF24Network/actions/workflows/linux_build.yml/badge.svg)](https://github.com/nRF24/RF24Network/actions/workflows/linux_build.yml)
+[![Arduino CLI build](https://github.com/nRF24/RF24Network/actions/workflows/build_arduino.yml/badge.svg)](https://github.com/nRF24/RF24Network/actions/workflows/build_arduino.yml)
+
 # TMRh20 2014 - Newly Optimized Network Layer for nRF24L01(+) radios
 
 Please see the full documentation at http://nRF24.github.io/RF24Network/
