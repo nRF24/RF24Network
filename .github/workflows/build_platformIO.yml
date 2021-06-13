@@ -33,11 +33,11 @@ jobs:
           python -m pip install --upgrade pip
           pip install --upgrade platformio
       - name: package lib
-        run: pio package pack -o PlatformIO-RF24Netork-${{ steps.latest_ver.outputs.release }}.tar.gz
+        run: pio package pack -o PlatformIO-RF24Network-${{ steps.latest_ver.outputs.release }}.tar.gz
       - name: Save artifact
         uses: actions/upload-artifact@v2
         with:
-          name: "PIO_pkg_RF24Mesh"
+          name: "PIO_pkg_RF24Network"
           path: PlatformIO*.tar.gz
       - name: Upload Release assets
         if: github.event_name == 'release'
