@@ -77,8 +77,10 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install --upgrade platformio
-    # - name: Install library dependencies
-    #   run: pio lib -g install RF24
+    # "dependencies" field in JSON should automatically install RF24.
+    # Because we run this CI test against the local repo, the JSON seems neglected
+    - name: Install library dependencies
+      run: pio lib -g install nrf24/RF24
     - name: Run PlatformIO
       run: pio ci --lib="." --board=${{ matrix.board }}
       env:

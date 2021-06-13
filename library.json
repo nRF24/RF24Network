@@ -11,8 +11,18 @@
 	"dependencies": [
 		{
 			"name": "RF24",
-			"authors": "nRF24",
-			"frameworks": "arduino"
+			"authors": "nrf24",
+			"frameworks": "arduino",
+			"platforms": [
+				"atmelavr",
+				"atmelsam",
+				"teensy",
+				"atmelmegaavr",
+				"espressif32",
+				"espressif8266",
+				"linux_arm",
+				"ststm32"
+			]
 		}
 	],
 	"exclude": [
