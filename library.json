@@ -18,6 +18,8 @@
     "export":
     {
         "exclude": [
+            ".github/*",
+            "keywords.txt",
             "examples_RPi/*",
             "RPi/*",
             "cmake/*",
