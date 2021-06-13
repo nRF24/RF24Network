@@ -15,10 +15,13 @@
 			"frameworks": "arduino"
 		}
 	],
-	"exclude": [
-		"examples_RPi/*",
-		"RPi/*"
-	],
+	"export":
+	{
+		"exclude": [
+			"examples_RPi/*",
+			"RPi/*"
+		]
+	},
 	"frameworks": "arduino",
 	"platforms": [
 		"atmelavr",
