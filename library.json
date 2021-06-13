@@ -14,16 +14,19 @@
 		"frameworks": "arduino"
 	},
 	"exclude": [
-		"examples/*",
 		"examples_RPi/*",
-		"RPi/*",
-		"tests/*"
+		"RPi/*"
 	],
 	"frameworks": "arduino",
 	"platforms": [
 		"atmelavr",
 		"atmelsam",
-		"teensy"
+		"teensy",
+		"atmelmegaavr",
+		"espressif32",
+		"espressif8266",
+		"linux_arm",
+		"ststm32"
 	],
 	"requires": [{
 		"name": "RF24"
