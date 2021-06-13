@@ -6,7 +6,7 @@
 	"license": "GPL-2.0-only",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/TMRh20/RF24Network.git"
+		"url": "https://github.com/nRF24/RF24Network.git"
 	},
 	"dependencies": [
 		{
