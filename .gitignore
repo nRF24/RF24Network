@@ -16,3 +16,4 @@ PINS_*/
 build/
 .vscode/
 *CMakeUserPresets*.json
+*.tar.gz
