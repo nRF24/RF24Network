@@ -40,11 +40,11 @@ uint8_t dataBuffer[MAX_PAYLOAD_SIZE];
 
 void setup(void) {
   Serial.begin(115200);
-  if (!Serial) {
+  while (!Serial) {
     // some boards need this because of native USB capability
   }
   Serial.println(F("RF24Network/examples/helloworld_tx_advanced/"));
-  printf_begin(); //Used to enable printf on AVR devices
+  printf_begin(); // needed for RF24* libs' internal printf() calls
 
   if (!radio.begin()) {
     Serial.println(F("Radio hardware not responding!"));

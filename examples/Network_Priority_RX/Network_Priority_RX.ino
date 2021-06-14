@@ -43,11 +43,8 @@ uint32_t myVariable = 0;
 void setup() {
 
   Serial.begin(115200);
-  if (!Serial) {
-    // some boards need this because of native USB capability
-  }
-  printf_begin(); //Used to enable printf on AVR devices
-  if (!Serial) {
+  printf_begin(); // needed for RF24* libs' internal printf() calls
+  while (!Serial) {
     // some boards need this because of native USB capability
   }
   Serial.println(F("RF24Network/examples/Network_Separation_RX/"));
