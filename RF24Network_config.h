@@ -52,7 +52,9 @@
         //#define ENABLE_NETWORK_STATS
 
         /** Enable dynamic payloads - If using different types of NRF24L01 modules, some may be incompatible when using this feature **/
-        #define ENABLE_DYNAMIC_PAYLOADS
+        #ifndef DISABLE_DYNAMIC_PAYLOADS
+            #define ENABLE_DYNAMIC_PAYLOADS
+        #endif // DISABLE_DYNAMIC_PAYLOADS
 
         /** Debug Options */
         //#define SERIAL_DEBUG
@@ -123,4 +125,3 @@
 
 
 #endif //RF24_CONFIG_H
-
