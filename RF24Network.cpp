@@ -211,20 +211,20 @@ uint8_t RF24Network::update(void)
                         delayMicroseconds(600 * 4);
                     }
                     delayMicroseconds((node_address % 4) * 600);
-                    write(levelToAddress(multicast_level) << 3, 4);
+                    write(levelToAddress(multicast_level) << 3, USER_TX_MULTICAST);
                 }
                 if (val == 2) { //External data received
                     return EXTERNAL_DATA_TYPE;
                 }
             } else {
                 if (node_address != NETWORK_DEFAULT_ADDRESS) {
-                    write(header->to_node, 1); //Send it on, indicate it is a routed payload
+                    write(header->to_node, TX_ROUTED); //Send it on, indicate it is a routed payload
                     returnVal = 0;
                 }
             }
             #else // not defined(RF24NetworkMulticast)
             if (node_address != NETWORK_DEFAULT_ADDRESS) {
-                write(header->to_node, 1); //Send it on, indicate it is a routed payload
+                write(header->to_node, TX_ROUTED); //Send it on, indicate it is a routed payload
                 returnVal = 0;
             }
             #endif // defined(RF24NetworkMulticast)
