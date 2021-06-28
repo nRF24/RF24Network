@@ -77,8 +77,8 @@ void loop() {
   unsigned long now = millis();              // If it's time to send a message, send it!
   if ( now - last_sent >= interval && !stopSending ) {
     last_sent = now;
-    Serial.print("Sending size ");
-    Serial.print(sizeofSend );
+    Serial.print(F("Sending size "));
+    Serial.print(sizeofSend);
 
     // Fragmentation/reassembly is transparent. Just send payloads as usual.
     RF24NetworkHeader header(/*to node*/ other_node);
@@ -89,9 +89,6 @@ void loop() {
       sizeofSend  = 0;
     }
 
-    if (ok)
-      Serial.println(" ok.");
-    else
-      Serial.println(" failed.");
+    Serial.println(ok ? F("ok.") : F("failed."));
   }
 }

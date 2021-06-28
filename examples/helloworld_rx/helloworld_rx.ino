@@ -57,9 +57,9 @@ void loop(void) {
     RF24NetworkHeader header;        // If so, grab it and print it out
     payload_t payload;
     network.read(header, &payload, sizeof(payload));
-    Serial.print("Received packet #");
+    Serial.print(F("Received packet: counter="));
     Serial.print(payload.counter);
-    Serial.print(" at ");
+    Serial.print(F(", origin timestamp="));
     Serial.println(payload.ms);
   }
 }

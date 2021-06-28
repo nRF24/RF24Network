@@ -63,13 +63,10 @@ void loop() {
   if (now - last_sent >= interval) {
     last_sent = now;
 
-    Serial.print("Sending...");
+    Serial.print(F("Sending..."));
     payload_t payload = { millis(), packets_sent++ };
     RF24NetworkHeader header(/*to node*/ other_node);
     bool ok = network.write(header, &payload, sizeof(payload));
-    if (ok)
-      Serial.println("ok.");
-    else
-      Serial.println("failed.");
+    Serial.println(ok ? F("ok.") : F("failed."));
   }
 }

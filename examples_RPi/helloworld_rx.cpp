@@ -16,10 +16,6 @@
 #include <stdio.h>
 #include <time.h>
 
-/**
- * g++ -L/usr/lib main.cc -I/usr/include -o main -lrrd
- **/
-//using namespace std;
 
 // CE Pin, CSN Pin, SPI Speed (Hz)
 RF24 radio(22, 0);
@@ -29,13 +25,8 @@ RF24Network network(radio);
 // Address of our node in Octal format
 const uint16_t this_node = 00;
 
-// Address of the other node in Octal format (01,021, etc)
+// Address of the other node in Octal format (01, 021, etc)
 const uint16_t other_node = 01;
-
-const unsigned long interval = 2000; //ms  // How often to send 'hello world to the other unit
-
-unsigned long last_sent;    // When did we last send?
-unsigned long packets_sent; // How many have we sent already
 
 struct payload_t { // Structure of our payload
     unsigned long ms;
@@ -44,7 +35,7 @@ struct payload_t { // Structure of our payload
 
 int main(int argc, char **argv)
 {
-    // Refer to RF24.h or nRF24L01 DS for settings
+    // Refer to RF24 docs or nRF24L01 Datasheet for settings
 
     if (!radio.begin()) {
         printf("Radio hardware not responding!\n");
@@ -64,11 +55,10 @@ int main(int argc, char **argv)
             payload_t payload;
             network.read(header, &payload, sizeof(payload));
 
-            printf("Received payload # %lu at %lu \n", payload.counter, payload.ms);
+            printf("Received payload: counter=%lu, origin timestamp=%lu\n", payload.counter, payload.ms);
         }
         //sleep(2);
         delay(2000);
-        //fclose(pFile);
     }
 
     return 0;

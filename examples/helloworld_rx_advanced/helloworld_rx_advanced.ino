@@ -75,10 +75,10 @@ void loop(void) {
 
     // Uncomment below to print the entire payload
     /*
-    for(uint32_t i=0; i<payloadSize; i++) {
+    for(uint32_t i = 0; i < payloadSize; i++) {
       Serial.print(dataBuffer[i]);
-      Serial.print(": ");
-      if(i%50 == 49) {
+      Serial.print(F(": "));
+      if(i % 50 == 49) {
         //Add a line break every 50 characters
         Serial.println();
       }

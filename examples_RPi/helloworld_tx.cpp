@@ -17,14 +17,9 @@
 #include <stdio.h>
 #include <time.h>
 
-/**
- * g++ -L/usr/lib main.cc -I/usr/include -o main -lrrd
- **/
 using namespace std;
 
-// CE Pin, CSN Pin, SPI Speed(Hz)
-
-RF24 radio(22, 0);
+RF24 radio(22, 0); // (CE Pin, CSN Pin, [SPI Speed (in Hz)])
 
 RF24Network network(radio);
 
@@ -34,7 +29,8 @@ const uint16_t this_node = 01;
 // Address of the other node
 const uint16_t other_node = 00;
 
-const unsigned long interval = 2000; //ms  // How often to send 'hello world to the other unit
+// How often (in milliseconds) to send a message to the `other_node`
+const unsigned long interval = 2000;
 
 unsigned long last_sent;    // When did we last send?
 unsigned long packets_sent; // How many have we sent already
@@ -46,7 +42,7 @@ struct payload_t { // Structure of our payload
 
 int main(int argc, char **argv)
 {
-    // Refer to RF24.h or nRF24L01 DS for settings
+    // Refer to RF24 docs or nRF24L01 Datasheet for settings
 
     if (!radio.begin()) {
         printf("Radio hardware not responding!\n");
