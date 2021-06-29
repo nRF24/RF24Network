@@ -190,7 +190,7 @@ uint8_t RF24Network::update(void)
         } else {
             #if defined(RF24NetworkMulticast)
 
-            if (header->to_node == 0100) {
+            if (header->to_node == NETWORK_MULTICAST_ADDRESS) {
                 if (header->type == NETWORK_POLL) {
                     returnVal = 0;
                     if (!(networkFlags & FLAG_NO_POLL) && node_address != NETWORK_DEFAULT_ADDRESS) {
@@ -627,7 +627,7 @@ uint16_t RF24Network::read(RF24NetworkHeader &header, void *message, uint16_t ma
 bool RF24Network::multicast(RF24NetworkHeader &header, const void *message, uint16_t len, uint8_t level)
 {
     // Fill out the header
-    header.to_node = 0100;
+    header.to_node = NETWORK_MULTICAST_ADDRESS;
     header.from_node = node_address;
     return write(header, message, len, levelToAddress(level));
 }
@@ -637,7 +637,7 @@ bool RF24Network::multicast(RF24NetworkHeader &header, const void *message, uint
 
 bool RF24Network::write(RF24NetworkHeader &header, const void *message, uint16_t len)
 {
-    return write(header, message, len, 070);
+    return write(header, message, len, NETWORK_AUTO_ROUTING);
 }
 
 /******************************************************************/
@@ -670,7 +670,7 @@ bool RF24Network::write(RF24NetworkHeader &header, const void *message, uint16_t
 
     IF_SERIAL_DEBUG_FRAGMENTATION(printf("%lu: FRG Total message fragments %d\n\r", millis(), fragment_id););
 
-    if (header.to_node != 0100) {
+    if (header.to_node != NETWORK_MULTICAST_ADDRESS) {
         networkFlags |= FLAG_FAST_FRAG;
         radio.stopListening();
     }
@@ -712,7 +712,7 @@ bool RF24Network::write(RF24NetworkHeader &header, const void *message, uint16_t
             msgCount++;
         }
 
-        //if(writeDirect != 070){ delay(2); } //Delay 2ms between sending multicast payloads
+        //if(writeDirect != NETWORK_AUTO_ROUTING){ delay(2); } //Delay 2ms between sending multicast payloads
 
         if (!ok && retriesPerFrag >= 3) {
             IF_SERIAL_DEBUG_FRAGMENTATION(printf("%lu: FRG TX with fragmentID '%d' failed after %d fragments. Abort.\n\r", millis(), fragment_id, msgCount););
@@ -783,10 +783,10 @@ bool RF24Network::_write(RF24NetworkHeader &header, const void *message, uint16_
   }*/
     // Otherwise send it out over the air
 
-    if (writeDirect != 070) {
+    if (writeDirect != NETWORK_AUTO_ROUTING) {
         uint8_t sendType = USER_TX_TO_LOGICAL_ADDRESS; // Payload is multicast to the first node, and routed normally to the next
 
-        if (header.to_node == 0100)
+        if (header.to_node == NETWORK_MULTICAST_ADDRESS)
             sendType = USER_TX_MULTICAST;
         if (header.to_node == writeDirect)
             sendType = USER_TX_TO_PHYSICAL_ADDRESS; // Payload is multicast to the first node, which is the recipient
@@ -798,7 +798,7 @@ bool RF24Network::_write(RF24NetworkHeader &header, const void *message, uint16_
 
 /******************************************************************/
 
-bool RF24Network::write(uint16_t to_node, uint8_t directTo) // Direct To: 0 = First Payload, standard routing, 1=routed payload, 2=directRoute to host, 3=directRoute to Route
+bool RF24Network::write(uint16_t to_node, uint8_t sendType) // sendType: 0 = First Payload, standard routing, 1=routed payload, 2=directRoute to host, 3=directRoute to Route
 {
     bool ok = false;
     bool isAckType = false;
@@ -814,7 +814,7 @@ bool RF24Network::write(uint16_t to_node, uint8_t directTo) // Direct To: 0 = Fi
         return false;
 
     //Load info into our conversion structure, and get the converted address info
-    logicalToPhysicalStruct conversion = {to_node, directTo, 0};
+    logicalToPhysicalStruct conversion = {to_node, sendType, 0};
     logicalToPhysicalAddress(&conversion);
 
     #if defined(RF24_LINUX)
@@ -823,7 +823,7 @@ bool RF24Network::write(uint16_t to_node, uint8_t directTo) // Direct To: 0 = Fi
     IF_SERIAL_DEBUG(printf_P(PSTR("%lu: MAC Sending to 0%o via 0%o on pipe %x\n\r"), millis(), to_node, conversion.send_node, conversion.send_pipe));
     #endif
     /**Write it*/
-    if (directTo == TX_ROUTED && conversion.send_node == to_node && isAckType) {
+    if (sendType == TX_ROUTED && conversion.send_node == to_node && isAckType) {
         delay(2);
     }
     ok = write_to_pipe(conversion.send_node, conversion.send_pipe, conversion.multicast);
@@ -837,7 +837,7 @@ bool RF24Network::write(uint16_t to_node, uint8_t directTo) // Direct To: 0 = Fi
     }
         #endif // !defined(RF24_LINUX)
 
-    if (directTo == TX_ROUTED && ok && conversion.send_node == to_node && isAckType) {
+    if (sendType == TX_ROUTED && ok && conversion.send_node == to_node && isAckType) {
 
         RF24NetworkHeader *header = (RF24NetworkHeader *)&frame_buffer;
         header->type = NETWORK_ACK;          // Set the payload type to NETWORK_ACK
@@ -860,7 +860,7 @@ bool RF24Network::write(uint16_t to_node, uint8_t directTo) // Direct To: 0 = Fi
         #endif
     }
 
-    if (ok && conversion.send_node != to_node && (directTo == 0 || directTo == 3) && isAckType) {
+    if (ok && conversion.send_node != to_node && (sendType == TX_NORMAL || sendType == USER_TX_TO_LOGICAL_ADDRESS) && isAckType) {
         // Now, continue listening
         if (networkFlags & FLAG_FAST_FRAG) {
             radio.txStandBy(txTimeout);
@@ -902,7 +902,7 @@ bool RF24Network::write(uint16_t to_node, uint8_t directTo) // Direct To: 0 = Fi
 
 /******************************************************************/
 
-// Provided the to_node and directTo option, it will return the resulting node and pipe
+// Provided the to_node and sendType option, it will return the resulting node and pipe
 void RF24Network::logicalToPhysicalAddress(logicalToPhysicalStruct *conversionInfo)
 {
 
@@ -1095,7 +1095,7 @@ uint16_t RF24Network::direct_child_route_to(uint16_t node)
 bool RF24Network::is_valid_address(uint16_t node)
 {
     bool result = true;
-    if (node == 0100 || node == 010) {
+    if (node == NETWORK_MULTICAST_ADDRESS || node == 010) {
         return result;
     }
     uint8_t count = 0;

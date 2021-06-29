@@ -15,6 +15,14 @@
         #define NETWORK_DEFAULT_ADDRESS 04444
     #endif // NETWORK_DEFAULT_ADDRESS
 
+    #ifndef NETWORK_MULTICAST_ADDRESS
+        #define NETWORK_MULTICAST_ADDRESS 0100
+    #endif // NETWORK_MULTICAST_ADDRESS
+
+    #ifndef NETWORK_AUTO_ROUTING
+        #define NETWORK_AUTO_ROUTING 070
+    #endif // NETWORK_AUTO_ROUTING
+
     #if !defined(__AVR_ATtiny85__) && !defined(__AVR_ATtiny84__)
 
         /********** USER CONFIG - non ATTiny **************/

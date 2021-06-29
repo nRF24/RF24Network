@@ -741,7 +741,7 @@ public:
     uint8_t networkFlags;
 
 private:
-    bool write(uint16_t, uint8_t directTo);
+    bool write(uint16_t, uint8_t sendType);
     bool write_to_pipe(uint16_t node, uint8_t pipe, bool multicast);
     uint8_t enqueue(RF24NetworkHeader *header);
 
