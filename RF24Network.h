@@ -356,6 +356,7 @@ public:
      * Calling begin brings up the network, and configures the address, which designates the location of the node within RF24Network topology.
      * @note Node addresses are specified in Octal format, see [RF24Network Addressing](md_docs_addressing.html) for more information.
      * @warning Be sure to first call `RF24::begin()` to initialize the radio properly.
+     * @note The address `04444` is resreved for RF24Mesh usage
      *
      * **Example 1:** Begin on current radio channel with address 0 (master node)
      * @code

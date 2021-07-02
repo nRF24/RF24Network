@@ -174,7 +174,7 @@ uint8_t RF24Network::update(void)
                 write(header->to_node, TX_NORMAL);
                 continue;
             }
-            if ((returnSysMsgs && header->type > 127) || header->type == NETWORK_ACK) {
+            if ((returnSysMsgs && header->type > MAX_USER_DEFINED_HEADER_TYPE) || header->type == NETWORK_ACK) {
                 IF_SERIAL_DEBUG_ROUTING(printf_P(PSTR("%lu MAC: System payload rcvd %d\n"), millis(), returnVal););
                 if (header->type != NETWORK_FIRST_FRAGMENT && header->type != NETWORK_MORE_FRAGMENTS && header->type != EXTERNAL_DATA_TYPE && header->type != NETWORK_LAST_FRAGMENT) {
                     return returnVal;

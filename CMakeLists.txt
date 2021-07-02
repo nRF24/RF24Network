@@ -37,7 +37,7 @@ option(SERIAL_DEBUG_FRAGMENTATION_L2
     "enable/disable debugging output related to fragmented messages' transmission success"
     OFF
 )
-option(DISABLE_FRAGMENTATION"disable message fragmentation" OFF)
+option(DISABLE_FRAGMENTATION "disable message fragmentation" OFF)
 option(DISABLE_DYNAMIC_PAYLOADS "force usage of static payload size" OFF)
 
 # detect CPU and add compiler flags accordingly
