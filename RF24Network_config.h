@@ -44,8 +44,12 @@
             #define MAX_PAYLOAD_SIZE  144
         #endif // MAX_PAYLOAD_SIZE
 
-        /** The size of the main buffer. This is the user-cache, where incoming data is stored.
-         * Data is stored using Frames: Header (8-bytes) + Frame_Size (2-bytes) + Data (?-bytes)
+        /**
+         * @brief The allocated size of the incoming frame buffer.
+         *
+         * This is the user-cache, where incoming data is stored.
+         * Data is stored using Frames: Header (8 bytes) + Message_Size (2 bytes) + Data (? bytes)
+         * @note Over-The-Air (OTA) transmissions don't include the message size in the transmitted packet.
          */
         #define MAIN_BUFFER_SIZE (MAX_PAYLOAD_SIZE + FRAME_HEADER_SIZE)
 
