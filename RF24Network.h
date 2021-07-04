@@ -697,7 +697,6 @@ public:
      * @code
      * uint8_t return_type = network.update();
      * if(return_type == EXTERNAL_DATA_TYPE) {
-     *     uint16_t size = network.frag_ptr->message_size;
      *     memcpy(&myDataBuffer, network.frag_ptr->message_buffer, network.frag_ptr->message_size);
      * }
      * @endcode
