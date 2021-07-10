@@ -91,15 +91,14 @@ unsigned long sleepTimer = 0;                           // Used to keep track of
 void setup() {
 
   Serial.begin(115200);
-  printf_begin();
-  if (!Serial) {
+  printf_begin(); // needed for RF24* libs' internal printf() calls
+  while (!Serial) {
     // some boards need this because of native USB capability
   }
   Serial.println(F("RF24Network/examples/meshping/"));
 
   this_node = node_address_set[NODE_ADDRESS];            // Which node are we?
 
-  SPI.begin();                                           // Bring up the RF network
   if (!radio.begin()) {
     Serial.println(F("Radio hardware not responding!"));
     while (1) {

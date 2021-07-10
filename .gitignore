@@ -13,3 +13,7 @@ version.h
 *.bak
 PINS_*/
 *.exe
+build/
+.vscode/
+*CMakeUserPresets*.json
+*.tar.gz

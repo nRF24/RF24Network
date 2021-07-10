@@ -40,11 +40,11 @@ uint8_t dataBuffer[MAX_PAYLOAD_SIZE];
 
 void setup(void) {
   Serial.begin(115200);
-  if (!Serial) {
+  while (!Serial) {
     // some boards need this because of native USB capability
   }
   Serial.println(F("RF24Network/examples/helloworld_tx_advanced/"));
-  printf_begin(); //Used to enable printf on AVR devices
+  printf_begin(); // needed for RF24* libs' internal printf() calls
 
   if (!radio.begin()) {
     Serial.println(F("Radio hardware not responding!"));
@@ -77,8 +77,8 @@ void loop() {
   unsigned long now = millis();              // If it's time to send a message, send it!
   if ( now - last_sent >= interval && !stopSending ) {
     last_sent = now;
-    Serial.print("Sending size ");
-    Serial.print(sizeofSend );
+    Serial.print(F("Sending size "));
+    Serial.print(sizeofSend);
 
     // Fragmentation/reassembly is transparent. Just send payloads as usual.
     RF24NetworkHeader header(/*to node*/ other_node);
@@ -89,9 +89,6 @@ void loop() {
       sizeofSend  = 0;
     }
 
-    if (ok)
-      Serial.println(" ok.");
-    else
-      Serial.println(" failed.");
+    Serial.println(ok ? F("ok.") : F("failed."));
   }
 }

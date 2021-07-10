@@ -80,7 +80,7 @@
  * **Linux**
  * Linux devices (defined RF24_LINUX) will buffer all data types in the user cache.
  *
- * **Arduino/AVR/Etc:** Data transmitted with the type set to EXTERNAL_DATA_TYPE will not be loaded into the user cache. <br>
+ * **Arduino/AVR/Etc:** Data transmitted with the type set to @ref EXTERNAL_DATA_TYPE will not be loaded into the user cache. <br>
  * External systems can extract external data using the following process, while internal data types are cached in the user buffer, and accessed using network.read() :
  * @code
  * uint8_t return_type = network.update();
@@ -252,15 +252,17 @@ struct RF24NetworkHeader
  *
  * The actual frame put over the air consists of a header (8-bytes) and a message payload (Up to 24-bytes)<br>
  * When data is received, it is stored using the RF24NetworkFrame structure, which includes:
- * 1. The header
+ * 1. The header containing information about routing the message and the message type
  * 2. The size of the included message
  * 3. The 'message' or data being received
  *
  */
 struct RF24NetworkFrame
 {
-    RF24NetworkHeader header; /** Header which is sent with each message */
-    uint16_t message_size;    /** The size in bytes of the payload length */
+    /** Header which is sent with each message */
+    RF24NetworkHeader header;
+    /** The size in bytes of the payload length */
+    uint16_t message_size;
 
     /**
      * On Arduino, the message buffer is just a pointer, and can be pointed to any memory location.
@@ -280,32 +282,34 @@ struct RF24NetworkFrame
     RF24NetworkFrame() {}
 
     /**
-     * Constructor - create a network frame with data
-     * Frames are constructed and handled differently on Arduino/AVR and Linux devices (defined RF24_LINUX)
+     * **Constructor for Linux platforms** - create a network frame with data
+     * Frames are constructed and handled differently on Arduino/AVR and Linux devices (`#if defined RF24_LINUX`)
      *
-     * <br>
-     * **Linux:**
      * @param _header The RF24Network header to be stored in the frame
      * @param _message The 'message' or data.
      * @param _len The size of the 'message' or data.
      *
-     * <br>
-     * **Arduino/AVR/Etc.**
-     * @see RF24Network.frag_ptr
-     * @param _header The RF24Network header to be stored in the frame
-     * @param _message_size The size of the 'message' or data
-     *
-     *
      * Frames are used internally and by external systems. See RF24NetworkHeader.
      */
-    #if defined(RF24_LINUX)
+    #if defined(RF24_LINUX) || defined(DOXYGEN_FORCED)
     RF24NetworkFrame(RF24NetworkHeader &_header, const void *_message = NULL, uint16_t _len = 0) : header(_header), message_size(_len)
     {
         if (_message && _len) {
             memcpy(message_buffer, _message, _len);
         }
     }
-    #else
+    #endif
+    #if defined(DOXYGEN_FORCED) || !defined(RF24_LINUX)
+    /**
+     * **Constructor for Arduino/AVR/etc. platforms** - create a network frame with data
+     * Frames are constructed and handled differently on Arduino/AVR and Linux devices (`#if defined RF24_LINUX`)
+     *
+     * @see RF24Network.frag_ptr
+     * @param _header The RF24Network header to be stored in the frame
+     * @param _message_size The size of the 'message' or data
+     *
+     * Frames are used internally and by external systems. See RF24NetworkHeader.
+     */
     RF24NetworkFrame(RF24NetworkHeader &_header, uint16_t _message_size) : header(_header), message_size(_message_size)
     {
     }
@@ -350,8 +354,9 @@ public:
     /**
      * Bring up the network using the current radio frequency/channel.
      * Calling begin brings up the network, and configures the address, which designates the location of the node within RF24Network topology.
-     * @note Node addresses are specified in Octal format, see [RF24Network Addressing](Addressing.html) for more information.
-     * @warning Be sure to 'begin' the radio first.
+     * @note Node addresses are specified in Octal format, see [RF24Network Addressing](md_docs_addressing.html) for more information.
+     * @warning Be sure to first call `RF24::begin()` to initialize the radio properly.
+     * @note The address `04444` is resreved for RF24Mesh usage
      *
      * **Example 1:** Begin on current radio channel with address 0 (master node)
      * @code
@@ -501,7 +506,7 @@ public:
     void setup_watchdog(uint8_t prescalar);
 
     /**
-     * @note: This value is automatically assigned based on the node address
+     * @note This value is automatically assigned based on the node address
      * to reduce errors and increase throughput of the network.
      *
      * Sets the timeout period for individual payloads in milliseconds at staggered intervals.
@@ -625,7 +630,8 @@ public:
 
     /**
      * Bring up the network on a specific radio frequency/channel.
-     * @note Use radio.setChannel() to configure the radio channel
+     * @deprecated Use radio.setChannel() to configure the radio channel.
+     * Use RF24Network::begin(uint16_t _node_address) to set the node address.
      *
      * **Example 1:** Begin on channel 90 with address 0 (master node)
      * @code
@@ -657,8 +663,9 @@ public:
     uint8_t frame_buffer[MAX_FRAME_SIZE];
 
     /**
-     * **Linux** <br>
-     * Data with a header type of EXTERNAL_DATA_TYPE will be loaded into a separate queue.
+     * **Linux platforms only**
+     *
+     * Data with a header type of @ref EXTERNAL_DATA_TYPE will be loaded into a separate queue.
      * The data can be accessed as follows:
      * @code
      * RF24NetworkFrame f;
@@ -672,15 +679,16 @@ public:
      * }
      * @endcode
      */
-    #if defined(RF24_LINUX)
+    #if defined(RF24_LINUX) || defined(DOXYGEN_FORCED)
     std::queue<RF24NetworkFrame> external_queue;
     #endif
 
-    #if !defined(DISABLE_FRAGMENTATION) && !defined(RF24_LINUX)
+    #if (!defined(DISABLE_FRAGMENTATION) && !defined(RF24_LINUX)) || defined(DOXYGEN_FORCED)
     /**
-     * **ARDUINO** <br>
-     * The frag_ptr is only used with Arduino (not RPi/Linux) and is mainly used for external data systems like RF24Ethernet. When
-     * an EXTERNAL_DATA payload type is received, and returned from network.update(), the frag_ptr will always point to the starting
+     * **ARDUINO platforms only**
+     *
+     * The `frag_ptr` is only used with Arduino (not RPi/Linux) and is mainly used for external data systems like RF24Ethernet. When
+     * a payload of type @ref EXTERNAL_DATA_TYPE is received, and returned from update(), the `frag_ptr` will always point to the starting
      * memory location of the received frame. <br>This is used by external data systems (RF24Ethernet) to immediately copy the received
      * data to a buffer, without using the user-cache.
      *
@@ -689,11 +697,10 @@ public:
      * @code
      * uint8_t return_type = network.update();
      * if(return_type == EXTERNAL_DATA_TYPE) {
-     *     uint16_t size = network.frag_ptr->message_size;
      *     memcpy(&myDataBuffer, network.frag_ptr->message_buffer, network.frag_ptr->message_size);
      * }
      * @endcode
-     * Linux devices (defined as RF24_LINUX) currently cache all payload types, and do not utilize frag_ptr.
+     * Linux devices (defined as `RF24_LINUX`) currently cache all payload types, and do not utilize `frag_ptr`.
      */
     RF24NetworkFrame *frag_ptr;
     #endif
@@ -708,11 +715,11 @@ public:
      *
      * | System Message Types <br> (Not Returned) |
      * |-----------------------|
-     * | NETWORK_ADDR_RESPONSE |
-     * | NETWORK_ACK           |
-     * | NETWORK_PING          |
-     * | NETWORK_POLL <br>(With multicast enabled) |
-     * | NETWORK_REQ_ADDRESS   |
+     * | @ref NETWORK_ADDR_RESPONSE |
+     * | @ref NETWORK_ACK           |
+     * | @ref NETWORK_PING          |
+     * | @ref NETWORK_POLL <br>(With multicast enabled) |
+     * | @ref NETWORK_REQ_ADDRESS   |
      *
      */
     bool returnSysMsgs;
@@ -725,16 +732,16 @@ public:
      *
      * | FLAGS | Value | Description |
      * |-------|-------|-------------|
-     * |FLAG_HOLD_INCOMING| 1(bit_1) | INTERNAL: Set automatically when a fragmented payload will exceed the available cache |
-     * |FLAG_BYPASS_HOLDS| 2(bit_2) | EXTERNAL: Can be used to prevent holds from blocking. Note: Holds are disabled & re-enabled by RF24Mesh when renewing addresses. This will cause data loss if incoming data exceeds the available cache space|
-     * |FLAG_FAST_FRAG| 4(bit_3) | INTERNAL: Replaces the fastFragTransfer variable, and allows for faster transfers between directly connected nodes. |
-     * |FLAG_NO_POLL| 8(bit_4) | EXTERNAL/USER: Disables NETWORK_POLL responses on a node-by-node basis. |
+     * | @ref FLAG_HOLD_INCOMING| 1 (bit 0 asserted) | INTERNAL: Set automatically when a fragmented payload will exceed the available cache |
+     * | @ref FLAG_BYPASS_HOLDS| 2 (bit 1 asserted) | EXTERNAL: Can be used to prevent holds from blocking. Note: Holds are disabled & re-enabled by RF24Mesh when renewing addresses. This will cause data loss if incoming data exceeds the available cache space|
+     * | @ref FLAG_FAST_FRAG| 4 (bit 2 asserted) | INTERNAL: Replaces the fastFragTransfer variable, and allows for faster transfers between directly connected nodes. |
+     * | @ref FLAG_NO_POLL| 8 (bit 3 asserted) | EXTERNAL/USER: Disables @ref NETWORK_POLL responses on a node-by-node basis. |
      *
      */
     uint8_t networkFlags;
 
 private:
-    bool write(uint16_t, uint8_t directTo);
+    bool write(uint16_t, uint8_t sendType);
     bool write_to_pipe(uint16_t node, uint8_t pipe, bool multicast);
     uint8_t enqueue(RF24NetworkHeader *header);
 

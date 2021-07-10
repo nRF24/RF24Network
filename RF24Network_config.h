@@ -11,50 +11,61 @@
 #ifndef __RF24NETWORK_CONFIG_H__
 #define __RF24NETWORK_CONFIG_H__
 
+    /** @brief A reserved valid address for use with RF24Mesh (when a mesh node requests an assigned address) */
     #ifndef NETWORK_DEFAULT_ADDRESS
         #define NETWORK_DEFAULT_ADDRESS 04444
     #endif // NETWORK_DEFAULT_ADDRESS
+
+    /** @brief A sentinel address value for multicasting purposes */
+    #define NETWORK_MULTICAST_ADDRESS 0100
+
+    /** @brief A sentinel value for internally indicating that the frame should be automatically routed as necessary */
+    #define NETWORK_AUTO_ROUTING 070
 
     #if !defined(__AVR_ATtiny85__) && !defined(__AVR_ATtiny84__)
 
         /********** USER CONFIG - non ATTiny **************/
 
         //#define ENABLE_SLEEP_MODE  //AVR only
+        /** @brief When defined, this will allow the use of multicasting messages */
         #define RF24NetworkMulticast
 
-        /* *
-         * \def
-         * Saves memory by disabling fragmentation
-         */
+        /* Saves memory by disabling fragmentation */
         //#define DISABLE_FRAGMENTATION
 
-        /** System defines */
+        /* System defines */
 
-        /** Maximum size of fragmented network frames and fragmentation cache.
-         *
-         * @note: This buffer can now be any size > 24. Previously need to be a multiple of 24.
-         * @note: If used with RF24Ethernet, this value is used to set the buffer sizes.
+        /**
+         * @brief Maximum size of fragmented network frames and fragmentation cache.
+         * @note This buffer can now be any size > 24. Previously this needed to be a multiple of 24 (changed in v1.0.15).
+         * @note If used with RF24Ethernet, this value is used to set the buffer sizes.
          */
         #ifndef MAX_PAYLOAD_SIZE
             #define MAX_PAYLOAD_SIZE  144
         #endif // MAX_PAYLOAD_SIZE
 
-        /** The size of the main buffer. This is the user-cache, where incoming data is stored.
-         * Data is stored using Frames: Header (8-bytes) + Frame_Size (2-bytes) + Data (?-bytes)
+        /**
+         * @brief The allocated size of the incoming frame buffer.
+         *
+         * This is the user-cache, where incoming data is stored.
+         * Data is stored using Frames: Header (8 bytes) + Message_Size (2 bytes) + Message_Data (? bytes)
+         * @note Over-The-Air (OTA) transmissions don't include the message size in the transmitted packet.
          */
         #define MAIN_BUFFER_SIZE (MAX_PAYLOAD_SIZE + FRAME_HEADER_SIZE)
 
 
-        /** Disable user payloads. Saves memory when used with RF24Ethernet or software that uses external data.*/
+        /* Disable user payloads. Saves memory when used with RF24Ethernet or software that uses external data.*/
         //#define DISABLE_USER_PAYLOADS
 
-        /** Enable tracking of success and failures for all transmissions, routed and user initiated */
+        /* Enable tracking of success and failures for all transmissions, routed and user initiated */
         //#define ENABLE_NETWORK_STATS
 
-        /** Enable dynamic payloads - If using different types of NRF24L01 modules, some may be incompatible when using this feature **/
-        #define ENABLE_DYNAMIC_PAYLOADS
+        #ifndef DISABLE_DYNAMIC_PAYLOADS
+            /** Enable dynamic payloads - If using different types of NRF24L01 modules, some may be incompatible when using this feature **/
+            #define ENABLE_DYNAMIC_PAYLOADS
+        #endif // DISABLE_DYNAMIC_PAYLOADS
 
-        /** Debug Options */
+        /* Debug Options */
         //#define SERIAL_DEBUG
         //#define SERIAL_DEBUG_MINIMAL
         //#define SERIAL_DEBUG_ROUTING
@@ -92,6 +103,7 @@
     #endif
 
     #if !defined (ARDUINO_ARCH_AVR)
+        // sprintf is used by RF24NetworkHeader::toString
         #ifndef sprintf_P
             #define sprintf_P sprintf
         #endif
@@ -123,4 +135,3 @@
 
 
 #endif //RF24_CONFIG_H
-

@@ -1,0 +1,117 @@
+name: PlatformIO build
+
+on:
+  pull_request:
+    types: [opened, reopened]
+    paths:
+      - ".github/workflows/build_platformIO.yml"
+      - "library.json"
+      - "examples/**"
+      - "!examples/*.zip"
+  push:
+    paths:
+      - ".github/workflows/build_platformIO.yml"
+      - "library.json"
+      - "examples/**"
+      - "!examples/*.zip"
+  release:
+    types: [published, edited]
+
+jobs:
+  validate_lib_json:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: get latest release version number
+        id: latest_ver
+        run: echo "::set-output name=release::$(awk -F "=" '/version/ {print $2}' library.properties)"
+      - name: Set up Python
+        uses: actions/setup-python@v2
+      - name: Install PlatformIO
+        run: |
+          python -m pip install --upgrade pip
+          pip install --upgrade platformio
+      - name: package lib
+        run: pio package pack -o PlatformIO-RF24Network-${{ steps.latest_ver.outputs.release }}.tar.gz
+      - name: Save artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: "PIO_pkg_RF24Network"
+          path: PlatformIO*.tar.gz
+      - name: Upload Release assets
+        if: github.event_name == 'release'
+        uses: csexton/release-asset-action@master
+        with:
+          pattern: "PlatformIO*.tar.gz"
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+  check_formatting:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Check code formatting
+        uses: per1234/artistic-style-action@main
+        with:
+          options-file-path: ./examples/examples_formatter.conf
+          name-patterns: |
+            - '*.ino'
+            - '*.cpp'
+            - '*.hpp'
+            - '*.h'
+          target-paths: |
+            - examples
+
+  build:
+    needs: [check_formatting, validate_lib_json]
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+
+      matrix:
+        example:
+          - "examples/helloworld_rx/helloworld_rx.ino"
+          - "examples/helloworld_rx_advanced/helloworld_rx_advanced.ino"
+          - "examples/helloworld_tx/helloworld_tx.ino"
+          - "examples/helloworld_tx_advanced/helloworld_tx_advanced.ino"
+          - "examples/Network_Priority_RX/Network_Priority_RX.ino"
+          - "examples/Network_Priority_TX/Network_Priority_TX.ino"
+        board:
+          - "teensy31"
+          - "teensy35"
+          - "teensy36"
+          - "teensy40"
+          - "teensy41"
+          - "teensylc"
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Cache pip
+      uses: actions/cache@v2
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+    - name: Cache PlatformIO
+      uses: actions/cache@v2
+      with:
+        path: ~/.platformio
+        key: ${{ runner.os }}-${{ hashFiles('**/lockfiles') }}
+    - name: Set up Python
+      uses: actions/setup-python@v2
+    - name: Install PlatformIO
+      run: |
+        python -m pip install --upgrade pip
+        pip install --upgrade platformio
+    # "dependencies" field in JSON should automatically install RF24.
+    # Because we run this CI test against the local repo, the JSON seems neglected
+    - name: Install library dependencies
+      run: pio lib -g install nrf24/RF24
+    - name: Run PlatformIO
+      run: pio ci --lib="." --board=${{ matrix.board }}
+      env:
+        PLATFORMIO_CI_SRC: ${{ matrix.example }}

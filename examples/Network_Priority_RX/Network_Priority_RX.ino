@@ -43,11 +43,8 @@ uint32_t myVariable = 0;
 void setup() {
 
   Serial.begin(115200);
-  if (!Serial) {
-    // some boards need this because of native USB capability
-  }
-  printf_begin(); //Used to enable printf on AVR devices
-  if (!Serial) {
+  printf_begin(); // needed for RF24* libs' internal printf() calls
+  while (!Serial) {
     // some boards need this because of native USB capability
   }
   Serial.println(F("RF24Network/examples/Network_Separation_RX/"));
@@ -97,12 +94,12 @@ void loop() {
     memcpy(&dataBuffer, network.frag_ptr->message_buffer, network.frag_ptr->message_size);
 
     // Handle the external data however...
-    Serial.print("External Data RX, size: ");
+    Serial.print(F("External Data RX, size: "));
     Serial.println(network.frag_ptr->message_size);
 
     for (uint16_t i = 0; i < network.frag_ptr->message_size; i++) {
       Serial.print(dataBuffer[i]);
-      Serial.print(":");
+      Serial.print(F(":"));
     }
     Serial.println();
   }
@@ -120,9 +117,9 @@ void loop() {
       uint32_t someVariable;
       if (header.type = '32') {                                    // If a certain header type is recieved
         network.read(header, &someVariable, sizeof(someVariable)); // Handle the data a specific way
-        Serial.print("RX User Data:\nHeader Type ");
+        Serial.print(F("RX User Data:\nHeader Type "));
         Serial.print(header.type);
-        Serial.print(" Value ");
+        Serial.print(F(" Value "));
         Serial.println(someVariable);
       } else {
         network.read(header, &someVariable, 0);                    // Clear the user data from the buffer if

@@ -39,12 +39,11 @@ struct payload_t {                   // Structure of our payload
 
 void setup(void) {
   Serial.begin(115200);
-  if (!Serial) {
+  while (!Serial) {
     // some boards need this because of native USB capability
   }
   Serial.println(F("RF24Network/examples/helloworld_tx/"));
 
-  SPI.begin();
   if (!radio.begin()) {
     Serial.println(F("Radio hardware not responding!"));
     while (1) {
@@ -64,15 +63,10 @@ void loop() {
   if (now - last_sent >= interval) {
     last_sent = now;
 
-    Serial.print("Sending...");
+    Serial.print(F("Sending..."));
     payload_t payload = { millis(), packets_sent++ };
     RF24NetworkHeader header(/*to node*/ other_node);
     bool ok = network.write(header, &payload, sizeof(payload));
-    if (ok)
-      Serial.println("ok.");
-    else
-      Serial.println("failed.");
+    Serial.println(ok ? F("ok.") : F("failed."));
   }
 }
-
-

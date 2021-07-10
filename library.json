@@ -1,31 +1,40 @@
 {
-	"name": "RF24Network",
-	"version": "1.0.15",
-	"keywords": "rf, radio, wireless, spi",
-	"description": "OSI Layer 3 Networking for nrf24L01(+) devices.",
-	"license": "GPL-2.0-only",
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/TMRh20/RF24Network.git"
-	},
-	"dependencies": {
-		"name": "RF24",
-		"authors": "RF24",
-		"frameworks": "arduino"
-	},
-	"exclude": [
-		"examples/*",
-		"examples_RPi/*",
-		"RPi/*",
-		"tests/*"
-	],
-	"frameworks": "arduino",
-	"platforms": [
-		"atmelavr",
-		"atmelsam",
-		"teensy"
-	],
-	"requires": [{
-		"name": "RF24"
-	}]
+    "name": "RF24Network",
+    "version": "1.0.16",
+    "keywords": "rf, radio, wireless, spi",
+    "description": "OSI Layer 3 Networking for nrf24L01(+) devices.",
+    "license": "GPL-2.0-only",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/nRF24/RF24Network.git"
+    },
+    "dependencies": [
+        {
+            "name": "RF24",
+            "authors": "nRF24",
+            "frameworks": "arduino"
+        }
+    ],
+    "export":
+    {
+        "exclude": [
+            ".github/*",
+            "keywords.txt",
+            "examples_RPi/*",
+            "RPi/*",
+            "cmake/*",
+            "CMakeLists.txt",
+            "Makefile"
+        ]
+    },
+    "frameworks": "arduino",
+    "platforms": [
+        "atmelavr",
+        "atmelsam",
+        "teensy",
+        "atmelmegaavr",
+        "espressif32",
+        "espressif8266",
+        "ststm32"
+    ]
 }

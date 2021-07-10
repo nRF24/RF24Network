@@ -34,12 +34,11 @@ struct payload_t {              // Structure of our payload
 
 void setup(void) {
   Serial.begin(115200);
-  if (!Serial) {
+  while (!Serial) {
     // some boards need this because of native USB capability
   }
   Serial.println(F("RF24Network/examples/helloworld_rx/"));
 
-  SPI.begin();
   if (!radio.begin()) {
     Serial.println(F("Radio hardware not responding!"));
     while (1) {
@@ -58,10 +57,9 @@ void loop(void) {
     RF24NetworkHeader header;        // If so, grab it and print it out
     payload_t payload;
     network.read(header, &payload, sizeof(payload));
-    Serial.print("Received packet #");
+    Serial.print(F("Received packet: counter="));
     Serial.print(payload.counter);
-    Serial.print(" at ");
+    Serial.print(F(", origin timestamp="));
     Serial.println(payload.ms);
   }
 }
-

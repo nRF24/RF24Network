@@ -37,7 +37,7 @@ uint8_t dataBuffer[MAX_PAYLOAD_SIZE]; //MAX_PAYLOAD_SIZE is defined in RF24Netwo
 void setup(void) {
 
   Serial.begin(115200);
-  if (!Serial) {
+  while (!Serial) {
     // some boards need this because of native USB capability
   }
   Serial.println(F("RF24Network/examples/helloworld_rx_advanced/"));
@@ -50,7 +50,7 @@ void setup(void) {
   }
   network.begin(/*channel*/ 90, /*node address*/ this_node);
 
-  printf_begin();       // Used to enable printf on AVR devices
+  printf_begin();       // needed for RF24* libs' internal printf() calls
   radio.printDetails(); // requires printf support
 }
 
@@ -75,10 +75,10 @@ void loop(void) {
 
     // Uncomment below to print the entire payload
     /*
-    for(uint32_t i=0; i<payloadSize; i++) {
+    for(uint32_t i = 0; i < payloadSize; i++) {
       Serial.print(dataBuffer[i]);
-      Serial.print(": ");
-      if(i%50 == 49) {
+      Serial.print(F(": "));
+      if(i % 50 == 49) {
         //Add a line break every 50 characters
         Serial.println();
       }
