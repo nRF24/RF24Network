@@ -103,6 +103,7 @@
     #endif
 
     #if !defined (ARDUINO_ARCH_AVR)
+        // sprintf is used by RF24NetworkHeader::toString
         #ifndef sprintf_P
             #define sprintf_P sprintf
         #endif
