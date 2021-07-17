@@ -265,7 +265,7 @@ uint8_t RF24Network::enqueue(RF24NetworkHeader *header)
         //The header.reserved contains the actual header.type on the last fragment
         if (result && frame.header.type == NETWORK_LAST_FRAGMENT) {
             IF_SERIAL_DEBUG_FRAGMENTATION(printf_P(PSTR("%ui: FRG Last fragment received\n"), millis()));
-            IF_SERIAL_DEBUG(printf_P(PSTR("%ui: NET Enqueue assembled frame @ %lu\n"), millis(), frame_queue.size()));
+            IF_SERIAL_DEBUG(printf_P(PSTR("%ui: NET Enqueue assembled frame @ %ui\n"), millis(), frame_queue.size()));
 
             RF24NetworkFrame *f = &(frameFragmentsCache[frame.header.from_node]);
 
@@ -285,7 +285,7 @@ uint8_t RF24Network::enqueue(RF24NetworkHeader *header)
         //if (frame.header.type <= MAX_USER_DEFINED_HEADER_TYPE) {
         //This is not a fragmented payload but a whole frame.
 
-        IF_SERIAL_DEBUG(printf_P(PSTR("%ui: NET Enqueue @ %lu\n"), millis(), frame_queue.size()));
+        IF_SERIAL_DEBUG(printf_P(PSTR("%ui: NET Enqueue @ %ui\n"), millis(), frame_queue.size()));
         // Copy the current frame into the frame queue
         result = frame.header.type == EXTERNAL_DATA_TYPE ? 2 : 1;
         //Load external payloads into a separate queue on linux
@@ -612,7 +612,7 @@ uint16_t RF24Network::read(RF24NetworkHeader &header, void *message, uint16_t ma
     }
     #endif // !defined(ARDUINO_ARCH_AVR)
     memmove(frame_queue, frame_queue + bufsize + 10 + padding, sizeof(frame_queue) - bufsize);
-    //IF_SERIAL_DEBUG(printf_P(PSTR("%ui: NET Received %s\n\r"),millis(),header.toString()));
+    //IF_SERIAL_DEBUG(printf_P(PSTR("%ui: NET Received %s\n\r"), millis(), header.toString()));
 
     #endif // !defined(RF24_LINUX)
     return bufsize;

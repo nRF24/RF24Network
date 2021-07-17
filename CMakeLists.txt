@@ -75,6 +75,7 @@ message(STATUS "using RF24 library: ${RF24}")
 add_library(${LibTargetName} SHARED
     RF24Network.cpp
 )
+
 target_include_directories(${LibTargetName} PUBLIC
     ${CMAKE_CURRENT_LIST_DIR}
 )
