@@ -405,6 +405,7 @@ public:
      * If there is no message available, the header is not touched
      *
      * @param[out] header The header (envelope) of the next message
+     * @return The length of the next available message in the queue.
      */
     uint16_t peek(RF24NetworkHeader &header);
 
@@ -417,18 +418,20 @@ public:
      *
      * @param[out] header The header (envelope) of this message
      * @param[out] message Pointer to memory where the message should be placed
-     * @param maxlen Amount of bytes to copy to message.
+     * @param maxlen Amount of bytes to copy to @p message .
+     * If this parameter is left unspecified, the entire length of the message is fetched.
+     * Hint: Use peek(RF24NetworkHeader) to get the length of next available message in the queue.
      */
-    void peek(RF24NetworkHeader &header, void *message, uint16_t maxlen);
+    void peek(RF24NetworkHeader &header, void *message, uint16_t maxlen=MAX_PAYLOAD_SIZE);
 
     /**
      * Read a message
-     *
+     * @note This function assumes there is a frame in the queue.
      * @code
      * while (network.available()) {
      *   RF24NetworkHeader header;
      *   uint32_t time;
-     *   network.peek(header);
+     *   uint16_t msg_size = network.peek(header);
      *   if (header.type == 'T') {
      *     network.read(header, &time, sizeof(time));
      *     Serial.print("Got time: ");
@@ -438,10 +441,12 @@ public:
      * @endcode
      * @param[out] header The header (envelope) of this message
      * @param[out] message Pointer to memory where the message should be placed
-     * @param maxlen The largest message size which can be held in @p message
+     * @param maxlen The largest message size which can be held in @p message .
+     * If this parameter is left unspecified, the entire length of the message is fetched.
+     * Hint: Use peek(RF24NetworkHeader &) to get the length of next available message in the queue.
      * @return The total number of bytes copied into @p message
      */
-    uint16_t read(RF24NetworkHeader &header, void *message, uint16_t maxlen);
+    uint16_t read(RF24NetworkHeader &header, void *message, uint16_t maxlen=MAX_PAYLOAD_SIZE);
 
     /**
      * Send a message

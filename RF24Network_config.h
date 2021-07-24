@@ -39,6 +39,7 @@
          * @brief Maximum size of fragmented network frames and fragmentation cache.
          * @note This buffer can now be any size > 24. Previously this needed to be a multiple of 24 (changed in v1.0.15).
          * @note If used with RF24Ethernet, this value is used to set the buffer sizes.
+         * @note For noeds driven by an ATTiny based chip, this is set to 72.
          */
         #ifndef MAX_PAYLOAD_SIZE
             #define MAX_PAYLOAD_SIZE  144

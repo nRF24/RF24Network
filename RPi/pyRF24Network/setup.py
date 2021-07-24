@@ -8,11 +8,7 @@ if version_info >= (3,):
 else:
     BOOST_LIB = "boost_python"
 
-# NOTE current repo directory structure requires the use of
-# `python3 setup.py build` and `python3 setup.py install`
-# where `pip3 install ./pyRF24` copies pyRF24 directory to
-# `tmp` folder that doesn't have the needed `../Makefile.inc`
-# NOTE can't access "../Makefile.inc" from working dir because
+# NOTE can't access "../../LICENSE.inc" from working dir because
 # it's relative. Brute force absolute path dynamically.
 git_dir = os.path.split(os.path.abspath(os.getcwd()))[0]
 git_dir = os.path.split(git_dir)[0]  # remove the "RPi" dir from working path
@@ -35,7 +31,8 @@ long_description = """
 setup(
     name="RF24Network",
     version=version,
-    license_files=os.path.join(git_dir, "LICENSE"),
+    license="GPLv2",
+    license_files=(os.path.join(git_dir, "LICENSE"),),
     long_description=long_description,
     long_description_content_type="text/x-rst",
     classifiers=[
