@@ -91,9 +91,13 @@ BOOST_PYTHON_MODULE(RF24Network)
             typedef bool (::RF24Network::*available_function_type)();
             RF24Network_exposer.def("available", available_function_type(&::RF24Network::available));
         }
-        { //::RF24Network::begin
+        { //::RF24Network::begin (marked as deprecated)
             typedef void (::RF24Network::*begin_function_type)(::uint8_t, ::uint16_t);
             RF24Network_exposer.def("begin", begin_function_type(&::RF24Network::begin), (bp::arg("_channel"), bp::arg("_node_address")));
+        }
+        { //::RF24Network::begin
+            typedef void (::RF24Network::*begin_function_type)(::uint16_t);
+            RF24Network_exposer.def("begin", begin_function_type(&::RF24Network::begin), (bp::arg("_node_address")));
         }
         { //::RF24Network::parent
             typedef ::uint16_t (::RF24Network::*parent_function_type)() const;
