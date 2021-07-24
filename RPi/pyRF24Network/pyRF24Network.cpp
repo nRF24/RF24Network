@@ -76,10 +76,8 @@ std::string toString_wrap(RF24NetworkHeader &ref)
     return std::string(ref.toString());
 }
 
-BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(peek_frame, RF24Network::peek, 1, 3)
-BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(peek_header, RF24Network::peek, 1, 2)
-
 // **************** RF24Network exposed  *****************
+
 BOOST_PYTHON_MODULE(RF24Network)
 {
     { //::RF24Network
@@ -130,6 +128,7 @@ BOOST_PYTHON_MODULE(RF24Network)
     }
 
     // **************** RF24NetworkHeader exposed  *****************
+
     bp::class_<RF24NetworkHeader>("RF24NetworkHeader", bp::init<>())
         .def(bp::init<uint16_t, bp::optional<unsigned char>>((bp::arg("_to"), bp::arg("_type") = (unsigned char)(0))))
         .def("toString", &toString_wrap)
