@@ -122,6 +122,9 @@
  *
  * In the event that the transmitting device will be waiting for a direct response, manually sent by the recipient, a NETWORK_ACK is not required. <br>
  * User messages utilizing a 'type' with a decimal value of 64 or less will not be acknowledged across the network via NETWORK_ACK messages.
+ *
+ * @note NETWORK_ACK messages are only sent by the last node in the route to a target node. <br>
+ * ie: When node 00 sends an instigating message to node 011, node 01 will send the NETWORK_ACK message to 00 upon sucessful delivery of instigating message to node 011.
  */
 #define NETWORK_ACK 193
 

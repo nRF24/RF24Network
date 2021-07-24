@@ -657,10 +657,7 @@ bool RF24Network::write(RF24NetworkHeader &header, const void *message, uint16_t
     if (len <= max_frame_payload_size) {
         //Normal Write (Un-Fragmented)
         frame_size = len + sizeof(RF24NetworkHeader);
-        if (_write(header, message, len, writeDirect)) {
-            return 1;
-        }
-        return 0;
+        return _write(header, message, len, writeDirect);
     }
     //Check payload size
     if (len > MAX_PAYLOAD_SIZE) {
@@ -832,6 +829,9 @@ bool RF24Network::write(uint16_t to_node, uint8_t sendType) // sendType: 0 = Fir
     }
 
     if (sendType == TX_ROUTED && ok && conversion.send_node == to_node && isAckType) {
+        // NETWORK_ACK messages are only sent by the last node in the route to a target node.
+        // ie: Node 00 sends to node 011, node 01 will send the network ack to 00 upon delivery.
+        // Any node receiving a NETWORK_ACK message will route it as a normal message.
 
         RF24NetworkHeader *header = (RF24NetworkHeader *)&frame_buffer;
         header->type = NETWORK_ACK;          // Set the payload type to NETWORK_ACK
