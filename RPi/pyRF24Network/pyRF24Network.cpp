@@ -41,7 +41,7 @@ int get_bytes_or_bytearray_ln(bp::object buf)
     return 0;
 }
 
-bp::tuple read_wrap(RF24Network &ref, size_t maxlen=MAX_PAYLOAD_SIZE)
+bp::tuple read_wrap(RF24Network &ref, size_t maxlen)
 {
     RF24NetworkHeader header;
 
@@ -53,7 +53,7 @@ bp::tuple read_wrap(RF24Network &ref, size_t maxlen=MAX_PAYLOAD_SIZE)
     return bp::make_tuple(header, py_ba);
 }
 
-bp::tuple peek_read_wrap(RF24Network &ref, size_t maxlen=MAX_PAYLOAD_SIZE)
+bp::tuple peek_read_wrap(RF24Network &ref, size_t maxlen)
 {
     RF24NetworkHeader header;
     char *buf = new char[maxlen + 1];
@@ -105,22 +105,14 @@ BOOST_PYTHON_MODULE(RF24Network)
         }
         { //::RF24Network::peek
             typedef bp::tuple (*peek_frame)(::RF24Network &, size_t);
-            RF24Network_exposer.def("peek", peek_frame(&peek_read_wrap), (bp::arg("maxlen")));
-        }
-        { //::RF24Network::peek (using optional maxlen param's default value)
-            typedef bp::tuple (*peek_frame)(::RF24Network &, size_t);
-            RF24Network_exposer.def("peek", peek_frame(&peek_read_wrap));
-        }
-        { //::RF24Network::read (using optional maxlen param's default value)
-            typedef bp::tuple (*read_function_type)(::RF24Network &, size_t);
-            RF24Network_exposer.def("read", read_function_type(&read_wrap));
+            RF24Network_exposer.def("peek", peek_frame(&peek_read_wrap), (bp::arg("maxlen")=MAX_PAYLOAD_SIZE));
         }
         { //::RF24Network::read
             typedef bp::tuple (*read_function_type)(::RF24Network &, size_t);
             RF24Network_exposer.def(
                 "read",
                 // read_function_type( &::RF24Network::read ),
-                read_function_type(&read_wrap), (bp::arg("maxlen")));
+                read_function_type(&read_wrap), (bp::arg("maxlen")=MAX_PAYLOAD_SIZE));
         }
         { //::RF24Network::update
             typedef void (::RF24Network::*update_function_type)();

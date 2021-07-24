@@ -23,15 +23,15 @@ if not radio.begin():
 network = pyRF24Network.RF24Network(radio)
 network.begin(90, this_node[0])
 
-head_out = pyRF24Network.RF24NetworkHeader(other_node[0], 0)
-head_in = pyRF24Network.RF24NetworkHeader()
+header = pyRF24Network.RF24NetworkHeader(other_node[0], 0)
 
 def master(count=1, interval=1):
     for _ in range(count):
         msg = bytes(range(count))  # using dynamic payload sizes
         count -= 1
         print("message", msg, end=" ")
-        if network.write(head_out, msg):
+        header = pyRF24Network.RF24NetworkHeader(other_node[0], 0)
+        if network.write(header, msg):
             print("sent successfully")
         else:
             print("failed to transmit")
@@ -45,10 +45,10 @@ def slave(timeout=10):
 
 def print_details():
     radio.printPrettyDetails()
-    print("node address\t:", oct(this_node[0]))
+    print("node address\t\t=", oct(this_node[0]))
 
-print("""\n
-    testing script for RF24Network python wrapper\n\n
-    run `master(<msg_count>)` to transmit\n
+print("""
+    testing script for RF24Network python wrapper\n
+    run `master(<msg_count>)` to transmit
     run `slave(<timeout_seconds>)` to receive"""
 )
