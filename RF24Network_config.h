@@ -39,7 +39,8 @@
          * @brief Maximum size of fragmented network frames and fragmentation cache.
          * @note This buffer can now be any size > 24. Previously this needed to be a multiple of 24 (changed in v1.0.15).
          * @note If used with RF24Ethernet, this value is used to set the buffer sizes.
-         * @note For noeds driven by an ATTiny based chip, this is set to 72.
+         * @note For nodes driven by an ATTiny based chip, this is set to 72. However, defining `DISABLE_FRAGMENTION` truncates
+         * the actual transmitted payload to 24 bytes (which is also the default behavior on ATTiny devices).
          */
         #ifndef MAX_PAYLOAD_SIZE
             #define MAX_PAYLOAD_SIZE  144
@@ -78,11 +79,10 @@
         /********** USER CONFIG - ATTiny **************/
         //#define ENABLE_SLEEP_MODE  //AVR only
         #define RF24NetworkMulticast
+        // NOTE: Only 24 bytes of a payload are used when DISABLE_FRAGMENTATION is defined
         #define MAX_PAYLOAD_SIZE 72
         #define MAIN_BUFFER_SIZE (MAX_PAYLOAD_SIZE + FRAME_HEADER_SIZE)
         #define DISABLE_FRAGMENTATION
-        // Enable MAX PAYLOAD SIZE if enabling fragmentation
-        //#define MAX_PAYLOAD_SIZE  MAIN_BUFFER_SIZE-10
         #define ENABLE_DYNAMIC_PAYLOADS
         //#define DISABLE_USER_PAYLOADS
     #endif

@@ -635,7 +635,7 @@ public:
 
     /**
      * Bring up the network on a specific radio frequency/channel.
-     * @deprecated Use radio.setChannel() to configure the radio channel.
+     * @deprecated Use `RF24::setChannel()` to configure the radio channel.
      * Use RF24Network::begin(uint16_t _node_address) to set the node address.
      *
      * **Example 1:** Begin on channel 90 with address 0 (master node)
