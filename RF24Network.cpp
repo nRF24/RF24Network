@@ -195,7 +195,11 @@ uint8_t RF24Network::update(void)
                     if (!(networkFlags & FLAG_NO_POLL) && node_address != NETWORK_DEFAULT_ADDRESS) {
                         header->to_node = header->from_node;
                         header->from_node = node_address;
+                        #ifdef MESH_SLOW_ADDRESS_RESPONSE
+                        delay(parent_pipe + MESH_SLOW_ADDRESS_RESPONSE);
+                        #else
                         delay(parent_pipe);
+                        #endif
                         write(header->to_node, USER_TX_TO_PHYSICAL_ADDRESS);
                     }
                     continue;
@@ -944,10 +948,7 @@ bool RF24Network::write_to_pipe(uint16_t node, uint8_t pipe, bool multicast)
         radio.stopListening();
     }
 
-    if (multicast)
-        radio.setAutoAck(0, 0);
-    else
-        radio.setAutoAck(0, 1);
+    radio.setAutoAck(0, !multicast);
 
     radio.openWritingPipe(pipe_address(node, pipe));
 
