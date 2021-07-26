@@ -195,8 +195,8 @@ uint8_t RF24Network::update(void)
                     if (!(networkFlags & FLAG_NO_POLL) && node_address != NETWORK_DEFAULT_ADDRESS) {
                         header->to_node = header->from_node;
                         header->from_node = node_address;
-                        #ifdef MESH_SLOW_ADDRESS_RESPONSE
-                        delay(parent_pipe + MESH_SLOW_ADDRESS_RESPONSE);
+                        #ifdef SLOW_ADDR_POLL_RESPONSE
+                        delay(parent_pipe + SLOW_ADDR_POLL_RESPONSE);
                         #else
                         delay(parent_pipe);
                         #endif
