@@ -127,6 +127,10 @@ if(DEFINED MAX_PAYLOAD_SIZE) # don't use CMake's `option()` for this one
     message(STATUS "MAX_PAYLOAD_SIZE set to ${MAX_PAYLOAD_SIZE}")
     target_compile_definitions(${LibTargetName} PUBLIC MAX_PAYLOAD_SIZE=${MAX_PAYLOAD_SIZE})
 endif()
+if(DEFINED SLOW_ADDR_POLL_RESPONSE)
+    message(STATUS "SLOW_ADDR_POLL_RESPONSE set to ${SLOW_ADDR_POLL_RESPONSE}")
+    target_compile_definitions(${LibTargetName} PUBLIC SLOW_ADDR_POLL_RESPONSE=${SLOW_ADDR_POLL_RESPONSE})
+endif()
 
 ###########################
 # target install rules for the RF24Log lib
