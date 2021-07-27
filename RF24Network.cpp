@@ -688,14 +688,13 @@ bool RF24Network::write(RF24NetworkHeader &header, const void *message, uint16_t
         header.reserved = fragment_id;
 
         if (fragment_id == 1) {
-            header.type = NETWORK_LAST_FRAGMENT; //Set the last fragment flag to indicate the last fragment
-            header.reserved = type;              //The reserved field is used to transmit the header type
+            header.type = NETWORK_LAST_FRAGMENT;  //Set the last fragment flag to indicate the last fragment
+            header.reserved = type;               //The reserved field is used to transmit the header type
+        } else if (msgCount == 0) {
+            header.type = NETWORK_FIRST_FRAGMENT;
+            networkFlags &= FLAG_FIRST_FRAG;
         } else {
-            if (msgCount == 0) {
-                header.type = NETWORK_FIRST_FRAGMENT;
-            } else {
-                header.type = NETWORK_MORE_FRAGMENTS; //Set the more fragments flag to indicate a fragmented frame
-            }
+            header.type = NETWORK_MORE_FRAGMENTS; //Set the more fragments flag to indicate a fragmented frame
         }
 
         uint16_t offset = msgCount * max_frame_payload_size;
@@ -717,14 +716,12 @@ bool RF24Network::write(RF24NetworkHeader &header, const void *message, uint16_t
         //if(writeDirect != NETWORK_AUTO_ROUTING){ delay(2); } //Delay 2ms between sending multicast payloads
 
         if (!ok && retriesPerFrag >= 3) {
-            IF_SERIAL_DEBUG_FRAGMENTATION(printf("%u: FRG TX with fragmentID '%d' failed after %d fragments. Abort.\n\r", millis(), fragment_id, msgCount););
+            IF_SERIAL_DEBUG_FRAGMENTATION(printf_P(PSTR("%u: FRG TX with fragmentID '%d' failed after %d fragments. Abort.\n\r"), millis(), fragment_id, msgCount));
             break;
         }
 
         //Message was successful sent
-        #if defined SERIAL_DEBUG_FRAGMENTATION_L2
-        printf("%u: FRG message transmission with fragmentID '%d' sucessfull.\n\r", millis(), fragment_id);
-        #endif
+        IF_SERIAL_DEBUG_FRAGMENTATION_L2(printf_P(PSTR("%u: FRG message transmission with fragmentID '%d' successful.\n\r"), millis(), fragment_id));
     }
     header.type = type;
     if (networkFlags & FLAG_FAST_FRAG) {
@@ -772,15 +769,15 @@ bool RF24Network::_write(RF24NetworkHeader &header, const void *message, uint16_
     }
 
     // If the user is trying to send it to himself
-    /*if ( header.to_node == node_address ){
-	#if defined (RF24_LINUX)
-	  RF24NetworkFrame frame = RF24NetworkFrame(header,message,rf24_min(MAX_FRAME_SIZE-sizeof(RF24NetworkHeader),len));
-	#else
-      RF24NetworkFrame frame(header,len);
+    /*if (header.to_node == node_address) {
+    #if defined (RF24_LINUX)
+        RF24NetworkFrame frame = RF24NetworkFrame(header, message, rf24_min(MAX_FRAME_SIZE - sizeof(RF24NetworkHeader), len));
+    #else
+        RF24NetworkFrame frame(header, len);
     #endif
-	// Just queue it in the received queue
-    return enqueue(frame);
-  }*/
+        // Just queue it in the received queue
+        return enqueue(frame);
+    }*/
     // Otherwise send it out over the air
 
     if (writeDirect != NETWORK_AUTO_ROUTING) {
@@ -939,18 +936,19 @@ bool RF24Network::write_to_pipe(uint16_t node, uint8_t pipe, bool multicast)
 
     // Open the correct pipe for writing.
     // First, stop listening so we can talk
-
-    if (!(networkFlags & FLAG_FAST_FRAG)) {
+    uint8_t assertedFlags = networkFlags & (FLAG_FIRST_FRAG + FLAG_FAST_FRAG);
+    if (assertedFlags < FLAG_FAST_FRAG) {
         radio.stopListening();
     }
-
-    radio.setAutoAck(0, !multicast);
-
-    radio.openWritingPipe(pipe_address(node, pipe));
+    if (assertedFlags > FLAG_FIRST_FRAG || !assertedFlags) {
+        networkFlags &= ~FLAG_FIRST_FRAG;
+        radio.setAutoAck(0, !multicast);
+        radio.openWritingPipe(pipe_address(node, pipe));
+    }
 
     ok = radio.writeFast(frame_buffer, frame_size, 0);
 
-    if (!(networkFlags & FLAG_FAST_FRAG)) {
+    if (assertedFlags < FLAG_FAST_FRAG) {
         ok = radio.txStandBy(txTimeout);
         radio.setAutoAck(0, 0);
     }

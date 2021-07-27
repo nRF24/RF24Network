@@ -176,6 +176,7 @@
 #define FLAG_BYPASS_HOLDS 2
 #define FLAG_FAST_FRAG 4
 #define FLAG_NO_POLL 8
+#define FLAG_FIRST_FRAG 16
 
 class RF24;
 
@@ -744,6 +745,7 @@ public:
      * | @ref FLAG_BYPASS_HOLDS| 2 (bit 1 asserted) | EXTERNAL: Can be used to prevent holds from blocking. Note: Holds are disabled & re-enabled by RF24Mesh when renewing addresses. This will cause data loss if incoming data exceeds the available cache space|
      * | @ref FLAG_FAST_FRAG| 4 (bit 2 asserted) | INTERNAL: Replaces the fastFragTransfer variable, and allows for faster transfers between directly connected nodes. |
      * | @ref FLAG_NO_POLL| 8 (bit 3 asserted) | EXTERNAL/USER: Disables @ref NETWORK_POLL responses on a node-by-node basis. |
+     * | @ref FLAG_FIRST_FRAG | 16 (bit 4 asserted) | INTERNAL: Used to avoid unnecessary repetition of some SPI transaction during message fragmentation. |
      *
      */
     uint8_t networkFlags;

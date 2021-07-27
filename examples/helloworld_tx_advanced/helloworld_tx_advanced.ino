@@ -89,6 +89,6 @@ void loop() {
       sizeofSend  = 0;
     }
 
-    Serial.println(ok ? F("ok.") : F("failed."));
+    Serial.println(ok ? F(" ok.") : F(" failed."));
   }
 }
