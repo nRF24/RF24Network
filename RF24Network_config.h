@@ -22,19 +22,6 @@
     /** @brief A sentinel value for internally indicating that the frame should be automatically routed as necessary */
     #define NETWORK_AUTO_ROUTING 070
 
-    #ifdef DOXYGEN_FORCED
-        /**
-        * @brief Adds a delay to node prior to transmitting NETWORK_ADDR_RESPONSE messages
-        *
-        * By default this is undefined for speed. This defined number of milliseconds is
-        * only applied to the master node when replying to a child trying to connect to the
-        * mesh network.
-        * @note It is advised to define this if any child node is running CircuitPython because
-        * the execution speed in pure python is inherently slower than it is in C++.
-        */
-        #define SLOW_ADDR_POLL_RESPONSE 10
-    #endif // defined DOXYGEN_FORCED
-
     #if !defined(__AVR_ATtiny85__) && !defined(__AVR_ATtiny84__)
 
         /********** USER CONFIG - non ATTiny **************/
