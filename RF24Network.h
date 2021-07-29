@@ -521,7 +521,6 @@ public:
      * Sets the timeout period for individual payloads in milliseconds at staggered intervals.
      * Payloads will be retried automatically until success or timeout
      * Set to 0 to use the normal auto retry period defined by radio.setRetries()
-     *
      */
     uint32_t txTimeout; /** Network timeout value */
 
@@ -565,10 +564,11 @@ public:
      * @param header reference to the RF24NetworkHeader object used for this @p message
      * @param message Pointer to memory where the message is located
      * @param len The size of the message
-     * @param level Multicast level to broadcast to
+     * @param level Multicast level to broadcast to. If this parameter is unspecified, then the
+     * current node's multicast level is used.
      * @return Whether the message was successfully sent
      */
-    bool multicast(RF24NetworkHeader &header, const void *message, uint16_t len, uint8_t level);
+    bool multicast(RF24NetworkHeader &header, const void *message, uint16_t len, uint8_t level=7);
 
     #endif
 
@@ -729,7 +729,6 @@ public:
      * | @ref NETWORK_PING          |
      * | @ref NETWORK_POLL <br>(With multicast enabled) |
      * | @ref NETWORK_REQ_ADDRESS   |
-     *
      */
     bool returnSysMsgs;
 
@@ -745,40 +744,101 @@ public:
      * | @ref FLAG_BYPASS_HOLDS| 2 (bit 1 asserted) | EXTERNAL: Can be used to prevent holds from blocking. Note: Holds are disabled & re-enabled by RF24Mesh when renewing addresses. This will cause data loss if incoming data exceeds the available cache space|
      * | @ref FLAG_FAST_FRAG| 4 (bit 2 asserted) | INTERNAL: Replaces the fastFragTransfer variable, and allows for faster transfers between directly connected nodes. |
      * | @ref FLAG_NO_POLL| 8 (bit 3 asserted) | EXTERNAL/USER: Disables @ref NETWORK_POLL responses on a node-by-node basis. |
-     * | @ref FLAG_FIRST_FRAG | 16 (bit 4 asserted) | INTERNAL: Used to avoid unnecessary repetition of some SPI transaction during message fragmentation. |
-     *
+     * | @ref FLAG_FIRST_FRAG | 16 (bit 4 asserted) | INTERNAL: Used to avoid unnecessary repetition of some SPI transactions during message fragmentation. |
      */
     uint8_t networkFlags;
 
 private:
+
+    /**
+     * @brief This function is the second to last stage a frame reaches before transmission.
+     * @param to_node Sets the outgoing traffic direction. Values passed to this parameter usually the
+     * destination node's logical address.
+     * @param sendType Specifies what "behavior" the outgoing transmission will use.
+     * | value |         macro name          |     corresponding behavior               |
+     * |-------|-----------------------------|------------------------------------------|
+     * |   0   | TX_NORMAL                   | First Payload, std routing    (auto-ack) |
+     * |   1   | TX_ROUTED                   | routed payload                (auto-ack) |
+     * |   2   | USER_TX_TO_PHYSICAL_ADDRESS | direct Route to host       (no auto-ack) |
+     * |   3   | USER_TX_TO_LOGICAL_ADDRESS  | direct Route to Route      (no auto-ack) |
+     * |   4   | USER_TX_MULTICAST           | multicast to several nodes (no auto-ack) |
+     * @note The "auto-ack" description in the above table pretains to the radio's auto-ack feature. This
+     * does not necessarily mean that the behavior will or won't invoke a NETWORK_ACK message (which depends
+     * on the outgoing message's type). NETWORK ACK messages are served to message types in range [65, 191]
+     * (excluding message fragments that aren't the last fragment of the message).
+     */
     bool write(uint16_t, uint8_t sendType);
+
+    /**
+     * @brief The last stage an outgoing frame reaches (actual/inital transmission is done here).
+     *
+     * The parameters for this function are the result translation of `logicalToPhysicalAddress()`.
+     * Internally, the networkFlags FLAG_FAST_FRAG & FLAG_FIRST_FRAG are used here (set beforehand)
+     * to avoid unnecessarily re-configuring the radio during transmission of fragmented messages.
+     */
     bool write_to_pipe(uint16_t node, uint8_t pipe, bool multicast);
+
+    /**
+     * @brief Enqueue a frame (referenced by its beginning header) in the node's queue.
+     * @returns
+     * - 0 if queue's size is maxed out
+     * - 1 if frame is successfully enqueued
+     * - 2 if EXTERNAL_DATA is detected (indicating that it is in the queue and should be
+     *   handled by an external system like RF24Gateway or RF24Ethernet).
+     */
     uint8_t enqueue(RF24NetworkHeader *header);
 
-    bool is_direct_child(uint16_t node);
-    bool is_descendant(uint16_t node);
-
-    uint16_t direct_child_route_to(uint16_t node);
+    /*
+     * Called from begin(), this sets up the radio to act as according to a logical node address.
+     *
+     * Based on the value of the private member `node_address`, the resulting confiuration affects
+     * private members `node_mask`, `parent_node`, `parent_pipe`, and `multicast_level`.
+     */
     void setup_address(void);
+
+    /*
+     * This (non-overloaded) function copies the outgoing frame into the `frame_buffer` and detirmines
+     * the initial values passed into `logicalToPhysicalAddress()` (based on the value passed
+     * to the `writeDirect` parameter). This is always called from either of the overloaded public
+     * `write()` functions.
+     */
     bool _write(RF24NetworkHeader &header, const void *message, uint16_t len, uint16_t writeDirect);
 
     struct logicalToPhysicalStruct
     {
-        uint16_t send_node;
-        uint8_t send_pipe;
-        bool multicast;
+        uint16_t send_node; /* the immediate destination (1 hop) of an outgoing frame */
+        uint8_t send_pipe;  /* the pipe number of the `send_node` for which outgoing packets are aimed at */
+        bool multicast;     /* flag to indicate that the outgoing frame does not want an auto-ack from `send_node` */
     };
 
+    /*
+     * Translates an outgoing frame's header information into the current node's
+     * required information (`logicalToPhysicalStruct`) for making the transmission.
+     *
+     * This returns void because the translated results are stored in the
+     * `logicalToPhysicalStruct` passed by reference.
+     */
     void logicalToPhysicalAddress(logicalToPhysicalStruct *conversionInfo);
+
+    /********* only called from `logicalToPhysicalAddress()` ***************/
+
+    /* Returns true if the given logical address (`node` parameter) is a direct child of the current node; otherwise returns false. */
+    bool is_direct_child(uint16_t node);
+    /* Returns true if the given logical address (`node` parameter) is a descendent of the current node; otherwise returns false. */
+    bool is_descendant(uint16_t node);
+    /* Returns a logical address for the first child en route to a child node */
+    uint16_t direct_child_route_to(uint16_t node);
+
+    /***********************************************************************/
 
     RF24 &radio; /** Underlying radio driver, provides link/physical layers */
 
     #if defined(RF24NetworkMulticast)
-    uint8_t multicast_level;
+    uint8_t multicast_level; /* The current node's network level (used for multicast TX/RX-ing) */
     #endif
     uint16_t node_address; /** Logical node address of this unit, 1 .. UINT_MAX */
-    uint8_t frame_size;
-    const static unsigned int max_frame_payload_size = MAX_FRAME_SIZE - sizeof(RF24NetworkHeader);
+    uint8_t frame_size;  /* The outgoing frame's total size including the header info. Ranges [8, MAX_PAYLOAD_SIZE] */
+    const static unsigned int max_frame_payload_size = MAX_FRAME_SIZE - sizeof(RF24NetworkHeader); /* always 24 bytes to compensate for the frame's header */
 
     #if defined(RF24_LINUX)
     std::queue<RF24NetworkFrame> frame_queue;
@@ -795,7 +855,7 @@ private:
     uint8_t *next_frame; /** Pointer into the @p frame_queue where we should place the next received frame */
 
     #if !defined(DISABLE_FRAGMENTATION)
-    RF24NetworkFrame frag_queue;
+    RF24NetworkFrame frag_queue; /* a cache for re-assembling incoming message fragments */
     uint8_t frag_queue_message_buffer[MAX_PAYLOAD_SIZE]; //frame size + 1
     #endif
 
@@ -804,6 +864,8 @@ private:
     uint16_t parent_node; /** Our parent's node address */
     uint8_t parent_pipe;  /** The pipe our parent uses to listen to us */
     uint16_t node_mask;   /** The bits which contain signfificant node address information */
+
+    /* Given the Logical node address & a pipe number, this returns the Physical address assigned to the radio's pipes. */
     uint64_t pipe_address(uint16_t node, uint8_t pipe);
 
     #if defined ENABLE_NETWORK_STATS
@@ -812,12 +874,11 @@ private:
     #endif
 
     #if defined(RF24NetworkMulticast)
+    /* translates network level number (0-3) to a Logical address (used for TX multicasting) */
     uint16_t levelToAddress(uint8_t level);
     #endif
 
     /** @} */
-public:
-
 };
 
 /**
@@ -856,7 +917,6 @@ public:
  * Using this sketch, each node will send a ping to the base every
  * few seconds.  The RF24Network library will route the message across
  * the mesh to the correct node.
- *
  */
 
 /**
@@ -877,7 +937,6 @@ public:
  *<br>
  * - Using this sketch, each node will send a ping to every other node in the network every few seconds.<br>
  * - The RF24Network library will route the message across the mesh to the correct node.<br>
- *
  */
 
 /**

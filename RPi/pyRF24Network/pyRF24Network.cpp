@@ -71,6 +71,13 @@ bool write_wrap(RF24Network &ref, RF24NetworkHeader &header, bp::object buf)
     return ref.write(header, get_bytes_or_bytearray_str(buf), get_bytes_or_bytearray_ln(buf));
 }
 
+#if defined RF24NetworkMulticast
+bool multicast_wrap(RF24Network &ref, RF24NetworkHeader &header, bp::object buf, uint8_t level)
+{
+    return ref.multicast(header, get_bytes_or_bytearray_str(buf), get_bytes_or_bytearray_ln(buf), level);
+}
+#endif // defined RF24NetworkMulticast
+
 std::string toString_wrap(RF24NetworkHeader &ref)
 {
     return std::string(ref.toString());
@@ -124,7 +131,27 @@ BOOST_PYTHON_MODULE(RF24Network)
             typedef bool (*write_function_type)(::RF24Network &, ::RF24NetworkHeader &, bp::object);
             RF24Network_exposer.def("write", write_function_type(&write_wrap), (bp::arg("header"), bp::arg("buf")));
         }
+
+#if defined RF24NetworkMulticast
+        { //::RF24Network::multicastLevel
+            typedef void (::RF24Network::*multicastLevel_function_type)(::uint16_t);
+            RF24Network_exposer.def("multicastLevel", multicastLevel_function_type(&::RF24Network::multicastLevel), (bp::arg("level")));
+        }
+        { //::RF24Network::multicast
+            typedef bool (*multicast_function_type)(::RF24Network &, ::RF24NetworkHeader &, bp::object, ::uint16_t);
+            RF24Network_exposer.def("multicast", multicast_function_type(&multicast_wrap), (bp::arg("header"), bp::arg("buf"), bp::arg("level")=7));
+        }
+        RF24Network_exposer.def_readwrite("multicastRelay", &RF24Network::multicastRelay);
+#endif // defined RF24NetworkMulticast
+
+        { //::RF24Network::is_valid_address
+            typedef bool (::RF24Network::*isAddressValid_function_type)(::uint16_t);
+            RF24Network_exposer.def("is_valid_address", isAddressValid_function_type(&::RF24Network::is_valid_address), (bp::arg("address")));
+        }
         RF24Network_exposer.def_readwrite("txTimeout", &RF24Network::txTimeout);
+        RF24Network_exposer.def_readwrite("routeTimeout", &RF24Network::routeTimeout);
+        RF24Network_exposer.def_readwrite("networkFlags", &RF24Network::networkFlags);
+        RF24Network_exposer.add_property("parent", &RF24Network::parent);
     }
 
     // **************** RF24NetworkHeader exposed  *****************

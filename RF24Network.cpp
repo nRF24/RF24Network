@@ -638,7 +638,7 @@ bool RF24Network::multicast(RF24NetworkHeader &header, const void *message, uint
     // Fill out the header
     header.to_node = NETWORK_MULTICAST_ADDRESS;
     header.from_node = node_address;
-    return write(header, message, len, levelToAddress(level));
+    return write(header, message, len, levelToAddress(level > 3 ? multicast_level : level));
 }
 #endif
 
@@ -696,7 +696,7 @@ bool RF24Network::write(RF24NetworkHeader &header, const void *message, uint16_t
             header.reserved = type;               //The reserved field is used to transmit the header type
         } else if (msgCount == 0) {
             header.type = NETWORK_FIRST_FRAGMENT;
-            networkFlags &= FLAG_FIRST_FRAG;
+            networkFlags |= FLAG_FIRST_FRAG;
         } else {
             header.type = NETWORK_MORE_FRAGMENTS; //Set the more fragments flag to indicate a fragmented frame
         }
@@ -737,7 +737,7 @@ bool RF24Network::write(RF24NetworkHeader &header, const void *message, uint16_t
 
     //Return true if all the chunks where sent successfully
 
-    IF_SERIAL_DEBUG_FRAGMENTATION(printf_P(PSTR("%u: FRG total message fragments sent %i. \n"), millis(), msgCount););
+    IF_SERIAL_DEBUG_FRAGMENTATION(printf_P(PSTR("%u: FRG total message fragments sent %i.\r\n"), millis(), msgCount););
     if (!ok || fragment_id > 0) {
         return false;
     }
@@ -799,7 +799,7 @@ bool RF24Network::_write(RF24NetworkHeader &header, const void *message, uint16_
 
 /******************************************************************/
 
-bool RF24Network::write(uint16_t to_node, uint8_t sendType) // sendType: 0 = First Payload, standard routing, 1=routed payload, 2=directRoute to host, 3=directRoute to Route
+bool RF24Network::write(uint16_t to_node, uint8_t sendType)
 {
     bool ok = false;
     bool isAckType = false;
@@ -889,7 +889,6 @@ bool RF24Network::write(uint16_t to_node, uint8_t sendType) // sendType: 0 = Fir
 
 /******************************************************************/
 
-// Provided the to_node and sendType option, it will return the resulting node and pipe
 void RF24Network::logicalToPhysicalAddress(logicalToPhysicalStruct *conversionInfo)
 {
 
@@ -913,19 +912,19 @@ void RF24Network::logicalToPhysicalAddress(logicalToPhysicalStruct *conversionIn
         pre_conversion_send_pipe = 0;
         //}
     }
-    // If the node is a direct child,
-    else if (is_direct_child(*to_node)) {
-        // Send directly
-        pre_conversion_send_node = *to_node;
-        // To its listening pipe
-        pre_conversion_send_pipe = 5;
-    }
-    // If the node is a child of a child
-    // talk on our child's listening pipe,
-    // and let the direct child relay it.
     else if (is_descendant(*to_node)) {
-        pre_conversion_send_node = direct_child_route_to(*to_node);
-        pre_conversion_send_pipe = 5;
+        pre_conversion_send_pipe = 5; // Send to its listening pipe
+        // If the node is a direct child,
+        if (is_direct_child(*to_node)) {
+            // Send directly
+            pre_conversion_send_node = *to_node;
+        }
+        // If the node is a child of a child
+        // talk on our child's listening pipe,
+        // and let the direct child relay it.
+        else {
+            pre_conversion_send_node = direct_child_route_to(*to_node);
+        }
     }
 
     *to_node = pre_conversion_send_node;
@@ -940,28 +939,28 @@ bool RF24Network::write_to_pipe(uint16_t node, uint8_t pipe, bool multicast)
 
     // Open the correct pipe for writing.
     // First, stop listening so we can talk
-    uint8_t assertedFlags = networkFlags & (FLAG_FIRST_FRAG + FLAG_FAST_FRAG);
-    if (assertedFlags < FLAG_FAST_FRAG) {
+    if (!(networkFlags & FLAG_FAST_FRAG)) {
         radio.stopListening();
     }
-    if (assertedFlags > FLAG_FIRST_FRAG || !assertedFlags) {
-        networkFlags &= ~FLAG_FIRST_FRAG;
+    uint8_t assertedFlags = networkFlags & (FLAG_FIRST_FRAG + FLAG_FAST_FRAG);
+    if (assertedFlags == (FLAG_FIRST_FRAG + FLAG_FAST_FRAG) || !assertedFlags) {
+        networkFlags &= ~FLAG_FIRST_FRAG; // still cheaper than writing 8 bytes over SPI
         radio.setAutoAck(0, !multicast);
         radio.openWritingPipe(pipe_address(node, pipe));
     }
 
     ok = radio.writeFast(frame_buffer, frame_size, 0);
 
-    if (assertedFlags < FLAG_FAST_FRAG) {
+    if (!(networkFlags & FLAG_FAST_FRAG)) {
         ok = radio.txStandBy(txTimeout);
         radio.setAutoAck(0, 0);
     }
 
     /*
     #if defined (__arm__) || defined (RF24_LINUX)
-    IF_SERIAL_DEBUG(printf_P(PSTR("%u: MAC Sent on %x %s\n\r"),millis(),(uint32_t)out_pipe,ok?PSTR("ok"):PSTR("failed")));
+    IF_SERIAL_DEBUG(printf_P(PSTR("%u: MAC Sent on %x %s\n\r"), millis(), (uint32_t)out_pipe, ok ? PSTR("ok") : PSTR("failed")));
     #else
-    IF_SERIAL_DEBUG(printf_P(PSTR("%u: MAC Sent on %lx %S\n\r"),millis(),(uint32_t)out_pipe,ok?PSTR("ok"):PSTR("failed")));
+    IF_SERIAL_DEBUG(printf_P(PSTR("%u: MAC Sent on %lx %S\n\r"), millis(), (uint32_t)out_pipe, ok ? PSTR("ok") : PSTR("failed")));
     #endif
     */
     return ok;
@@ -981,21 +980,15 @@ const char *RF24NetworkHeader::toString(void) const
 
 bool RF24Network::is_direct_child(uint16_t node)
 {
-    bool result = false;
-
     // A direct child of ours has the same low numbers as us, and only
     // one higher number.
     //
     // e.g. node 0234 is a direct child of 034, and node 01234 is a
     // descendant but not a direct child
 
-    // First, is it even a descendant?
-    if (is_descendant(node)) {
-        // Does it only have ONE more level than us?
-        uint16_t child_node_mask = (~node_mask) << 3;
-        result = (node & child_node_mask) == 0;
-    }
-    return result;
+    // Does it only have ONE more level than us?
+    uint16_t child_node_mask = (~node_mask) << 3;
+    return (node & child_node_mask) == 0;
 }
 
 /******************************************************************/
