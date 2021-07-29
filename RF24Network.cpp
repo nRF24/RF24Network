@@ -407,7 +407,7 @@ uint8_t RF24Network::enqueue(RF24NetworkHeader *header)
 
         if (header->type == NETWORK_FIRST_FRAGMENT) {
 
-            memcpy(&frag_queue, &frame_buffer, sizeof(RF24NetworkHeader));
+            memcpy((char *)(&frag_queue), &frame_buffer, sizeof(RF24NetworkHeader));
             memcpy(frag_queue.message_buffer, frame_buffer + sizeof(RF24NetworkHeader), message_size);
 
             IF_SERIAL_DEBUG_FRAGMENTATION(printf_P(PSTR("queue first, total frags %d\n\r"), header->reserved););
@@ -475,7 +475,7 @@ uint8_t RF24Network::enqueue(RF24NetworkHeader *header)
     // Copy the current frame into the frame queue
     #if !defined(DISABLE_FRAGMENTATION)
     if (header->type == EXTERNAL_DATA_TYPE) {
-        memcpy(&frag_queue, &frame_buffer, 8);
+        memcpy((char *)(&frag_queue), &frame_buffer, 8);
         frag_queue.message_buffer = frame_buffer + sizeof(RF24NetworkHeader);
         frag_queue.message_size = message_size;
         return 2;
@@ -696,7 +696,6 @@ bool RF24Network::write(RF24NetworkHeader &header, const void *message, uint16_t
             header.reserved = type;               //The reserved field is used to transmit the header type
         } else if (msgCount == 0) {
             header.type = NETWORK_FIRST_FRAGMENT;
-            networkFlags |= FLAG_FIRST_FRAG;
         } else {
             header.type = NETWORK_MORE_FRAGMENTS; //Set the more fragments flag to indicate a fragmented frame
         }
@@ -942,9 +941,8 @@ bool RF24Network::write_to_pipe(uint16_t node, uint8_t pipe, bool multicast)
     if (!(networkFlags & FLAG_FAST_FRAG)) {
         radio.stopListening();
     }
-    uint8_t assertedFlags = networkFlags & (FLAG_FIRST_FRAG + FLAG_FAST_FRAG);
-    if (assertedFlags == (FLAG_FIRST_FRAG + FLAG_FAST_FRAG) || !assertedFlags) {
-        networkFlags &= ~FLAG_FIRST_FRAG; // still cheaper than writing 8 bytes over SPI
+
+    if (!(networkFlags & FLAG_FAST_FRAG) || (frame_buffer[6] == NETWORK_FIRST_FRAGMENT && networkFlags & FLAG_FAST_FRAG)) {
         radio.setAutoAck(0, !multicast);
         radio.openWritingPipe(pipe_address(node, pipe));
     }
