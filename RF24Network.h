@@ -481,17 +481,23 @@ public:
     /**@{*/
 
     /**
-     * By default, multicast addresses are divided into levels.
+     * By default, multicast addresses are divided into 5 network levels:
+     * - The master node is the only node on level 0 (the lowest level)
+     * - Nodes 01-05 (level 1) share a multicast address
+     * - Nodes 0n1-0n5 (level 2) share a multicast address
+     * - Nodes 0n11-0n55 (level 3) share a multicast address
+     * - Nodes 0n111-0n555 (level 4) share a multicast address
      *
-     * Nodes 1-5 share a multicast address, nodes n1-n5 share a multicast address, and nodes n11-n55 share a multicast address.<br>
+     * Notice "n" (used in the list above) stands for an octal digit in range [0, 5]
      *
-     * This option is used to override the defaults, and create custom multicast groups that all share a single
-     * address. <br>
-     * The level should be specified in decimal format 1-6 <br>
+     * This optionional function is used to override the default level set when a node's logical
+     * address changes, and it can be used to create custom multicast groups that all share a
+     * single address.
      * @see multicastRelay
-     * @param level Levels 1 to 6 are available. All nodes at the same level will receive the same
-     * messages if in range. Messages will be routed in order of level, low to high by default, with the
-     * master node (00) at multicast Level 0
+     * @see multicast()
+     * @see [The topology image](http://github.com/nRF24/RF24Network/blob/master/images/topologyImage.jpg)
+     * @param level Levels 0 to 4 are available. All nodes at the same level will receive the same
+     * messages if in range. Messages will be routed in order of level, low to high, by default.
      */
     void multicastLevel(uint8_t level);
 
@@ -499,7 +505,9 @@ public:
      * Enabling this will allow this node to automatically forward received multicast frames to the next highest
      * multicast level. Duplicate frames are filtered out, so multiple forwarding nodes at the same level should
      * not interfere. Forwarded payloads will also be received.
-     * @see multicastLevel
+     *
+     * This is disabled by default.
+     * @see multicastLevel()
      */
     bool multicastRelay;
 
@@ -558,13 +566,13 @@ public:
      *
      * Multicasting is arranged in levels, with all nodes on the same level listening to the same address
      * Levels are assigned by network level ie: nodes 01-05: Level 1, nodes 011-055: Level 2
-     * @see multicastLevel
+     * @see multicastLevel()
      * @see multicastRelay
      * @param header reference to the RF24NetworkHeader object used for this @p message
      * @param message Pointer to memory where the message is located
      * @param len The size of the message
      * @param level Multicast level to broadcast to. If this parameter is unspecified, then the
-     * current node's multicast level is used.
+     * node's current multicastLevel() is used.
      * @return Whether the message was successfully sent
      */
     bool multicast(RF24NetworkHeader &header, const void *message, uint16_t len, uint8_t level=7);
