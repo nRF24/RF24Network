@@ -771,8 +771,8 @@ private:
      * @brief The last stage an outgoing frame reaches (actual/inital transmission is done here).
      *
      * The parameters for this function are the result translation of `logicalToPhysicalAddress()`.
-     * Internally, the networkFlags FLAG_FAST_FRAG & FLAG_FIRST_FRAG are used here (set beforehand)
-     * to avoid unnecessarily re-configuring the radio during transmission of fragmented messages.
+     * Internally, the `networkFlags` FLAG_FAST_FRAG is used here (set beforehand) to avoid unnecessarily
+     * re-configuring the radio during transmission of fragmented messages.
      */
     bool write_to_pipe(uint16_t node, uint8_t pipe, bool multicast);
 
