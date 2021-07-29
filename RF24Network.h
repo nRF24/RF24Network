@@ -667,7 +667,15 @@ public:
      */
     /**@{*/
 
-    /** The raw system frame buffer of received data. */
+    /**
+     * @brief The raw system frame buffer.
+     *
+     * This member can be accessed to retrieve the latest received data just after it is enqueued.
+     * This buffer is also used for outgoing data.
+     * @warning Conditionally, this buffer may only contain fragments of a message (either
+     * outgoing or incoming).
+     * @note The first 8 bytes of this buffer is latest handled frame's RF24NetworkHeader data.
+     */
     uint8_t frame_buffer[MAX_FRAME_SIZE];
 
     /**
