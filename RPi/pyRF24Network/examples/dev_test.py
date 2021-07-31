@@ -18,10 +18,12 @@ other_node = [
 
 radio = pyRF24.RF24(22, 0)
 if not radio.begin():
-    print("radio mot respoding")
+    raise RuntimeError("radio hardware not responding")
+
+radio.channel = 90
 
 network = pyRF24Network.RF24Network(radio)
-network.begin(90, this_node[0])
+network.begin(this_node[0])
 
 header = pyRF24Network.RF24NetworkHeader(other_node[0], 0)
 
@@ -41,7 +43,7 @@ def slave(timeout=10):
     while time.monotonic() <= end_timer:
         # let SERIAL_DEBUG output do the printing to stdout
         network.update()
-    # let dev do post-reception work in REPL (using `head_in`)
+    # let dev do post-reception work in REPL (using `header`)
 
 def print_details():
     radio.printPrettyDetails()

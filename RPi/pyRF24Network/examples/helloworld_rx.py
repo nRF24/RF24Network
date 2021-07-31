@@ -33,10 +33,13 @@ this_node = 0o0
 other_node = 0o1
 
 # initialize the radio
-radio.begin()
+if not radio.begin():
+    raise RuntimeError("radio hardware not responding")
+
+radio.channel = 90
 
 # initialize the network node
-network.begin(90, this_node)    # channel 90
+network.begin(this_node)
 
 # radio.printDetails()
 radio.printPrettyDetails()
