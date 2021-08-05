@@ -165,15 +165,6 @@
 /** Internal defines for handling internal payloads - prevents reading additional data from the radio
  * when buffers are full
  */
-#define FLAG_HOLD_INCOMING 1
-/** FLAG_BYPASS_HOLDS is mainly for use with RF24Mesh as follows:
- * a: Ensure no data in radio buffers, else exit
- * b: Address is changed to multicast address for renewal
- * c: Holds Cleared (bypass flag is set)
- * d: Address renewal takes place and is set
- * e: Holds Enabled (bypass flag off)
- */
-#define FLAG_BYPASS_HOLDS 2
 #define FLAG_FAST_FRAG 4
 #define FLAG_NO_POLL 8
 
@@ -754,10 +745,11 @@ public:
      *
      * | FLAGS | Value | Description |
      * |-------|-------|-------------|
-     * | @ref FLAG_HOLD_INCOMING| 1 (bit 0 asserted) | INTERNAL: Set automatically when a fragmented payload will exceed the available cache |
-     * | @ref FLAG_BYPASS_HOLDS| 2 (bit 1 asserted) | EXTERNAL: Can be used to prevent holds from blocking. Note: Holds are disabled & re-enabled by RF24Mesh when renewing addresses. This will cause data loss if incoming data exceeds the available cache space|
      * | @ref FLAG_FAST_FRAG| 4 (bit 2 asserted) | INTERNAL: Replaces the fastFragTransfer variable, and allows for faster transfers between directly connected nodes. |
      * | @ref FLAG_NO_POLL| 8 (bit 3 asserted) | EXTERNAL/USER: Disables @ref NETWORK_POLL responses on a node-by-node basis. |
+     *
+     * @note Bit posistions 0 & 1 in the `networkFlags` byte are no longer used as they once were
+     * during experimental development.
      */
     uint8_t networkFlags;
 
