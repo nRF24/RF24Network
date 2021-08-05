@@ -503,8 +503,7 @@ public:
 
     /**
      * Enabling this will allow this node to automatically forward received multicast frames to the next highest
-     * multicast level. Duplicate frames are filtered out, so multiple forwarding nodes at the same level should
-     * not interfere. Forwarded payloads will also be received.
+     * multicast level. Forwarded frames will also be enqueued on the forwarding node as a received frame.
      *
      * This is disabled by default.
      * @see multicastLevel()
@@ -515,7 +514,7 @@ public:
      * Set up the watchdog timer for sleep mode using the number 0 through 10 to represent the following time periods:<br>
      * wdt_16ms = 0, wdt_32ms, wdt_64ms, wdt_128ms, wdt_250ms, wdt_500ms, wdt_1s, wdt_2s, wdt_4s, wdt_8s
      * @code
-     * 	setup_watchdog(7);   // Sets the WDT to trigger every second
+     * setup_watchdog(7);   // Sets the WDT to trigger every second
      * @endcode
      * @param prescalar The WDT prescaler to define how often the node will wake up. When defining sleep mode cycles, this time period is 1 cycle.
      */
