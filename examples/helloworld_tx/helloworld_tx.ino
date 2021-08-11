@@ -50,7 +50,8 @@ void setup(void) {
       // hold in infinite loop
     }
   }
-  network.begin(/*channel*/ 90, /*node address*/ this_node);
+  radio.setChannel(90);
+  network.begin(/*node address*/ this_node);
 }
 
 void loop() {

@@ -107,7 +107,8 @@ void setup() {
     }
   }
   radio.setPALevel(RF24_PA_HIGH);
-  network.begin(/*channel*/ 100, /*node address*/ this_node );
+  radio.setChannel(100);
+  network.begin(/*node address*/ this_node);
 }
 
 void loop() {

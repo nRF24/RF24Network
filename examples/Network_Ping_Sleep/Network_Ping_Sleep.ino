@@ -106,7 +106,8 @@ void setup() {
     }
   }
   radio.setPALevel(RF24_PA_HIGH);
-  network.begin(/*channel*/ 100, /*node address*/ this_node );
+  radio.setChannel(100);
+  network.begin(/*node address*/ this_node);
 
   /******************************** This is the configuration for sleep mode ***********************/
   network.setup_watchdog(wdt_1s);                       //The watchdog timer will wake the MCU and radio every second to send a sleep payload, then go back to sleep

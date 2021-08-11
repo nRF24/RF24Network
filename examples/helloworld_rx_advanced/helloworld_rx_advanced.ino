@@ -48,7 +48,8 @@ void setup(void) {
       // hold in infinite loop
     }
   }
-  network.begin(/*channel*/ 90, /*node address*/ this_node);
+  radio.setChannel(90);
+  network.begin(/*node address*/ this_node);
 
   printf_begin();       // needed for RF24* libs' internal printf() calls
   radio.printDetails(); // requires printf support

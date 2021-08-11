@@ -57,7 +57,8 @@ int main(int argc, char **argv)
     radio.setRetries(7, 7);
 
     delay(5);
-    network.begin(/*channel*/ 100, /*node address*/ this_node);
+    radio.setChannel(100);
+    network.begin(/*node address*/ this_node);
     radio.printDetails();
 
     while (1) {

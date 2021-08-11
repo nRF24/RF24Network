@@ -50,7 +50,8 @@ int main(int argc, char **argv)
     }
 
     delay(5);
-    network.begin(/*channel*/ 90, /*node address*/ this_node);
+    radio.setChannel(90);
+    network.begin(/*node address*/ this_node);
     radio.printDetails();
 
     while (1) {
