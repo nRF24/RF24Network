@@ -208,13 +208,13 @@ uint8_t RF24Network::update(void)
                 uint8_t val = enqueue(header);
 
                 if (multicastRelay) {
-                    IF_SERIAL_DEBUG_ROUTING(printf_P(PSTR("%u: MAC FWD multicast frame from 0%o to level %u\n"), millis(), header->from_node, multicast_level + 1););
+                    IF_SERIAL_DEBUG_ROUTING(printf_P(PSTR("%u: MAC FWD multicast frame from 0%o to level %u\n"), millis(), header->from_node, _multicast_level + 1););
                     if ((node_address >> 3) != 0) {
                         // for all but the first level of nodes, those not directly connected to the master, we add the total delay per level
                         delayMicroseconds(600 * 4);
                     }
                     delayMicroseconds((node_address % 4) * 600);
-                    write(levelToAddress(multicast_level) << 3, USER_TX_MULTICAST);
+                    write(levelToAddress(_multicast_level) << 3, USER_TX_MULTICAST);
                 }
                 if (val == 2) { //External data received
                     return EXTERNAL_DATA_TYPE;
@@ -638,7 +638,7 @@ bool RF24Network::multicast(RF24NetworkHeader &header, const void *message, uint
     // Fill out the header
     header.to_node = NETWORK_MULTICAST_ADDRESS;
     header.from_node = node_address;
-    return write(header, message, len, levelToAddress(level > 3 ? multicast_level : level));
+    return write(header, message, len, levelToAddress(level > 3 ? _multicast_level : level));
 }
 #endif
 
@@ -1011,7 +1011,7 @@ void RF24Network::setup_address(void)
         #if defined(RF24NetworkMulticast)
         count++;
     }
-    multicast_level = count;
+    _multicast_level = count;
         #else
     }
         #endif
@@ -1101,7 +1101,7 @@ bool RF24Network::is_valid_address(uint16_t node)
 
 void RF24Network::multicastLevel(uint8_t level)
 {
-    multicast_level = level;
+    _multicast_level = level;
     radio.stopListening();
     radio.openReadingPipe(0, pipe_address(levelToAddress(level), 0));
     radio.startListening();

@@ -753,6 +753,13 @@ public:
      */
     uint8_t networkFlags;
 
+protected:
+
+    #if defined(RF24NetworkMulticast)
+    uint8_t _multicast_level; /* The current node's network level (used for multicast TX/RX-ing) */
+    #endif
+    uint16_t node_address; /** Logical node address of this unit, 1 .. UINT_MAX */
+
 private:
 
     /**
@@ -794,10 +801,11 @@ private:
     uint8_t enqueue(RF24NetworkHeader *header);
 
     /*
-     * Called from begin(), this sets up the radio to act as according to a logical node address.
+     * Called from begin(), this sets up the radio to act accordingly per the
+     * logical `_node_address` parameter passed to `begin()`.
      *
      * Based on the value of the private member `node_address`, the resulting confiuration affects
-     * private members `node_mask`, `parent_node`, `parent_pipe`, and `multicast_level`.
+     * private members `node_mask`, `parent_node`, `parent_pipe`, and `_multicast_level`.
      */
     void setup_address(void);
 
@@ -838,10 +846,6 @@ private:
 
     RF24 &radio; /** Underlying radio driver, provides link/physical layers */
 
-    #if defined(RF24NetworkMulticast)
-    uint8_t multicast_level; /* The current node's network level (used for multicast TX/RX-ing) */
-    #endif
-    uint16_t node_address; /** Logical node address of this unit, 1 .. UINT_MAX */
     uint8_t frame_size;  /* The outgoing frame's total size including the header info. Ranges [8, MAX_PAYLOAD_SIZE] */
     const static unsigned int max_frame_payload_size = MAX_FRAME_SIZE - sizeof(RF24NetworkHeader); /* always 24 bytes to compensate for the frame's header */
 
