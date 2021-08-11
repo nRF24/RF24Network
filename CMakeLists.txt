@@ -14,8 +14,11 @@ cmake_minimum_required(VERSION 3.15)
 
 # Set the project name to your project name
 project(RF24Network C CXX)
-include(cmake/StandardProjectSettings.cmake)
-include(cmake/PreventInSourceBuilds.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/cmake/StandardProjectSettings.cmake)
+if(not "${CMAKE_CURRENT_LIST_DIR}" STREQUAL "${CMAKE_CURRENT_SOURCE_DIR}")
+    # python wrapper builds in source, but not in submodules' source
+    include(${CMAKE_CURRENT_LIST_DIR}/cmake/PreventInSourceBuilds.cmake)
+endif()
 
 # Link this 'library' to set the c++ standard / compile-time options requested
 add_library(project_options INTERFACE)
@@ -54,17 +57,17 @@ endif()
 add_library(project_warnings INTERFACE)
 
 # enable cache system
-include(cmake/Cache.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/cmake/Cache.cmake)
 
 # standard compiler warnings
-include(cmake/CompilerWarnings.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/cmake/CompilerWarnings.cmake)
 set_project_warnings(project_warnings)
 
 # get library info from Arduino IDE's required library.properties file
-include(cmake/GetLibInfo.cmake) # sets the variable LibTargetName
+include(${CMAKE_CURRENT_LIST_DIR}/cmake/GetLibInfo.cmake) # sets the variable LibTargetName
 
 # setup CPack options
-include(cmake/CPackInfo.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/cmake/CPackInfo.cmake)
 
 find_library(RF24 rf24 REQUIRED)
 message(STATUS "using RF24 library: ${RF24}")
