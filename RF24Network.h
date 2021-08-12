@@ -308,17 +308,6 @@ struct RF24NetworkFrame
     {
     }
     #endif
-
-    /**
-     * Create debugging string
-     *
-     * Useful for debugging.  Dumps all members into a single string, using
-     * internal static memory.  This memory will get overridden next time
-     * you call the method.
-     *
-     * @return String representation of this object
-     */
-    const char *toString(void) const;
 };
 
 /**
