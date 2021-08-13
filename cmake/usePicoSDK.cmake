@@ -10,9 +10,9 @@ set(CMAKE_CXX_STANDARD 17)
 add_library(RF24Network INTERFACE)
 
 target_sources(RF24Network INTERFACE
-    ${CMAKE_CURRENT_LIST_DIR}/RF24Network.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/../RF24Network.cpp
 )
 
 target_include_directories(RF24Network INTERFACE
-    ${CMAKE_CURRENT_LIST_DIR}/
+    ${CMAKE_CURRENT_LIST_DIR}/../
 )
