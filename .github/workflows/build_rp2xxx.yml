@@ -99,7 +99,7 @@ jobs:
       with:
         name: examples_pico_${{ matrix.board }}
         path: |
-          ${{ github.workspace }}/build/*.uf2
-          ${{ github.workspace }}/build/*.elf
-        # ${{ github.workspace }}/build/*.hex
-        # ${{ github.workspace }}/build/*.bin
+          ${{ github.workspace }}/RF24Network/build/*.uf2
+          ${{ github.workspace }}/RF24Network/build/*.elf
+        # ${{ github.workspace }}/RF24Network/build/*.hex
+        # ${{ github.workspace }}/RF24Network/build/*.bin
