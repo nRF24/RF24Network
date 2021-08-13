@@ -58,6 +58,7 @@ jobs:
       uses: actions/checkout@v2
       with:
         path: RF24
+        ref: rp2xxx
 
     - name: Install toolchain
       run: sudo apt update && sudo apt install gcc-arm-none-eabi libnewlib-arm-none-eabi build-essential
