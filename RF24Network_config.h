@@ -106,7 +106,7 @@
 
 #ifdef __cplusplus
 
-    #if (defined (__linux) || defined (linux)) && !defined (__ARDUINO_X86__)
+    #if (defined (__linux) || defined (linux)) && !defined (__ARDUINO_X86__) && !defined (USE_RF24_LIB_SRC)
         #include <RF24/RF24_config.h>
 
     //ATXMega
