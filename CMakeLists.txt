@@ -66,8 +66,10 @@ set_project_warnings(${LibTargetName}_project_warnings)
 # setup CPack options
 include(${CMAKE_CURRENT_LIST_DIR}/cmake/CPackInfo.cmake)
 
-find_library(RF24 rf24 REQUIRED)
-message(STATUS "using RF24 library: ${RF24}")
+if(NOT DEFINED USE_RF24_LIB_SRC)
+    find_library(RF24 rf24 REQUIRED)
+    message(STATUS "using RF24 library: ${RF24}")
+endif()
 
 ###########################
 # create target for bulding the RF24Log lib
@@ -80,23 +82,25 @@ target_include_directories(${LibTargetName} PUBLIC
     ${CMAKE_CURRENT_LIST_DIR}
 )
 
-target_link_libraries(${LibTargetName}
-    INTERFACE ${LibTargetName}_project_options
-    INTERFACE ${LibTargetName}_project_warnings
-)
-
-# python wrapper builds from source
 if(DEFINED USE_RF24_LIB_SRC OR pybind11_FOUND OR SKBUILD)
     message(STATUS "Building lib from RF24 source")
     target_compile_definitions(${LibTargetName} PUBLIC USE_RF24_LIB_SRC)
-    target_link_libraries(${LibTargetName} INTERFACE rf24)
     if(NOT DEFINED RF24_LIB_PATH)
         target_include_directories(${LibTargetName} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../RF24)
     else()
         target_include_directories(${LibTargetName} PUBLIC ${RF24_LIB_PATH})
     endif()
+    target_link_libraries(${LibTargetName}
+        INTERFACE ${LibTargetName}_project_options
+        INTERFACE ${LibTargetName}_project_warnings
+    )
+
 else()
-    target_link_libraries(${LibTargetName} SHARED ${RF24})
+    target_link_libraries(${LibTargetName}
+        INTERFACE ${LibTargetName}_project_options
+        INTERFACE ${LibTargetName}_project_warnings
+        SHARED ${RF24}
+    )
 endif()
 
 set_target_properties(
