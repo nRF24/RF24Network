@@ -19,11 +19,17 @@
 #include <unistd.h>
 #include <iostream>
 #include <algorithm>
+#if !defined (USE_RF24_LIB_SRC)
 #include <RF24/RF24.h>
+#endif
 #else
 #include "RF24.h"
 #endif
 #include "RF24Network.h"
+#if defined (USE_RF24_LIB_SRC)
+#include <RF24.h>
+#endif
+
 
 #if defined(ENABLE_SLEEP_MODE) && defined(ESP8266)
 #warning "Disabling sleep mode because sleep doesn't work on ESP8266"
