@@ -525,6 +525,7 @@ public:
      * For advanced operation of the network
      */
     /**@{*/
+    #if defined (ENABLE_NETWORK_STATS) || defined (DOXYGEN_FORCED)
 
     /**
      * Return the number of failures and successes for all transmitted payloads, routed or sent directly
@@ -537,6 +538,7 @@ public:
      */
     void failures(uint32_t *_fails, uint32_t *_ok);
 
+    #endif // defined (ENABLE_NETWORK_STATS)
     #if defined(RF24NetworkMulticast)
 
     /**
