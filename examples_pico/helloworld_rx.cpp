@@ -4,8 +4,7 @@
  * RECEIVER NODE
  * Listens for messages from the transmitter and prints them out.
  */
-#include "pico/stdlib.h"  // printf(), sleep_ms(), getchar_timeout_us(), to_us_since_boot(), get_absolute_time()
-#include "pico/bootrom.h" // reset_usb_boot()
+#include "pico/stdlib.h"  // printf(), sleep_ms(), to_ms_since_boot(), get_absolute_time()
 #include <tusb.h>         // tud_cdc_connected()
 #include <RF24.h>         // RF24 radio object
 #include <RF24Network.h>  // RF24Network network object

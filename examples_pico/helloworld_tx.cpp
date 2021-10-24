@@ -4,8 +4,7 @@
  * TRANSMITTER NODE
  * Transmits messages to the reciever every 2 seconds.
  */
-#include "pico/stdlib.h"  // printf(), sleep_ms(), getchar_timeout_us(), to_us_since_boot(), get_absolute_time()
-#include "pico/bootrom.h" // reset_usb_boot()
+#include "pico/stdlib.h"  // printf(), sleep_ms(), to_ms_since_boot(), get_absolute_time()
 #include <tusb.h>         // tud_cdc_connected()
 #include <RF24.h>         // RF24 radio object
 #include <RF24Network.h>  // RF24Network network object
@@ -64,12 +63,12 @@ bool setup()
 void loop()
 {
     network.update();
-    unsigned long now = millis(); // If it's time to send a message, send it!
-    if (now - last_sent >= interval) {
+    unsigned long now = to_ms_since_boot(get_absolute_time());
+    if (now - last_sent >= interval) { // If it's time to send a message, send it!
         last_sent = now;
 
         printf("Sending ..\n");
-        payload_t payload = {millis(), packets_sent++};
+        payload_t payload = {now, packets_sent++};
         RF24NetworkHeader header(/*to node*/ other_node);
         bool ok = network.write(header, &payload, sizeof(payload));
         printf("%s.\n", ok ? "ok" : "failed");
