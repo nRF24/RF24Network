@@ -89,8 +89,8 @@ digit in the address represents a position in the tree further from the base.
   and multiple leaf nodes spread out at a distance, using intermediate nodes to reach other nodes.
 
 ![
-    @image html example_tree.svg
-    ](../images/example_tree.svg)
+  @image html example_tree.svg
+  ](https:://github.com/nRF24/RF24Network/blob/CMake-4-Linux/images/example_tree.svg)
 
 ## How routing is handled
 
