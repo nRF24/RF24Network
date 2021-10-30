@@ -336,26 +336,23 @@ public:
 
     /**
      * Bring up the network using the current radio frequency/channel.
-     * Calling begin brings up the network, and configures the address, which designates the location of the node within RF24Network topology.
-     * @note Node addresses are specified in Octal format, see [RF24Network Addressing](md_docs_addressing.html) for more information.
+     * Calling begin brings up the network, and configures the address, which designates the
+     * location of the node within [RF24Network topology](md_docs_tuning.html).
+     *
+     * @note Node addresses are specified in Octal format, see
+     * [RF24Network Addressing](md_docs_addressing.html) for more information.
      * @warning Be sure to first call `RF24::begin()` to initialize the radio properly.
-     * @note The address `04444` is resreved for RF24Mesh usage
+     * @note The address `04444` is reserved for RF24Mesh usage (when a mesh node is connecting to the network).
      *
      * **Example 1:** Begin on current radio channel with address 0 (master node)
-     * @code
-     * network.begin(00);
-     * @endcode
+     * @code network.begin(00); @endcode
      * **Example 2:** Begin with address 01 (child of master)
-     * @code
-     * network.begin(01);
-     * @endcode
+     * @code network.begin(01); @endcode
      * **Example 3:** Begin with address 011 (child of 01, grandchild of master)
-     * @code
-     * network.begin(011);
-     * @endcode
+     * @code network.begin(011); @endcode
      *
      * @see begin(uint8_t _channel, uint16_t _node_address)
-     * @param _node_address The logical address of this node
+     * @param _node_address The logical address of this node.
      */
     inline void begin(uint16_t _node_address)
     {
@@ -368,7 +365,7 @@ public:
      * This function must be called regularly to keep the layer going.  This is where payloads are
      * re-routed, received, and all the action happens.
      *
-     * @return Returns the type of the last received payload.
+     * @return Returns the @ref RF24NetworkHeader::type of the last received payload.
      */
     uint8_t update(void);
 
@@ -383,11 +380,10 @@ public:
      * Read the next available header
      *
      * Reads the next available header without advancing to the next
-     * incoming message.  Useful for doing a switch on the message type
+     * incoming message.  Useful for doing a switch on the message type.
      *
-     * If there is no message available, the header is not touched
-     *
-     * @param[out] header The header (envelope) of the next message
+     * @param[out] header The RF24NetworkHeader (envelope) of the next message.
+     * If there is no message available, the referenced `header` object is not touched
      * @return The length of the next available message in the queue.
      */
     uint16_t peek(RF24NetworkHeader &header);
@@ -399,7 +395,7 @@ public:
      * incoming message.  Useful for doing a transparent packet
      * manipulation layer on top of RF24Network.
      *
-     * @param[out] header The header (envelope) of this message
+     * @param[out] header The RF24NetworkHeader (envelope) of this message
      * @param[out] message Pointer to memory where the message should be placed
      * @param maxlen Amount of bytes to copy to @p message .
      * If this parameter is left unspecified, the entire length of the message is fetched.
@@ -422,7 +418,7 @@ public:
      *   }
      * }
      * @endcode
-     * @param[out] header The header (envelope) of this message
+     * @param[out] header The RF24NetworkHeader (envelope) of this message
      * @param[out] message Pointer to memory where the message should be placed
      * @param maxlen The largest message size which can be held in @p message .
      * If this parameter is left unspecified, the entire length of the message is fetched.
@@ -470,12 +466,13 @@ public:
      *
      * Notice "n" (used in the list above) stands for an octal digit in range [0, 5]
      *
-     * This optionional function is used to override the default level set when a node's logical
+     * This optional function is used to override the default level set when a node's logical
      * address changes, and it can be used to create custom multicast groups that all share a
      * single address.
-     * @see multicastRelay
-     * @see multicast()
-     * @see [The topology image](http://github.com/nRF24/RF24Network/blob/master/images/topologyImage.jpg)
+     * @see
+     * - multicastRelay
+     * - multicast()
+     * - [The topology image](http://github.com/nRF24/RF24Network/blob/master/images/topologyImage.jpg)
      * @param level Levels 0 to 4 are available. All nodes at the same level will receive the same
      * messages if in range. Messages will be routed in order of level, low to high, by default.
      */
@@ -501,22 +498,25 @@ public:
     void setup_watchdog(uint8_t prescalar);
 
     /**
+     * @brief Network timeout value
      * @note This value is automatically assigned based on the node address
      * to reduce errors and increase throughput of the network.
      *
      * Sets the timeout period for individual payloads in milliseconds at staggered intervals.
-     * Payloads will be retried automatically until success or timeout
-     * Set to 0 to use the normal auto retry period defined by radio.setRetries()
+     * Payloads will be retried automatically until success or timeout.
+     * Set to 0 to use the normal auto retry period defined by `radio.setRetries()`.
      */
-    uint32_t txTimeout; /** Network timeout value */
+    uint32_t txTimeout;
 
     /**
-     * This only affects payloads that are routed by one or more nodes.
+     * @brief Timeout for routed payloads
+     *
+     * This only affects payloads that are routed through one or more nodes.
      * This specifies how long to wait for an ack from across the network.
      * Radios sending directly to their parent or children nodes do not
      * utilize this value.
      */
-    uint16_t routeTimeout; /** Timeout for routed payloads */
+    uint16_t routeTimeout;
 
     /**@}*/
     /**
@@ -547,8 +547,9 @@ public:
      *
      * Multicasting is arranged in levels, with all nodes on the same level listening to the same address
      * Levels are assigned by network level ie: nodes 01-05: Level 1, nodes 011-055: Level 2
-     * @see multicastLevel()
-     * @see multicastRelay
+     * @see
+     * - multicastLevel()
+     * - multicastRelay
      * @param header reference to the RF24NetworkHeader object used for this @p message
      * @param message Pointer to memory where the message is located
      * @param len The size of the message
@@ -563,7 +564,7 @@ public:
     /**
      * Writes a direct (unicast) payload. This allows routing or sending messages outside of the usual routing paths.
      * The same as write, but a physical address is specified as the last option.
-     * The payload will be written to the physical address, and routed as necessary by the recipient
+     * The payload will be written to the physical address, and routed as necessary by the recipient.
      */
     bool write(RF24NetworkHeader &header, const void *message, uint16_t len, uint16_t writeDirect);
 
@@ -571,23 +572,25 @@ public:
      * Sleep this node - For AVR devices only
      * @note NEW - Nodes can now be slept while the radio is not actively transmitting. This must be manually enabled by uncommenting
      * the `#define ENABLE_SLEEP_MODE` in RF24Network_config.h
-     * @note Setting the interruptPin to 255 will disable interrupt wake-ups
-     * @note The watchdog timer should be configured in setup() if using sleep mode.
-     * This function will sleep the node, with the radio still active in receive mode.
+     * @note The watchdog timer should be configured in the sketch's `setup()` if using sleep mode.
+     * This function will sleep the node, with the radio still active in receive mode. See setup_watchdog().
      *
      * The node can be awoken in two ways, both of which can be enabled simultaneously:
      * 1. An interrupt - usually triggered by the radio receiving a payload. Must use pin 2 (interrupt 0) or 3 (interrupt 1) on Uno, Nano, etc.
      * 2. The watchdog timer waking the MCU after a designated period of time, can also be used instead of delays to control transmission intervals.
-     * @code
-     * if(!network.available()){ network.sleepNode(1,0); }  //Sleeps the node for 1 second or a payload is received
      *
-     * Other options:
-     * network.sleepNode(0,0);         // Sleep this node for the designated time period, or a payload is received.
-     * network.sleepNode(1,255);       // Sleep this node for 1 cycle. Do not wake up until then, even if a payload is received ( no interrupt )
+     * @code
+     * if(!network.available())
+     *     network.sleepNode(1, 0); // Sleep the node for 1 second or a payload is received
+     *
+     * // Other options:
+     * network.sleepNode(0, 0);     // Sleep this node for the designated time period, or a payload is received.
+     * network.sleepNode(1, 255);   // Sleep this node for 1 cycle. Do not wake up until then, even if a payload is received ( no interrupt )
      * @endcode
-     * @see setup_watchdog()
+     *
      * @param cycles: The node will sleep in cycles of 1s. Using 2 will sleep 2 WDT cycles, 3 sleeps 3WDT cycles...
-     * @param interruptPin: The interrupt number to use (0,1) for pins two and three on Uno,Nano. More available on Mega etc.
+     * @param interruptPin: The interrupt number to use (0, 1) for pins 2 and 3 on Uno & Nano. More available on Mega etc.
+     * Setting this parameter to 255 will disable interrupt wake-ups.
      * @param INTERRUPT_MODE an identifying number to indicate what type of state for which the @p interrupt_pin will be used to wake up the radio.
      * | @p INTERRUPT_MODE | type of state |
      * |:-----------------:|:-------------:|
@@ -602,18 +605,23 @@ public:
     /**
      * This node's parent address
      *
-     * @return This node's parent address, or -1 if this is the base
+     * @return This node's parent address, or 65,535 (-1 when casted to a signed int16_t) if this is the master node.
      */
     uint16_t parent() const;
 
     /**
-     * Provided a node address and a pipe number, will return the RF24Network address of that child pipe for that node
+     * Provided a node address and a pipe number, will return the RF24Network address of that child pipe for that node.
      */
     uint16_t addressOfPipe(uint16_t node, uint8_t pipeNo);
 
     /**
-     * @note Addresses are specified in octal: 011, 034
-     * @return True if a supplied address is valid
+     * Validate a network address as a proper logical address
+     * @note Addresses are specified in octal form, ie 011, 034.
+     * Review [RF24Nettwork addressing](md_docs_addressing.html) for more information.
+     * @param node The specified logical address of a network node.
+     * @return True if the specified `node` address is a valid network address, otherwise false.
+     * @remark This function will validate an improper address of `0100` as it is the reserved
+     * @ref NETWORK_MULTICAST_ADDRESS used for multicasted messages.
      */
     bool is_valid_address(uint16_t node);
 
@@ -643,8 +651,8 @@ public:
      * network.begin(90, 011);
      * @endcode
      *
-     * @param _channel The RF channel to operate on
-     * @param _node_address The logical address of this node
+     * @param _channel The RF channel to operate on.
+     * @param _node_address The logical address of this node.
      */
     void begin(uint8_t _channel, uint16_t _node_address);
 
@@ -747,9 +755,18 @@ public:
 protected:
 
     #if defined(RF24NetworkMulticast)
-    uint8_t _multicast_level; /* The current node's network level (used for multicast TX/RX-ing) */
+    /**
+     * The current node's network level (used for multicast TX/RX-ing).
+     * @see Use multicastLevel() to adjust this when needed.
+     */
+    uint8_t _multicast_level;
     #endif
-    uint16_t node_address; /** Logical node address of this unit, 1 .. UINT_MAX */
+    /**
+     * Logical node address of this unit, typically in range [0,  2,925] (that's [0, 05555] in octal).
+     * @note The values 0 represents the network master node. Additionally,
+     * the value 1 is occupied when using RF24Ethernet layer.
+     */
+    uint16_t node_address;
 
 private:
 

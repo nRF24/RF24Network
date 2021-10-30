@@ -2,7 +2,8 @@
 8000000/
 out/
 docs/html/
-docs/xml/
+docs/sphinx/xml/
+docs/_build/
 .*.swp
 .*.swo
 Session.vim
