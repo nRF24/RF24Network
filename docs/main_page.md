@@ -90,7 +90,7 @@ digit in the address represents a position in the tree further from the base.
 
 ![
   @image html example_tree.svg
-  ](https:://github.com/nRF24/RF24Network/blob/CMake-4-Linux/images/example_tree.svg)
+  ](https://github.com/nRF24/RF24Network/blob/CMake-4-Linux/images/example_tree.svg)
 
 ## How routing is handled
 
