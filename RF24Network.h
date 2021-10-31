@@ -143,7 +143,8 @@
  * a NETWORK_ACK is not required. This is because the radio's auto-ack feature is utilized for
  * connections between directly related network nodes. For example: nodes `01` and `011` use the
  * radio's auto-ack feature for transmissions between them, but nodes `01` and `02` do not use
- * the radio's auto-ack feature for transmissions between them.
+ * the radio's auto-ack feature for transmissions between them as messages will be routed through
+ * other nodes.
  * @par
  * Multicasted messages do use the radio's auto-ack feature because of the hardware limitations of
  * nRF24L01 transceivers. This applies to all multicasted messages (directly related nodes or
@@ -395,9 +396,9 @@ public:
      * location of the node within [RF24Network topology](md_docs_tuning.html).
      *
      * @note Node addresses are specified in Octal format, see
-     * [RF24Network Addressing](md_docs_addressing.html) for more information.
+     * [RF24Network Addressing](md_docs_addressing.html) for more information. The address `04444`
+     * is reserved for RF24Mesh usage (when a mesh node is connecting to the network).
      * @warning Be sure to first call `RF24::begin()` to initialize the radio properly.
-     * @note The address `04444` is reserved for RF24Mesh usage (when a mesh node is connecting to the network).
      *
      * **Example 1:** Begin on current radio channel with address 0 (master node)
      * @code network.begin(00); @endcode
@@ -817,9 +818,10 @@ protected:
     uint8_t _multicast_level;
     #endif
     /**
-     * Logical node address of this unit, typically in range [0,  2,925] (that's [0, 05555] in octal).
-     * @note The values 0 represents the network master node. Additionally,
-     * the value 1 is occupied when using RF24Ethernet layer.
+     * Logical node address of this unit, typically in range [0, 2925] (that's [0, 05555] in
+     * octal).
+     * @note The values 0 represents the network master node. Additionally, the value 1 is occupied
+     * when using RF24Ethernet layer.
      */
     uint16_t node_address;
 
@@ -842,7 +844,7 @@ private:
      * on the outgoing message's type). NETWORK ACK messages are served to message types in range [65, 191]
      * (excluding message fragments that aren't the last fragment of the message).
      */
-    bool write(uint16_t, uint8_t sendType);
+    bool write(uint16_t to_node, uint8_t sendType);
 
     /**
      * @brief The last stage an outgoing frame reaches (actual/inital transmission is done here).
@@ -882,9 +884,12 @@ private:
 
     struct logicalToPhysicalStruct
     {
-        uint16_t send_node; /* the immediate destination (1 hop) of an outgoing frame */
-        uint8_t send_pipe;  /* the pipe number of the `send_node` for which outgoing packets are aimed at */
-        bool multicast;     /* flag to indicate that the outgoing frame does not want an auto-ack from `send_node` */
+        /** The immediate destination (1 hop) of an outgoing frame */
+        uint16_t send_node;
+        /** The pipe number of the `send_node` for which outgoing packets are aimed at */
+        uint8_t send_pipe;
+        /** A flag to indicate that the outgoing frame does not want an auto-ack from `send_node` */
+        bool multicast;
     };
 
     /*
@@ -956,16 +961,16 @@ private:
 /**
  * @example helloworld_tx.ino
  *
- * Simplest possible example of using RF24Network.  Put this sketch
- * on one node, and helloworld_rx.pde on the other.  Tx will send
+ * Simplest possible example of using RF24Network. Put this sketch
+ * on one node, and helloworld_rx.pde on the other. Tx will send
  * Rx a nice message every 2 seconds which rx will print out for us.
  */
 
 /**
  * @example helloworld_rx.ino
  *
- * Simplest possible example of using RF24Network.  Put this sketch
- * on one node, and helloworld_tx.pde on the other.  Tx will send
+ * Simplest possible example of using RF24Network. Put this sketch
+ * on one node, and helloworld_tx.pde on the other. Tx will send
  * Rx a nice message every 2 seconds which rx will print out for us.
  */
 
@@ -978,6 +983,7 @@ private:
 
 /**
  * @example helloworld_rx_advanced.ino
+ *
  * A more advanced version of helloworld_rx using fragmentation/reassembly
  * and variable payload sizes
  */
@@ -1006,9 +1012,9 @@ private:
  * to go back to sleep immediately.
  * The displayed millis() count will give an indication of how much a node has been sleeping compared to the others, as millis() will
  * not increment while a node sleeps.
- *<br>
+ *
  * - Using this sketch, each node will send a ping to every other node in the network every few seconds.<br>
- * - The RF24Network library will route the message across the mesh to the correct node.<br>
+ * - The RF24Network library will route the message across the mesh to the correct node.
  */
 
 /**

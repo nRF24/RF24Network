@@ -14,13 +14,13 @@ See the [Topology and Overview](md_docs_tuning.html) page for more info regardin
 
 ## Decimal, Octal and Binary formats
 
-Say we want to designate a logical address to a node, using a tree topology as defined by the manufacturer.
-In the simplest format, we could assign the first node the address of 1, the second 2 and so on.
-Since a single node can only connect to 6 other nodes (1 parent and 5 children) subnets need to be created if using more than 6 nodes.<br>
-In this case the:
+Say we want to designate a logical address to a node, using a tree topology as defined by the
+manufacturer. In the simplest format, we could assign the first node the address of 1, the second
+2, and so on. Since a single node can only connect to 6 other nodes (1 parent and 5 children)
+subnets need to be created if using more than 6 nodes. In this case, the
 
-- children of node 1 could simply be designated as 011, 021, 031, 041, and 051
-- children of node 2 could be designated as 012, 022, 032, 042, and 052
+- children of node 1 could simply be designated as 11, 21, 31, 41, and 51
+- children of node 2 could be designated as 12, 22, 32, 42, and 52
 
 The above example is exactly how RF24Network manages the addresses, but they are represented in Octal format.
 
@@ -34,8 +34,9 @@ The above example is exactly how RF24Network manages the addresses, but they are
 |   73    | 0111  | 01001001 |
 |   111   | 0157  | 01101111 |
 
-Since the numbers 0-7 can be represented in exactly three bits, each digit is represented by exactly 3 bits when viewed in octal format.
-This allows a very simple method of managing addresses via masking and bit shifting.
+Since the numbers 0-7 can be represented in exactly three bits, each digit is represented by
+exactly 3 bits when viewed in octal format. This allows a very simple method of managing addresses
+via masking and bit shifting.
 
 ## Displaying Addresses
 
@@ -54,5 +55,5 @@ printf("0%o\n", address);
 ```
 
 @see
-- [cplusplus.com tutorial](http://www.cplusplus.com/doc/hex/) for more information number bases.
-- the [Topology and Overview page](md_docs_tuning.html) for more information regarding network topology.
+- [This cplusplus.com tutorial](http://www.cplusplus.com/doc/hex/) for more information number bases.
+- The [Topology and Overview page](md_docs_tuning.html) for more information regarding network topology.

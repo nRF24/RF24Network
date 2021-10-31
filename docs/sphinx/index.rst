@@ -20,7 +20,6 @@ Site Index
     classRF24Network
     net_payload_structs
     RF24Network__config_8h
-    external_api
     deprecated
 
 
