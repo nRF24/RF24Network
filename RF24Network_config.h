@@ -24,7 +24,7 @@
 
     #ifdef DOXYGEN_FORCED
         /**
-        * @brief Adds a delay to node prior to transmitting NETWORK_ADDR_RESPONSE messages
+        * @brief Adds a delay to node prior to transmitting @ref NETWORK_ADDR_RESPONSE messages
         *
         * By default this is undefined for speed. This defined number of milliseconds is
         * only applied to the master node when replying to a child trying to connect to the
@@ -76,7 +76,7 @@
         //#define ENABLE_NETWORK_STATS
 
         #ifndef DISABLE_DYNAMIC_PAYLOADS
-            /** Enable dynamic payloads - If using different types of NRF24L01 modules, some may be incompatible when using this feature **/
+            /** Enable dynamic payloads - If using different types of nRF24L01 modules, some may be incompatible when using this feature **/
             #define ENABLE_DYNAMIC_PAYLOADS
         #endif // DISABLE_DYNAMIC_PAYLOADS
 

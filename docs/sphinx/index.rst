@@ -33,9 +33,10 @@ Site Index
 
 .. toctree::
     :maxdepth: 1
+    :caption: Modules
     :hidden:
 
-    modules
+    group__DEFINED_TYPES
 
 .. toctree::
     :maxdepth: 2

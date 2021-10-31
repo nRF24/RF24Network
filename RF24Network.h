@@ -44,43 +44,53 @@
 /**
  * **Reserved network message types**
  *
- * The network will determine whether to automatically acknowledge payloads based on their general type <br>
+ * The network will determine whether to automatically acknowledge payloads based on their general
+ * `RF24NetworkHeader::type`.
  *
- * **User types** (1-127) 1-64 will NOT be acknowledged <br>
- * **System types** (128-255) 192 through 255 will NOT be acknowledged<br>
- *
- * @defgroup DEFINED_TYPES Reserved System Message Types
+ * - **User types** (1 - 127) 1 - 64 will NOT be acknowledged
+ * - **System types** (128 - 255) 192 - 255 will NOT be acknowledged
  *
  * System types can also contain message data.
+ *
+ * @defgroup DEFINED_TYPES Reserved System Message Types
  *
  * @{
  */
 
 /**
- * A NETWORK_ADDR_RESPONSE type is utilized to manually route custom messages containing a single RF24Network address
+ * A @ref NETWORK_ADDR_RESPONSE type is utilized to manually route custom messages containing a
+ * single RF24Network address.
  *
  * Used by RF24Mesh
  *
- * If a node receives a message of this type that is directly addressed to it, it will read the included message, and forward the payload
- * on to the proper recipient. <br>
- * This allows nodes to forward multicast messages to the master node, receive a response, and forward it back to the requester.
+ * If a node receives a message of this type that is directly addressed to it, it will read the
+ * included message, and forward the payload on to the proper recipient.
+ *
+ * This allows nodes to forward multicast messages to the master node, receive a response, and
+ * forward it back to the requester.
  */
 #define NETWORK_ADDR_RESPONSE 128
 
 /**
- * Messages of type NETWORK_PING will be dropped automatically by the recipient. A NETWORK_ACK or automatic radio-ack will indicate to the sender whether the
- * payload was successful. The time it takes to successfully send a NETWORK_PING is the round-trip-time.
+ * Messages of type @ref NETWORK_PING will be dropped automatically by the recipient.
+ * A @ref NETWORK_ACK or automatic radio-ack will indicate to the sender whether the payload was
+ * successful. The time it takes to successfully send a @ref NETWORK_PING is the round-trip-time.
  */
 #define NETWORK_PING 130
 
 /**
- * External data types are used to define messages that will be passed to an external data system. This allows RF24Network to route and pass any type of data, such
- * as TCP/IP frames, while still being able to utilize standard RF24Network messages etc.
+ * External data types are used to define messages that will be passed to an external data system.
+ * This allows RF24Network to route and pass any type of data, such as TCP/IP frames, while still
+ * being able to utilize standard RF24Network messages etc.
  *
- * **Linux**
- * Linux devices (defined RF24_LINUX) will buffer all data types in the user cache.
+ * - **Linux**
  *
- * **Arduino/AVR/Etc:** Data transmitted with the type set to @ref EXTERNAL_DATA_TYPE will not be loaded into the user cache. <br>
+ *   Linux devices (defined with `RF24_LINUX` macro) will buffer all data types in the user cache.
+ *
+ * - **Arduino/AVR/Etc**
+ *
+ *   Data transmitted with the type set to @ref EXTERNAL_DATA_TYPE will not be loaded into the user cache.
+ *
  * External systems can extract external data using the following process, while internal data types are cached in the user buffer, and accessed using network.read() :
  * @code
  * uint8_t return_type = network.update();
@@ -104,7 +114,7 @@
 
 /**
  * Messages of this type indicate the last fragment in a sequence of message fragments.
- * Messages of this type do not receive a NETWORK_ACK
+ * Messages of this type do not receive a @ref NETWORK_ACK
  */
 #define NETWORK_LAST_FRAGMENT 150
 //#define NETWORK_LAST_FRAGMENT 201
@@ -113,18 +123,39 @@
 //#define NETWORK_ACK_REQUEST 192
 
 /**
- * Messages of this type are used internally, to signal the sender that a transmission has been completed.
- * RF24Network does not directly have a built-in transport layer protocol, so message delivery is not 100% guaranteed.<br>
- * Messages can be lost via corrupted dynamic payloads, or a NETWORK_ACK can fail, while the message was actually successful.
+ * Messages of this type signal the sender that a network-wide transmission has been completed.
  *
- * NETWORK_ACK messages can be utilized as a traffic/flow control mechanism, since transmitting nodes will be forced to wait until
- * the payload is transmitted across the network and acknowledged, before sending additional data.
+ * - **Not fool-proof**
+ * @par
+ * RF24Network does not directly have a built-in transport layer protocol, so message delivery is
+ * not 100% guaranteed. Messages can be lost via corrupted dynamic payloads, or a NETWORK_ACK can
+ * fail (despite successful transmission of the message).
  *
- * In the event that the transmitting device will be waiting for a direct response, manually sent by the recipient, a NETWORK_ACK is not required. <br>
- * User messages utilizing a 'type' with a decimal value of 64 or less will not be acknowledged across the network via NETWORK_ACK messages.
+ * - **Traffic analysis**
+ * @par
+ * NETWORK_ACK messages can be utilized as a traffic/flow control mechanism. Transmitting nodes
+ * that emit NETWORK_ACK qualifying messages will be forced to wait, before sending additional
+ * data, until the payload is transmitted across the network and acknowledged.
  *
- * @note NETWORK_ACK messages are only sent by the last node in the route to a target node. <br>
- * ie: When node 00 sends an instigating message to node 011, node 01 will send the NETWORK_ACK message to 00 upon sucessful delivery of instigating message to node 011.
+ * - **Different from Radio ACK Packets**
+ * @par
+ * In the event that the transmitting device will be sending directly to a parent or child node,
+ * a NETWORK_ACK is not required. This is because the radio's auto-ack feature is utilized for
+ * connections between directly related network nodes. For example: nodes `01` and `011` use the
+ * radio's auto-ack feature for transmissions between them, but nodes `01` and `02` do not use
+ * the radio's auto-ack feature for transmissions between them.
+ * @par
+ * Multicasted messages do use the radio's auto-ack feature because of the hardware limitations of
+ * nRF24L01 transceivers. This applies to all multicasted messages (directly related nodes or
+ * otherwise).
+ *
+ * @remark
+ * Remember, user messages types with a decimal value of 64 or less will not be acknowledged across
+ * the network via NETWORK_ACK messages.
+ *
+ * @note NETWORK_ACK messages are only sent by the last node in the route to a target node.
+ * ie: When node `00` sends an instigating message to node `011`, node `01` will send the
+ * NETWORK_ACK message to `00` upon sucessful delivery of instigating message to node `011`.
  */
 #define NETWORK_ACK 193
 
@@ -144,13 +175,16 @@
  * Any (non-master) node receiving a message of this type will manually forward it to the master node using a normal network write.
  */
 #define NETWORK_REQ_ADDRESS 195
+
+// The following 2 atrifacts now exist in RF24Mesh as their significance was specific to RF24Mesh.
 //#define NETWORK_ADDR_LOOKUP 196
 //#define NETWORK_ADDR_RELEASE 197
 /** @} */
 
+/* This isn't actually used anywhere. */
 #define NETWORK_MORE_FRAGMENTS_NACK 200
 
-/** Internal defines for handling written payloads */
+/* Internal defines for handling written payloads */
 #define TX_NORMAL 0
 #define TX_ROUTED 1
 #define USER_TX_TO_PHYSICAL_ADDRESS 2 // no network ACK
@@ -160,12 +194,22 @@
 #define MAX_FRAME_SIZE 32    // Size of individual radio frames
 #define FRAME_HEADER_SIZE 10 // Size of RF24Network frames - data
 
-#define USE_CURRENT_CHANNEL 255 // Use current radio channel when setting up the network
+/**
+ * A sentinel value signifying that the current radio channel should be unchanged when setting
+ * up the network node with RF24Network::begin(uint8_t _channel, uint16_t _node_address).
+ */
+#define USE_CURRENT_CHANNEL 255
 
-/** Internal defines for handling internal payloads - prevents reading additional data from the radio
- * when buffers are full
+/**
+ * This flag (when asserted in RF24Network::networkFlags) prevents repetitively configuring the
+ * radio during transmission of fragmented messages.
  */
 #define FLAG_FAST_FRAG 4
+/**
+ * This flag (when asserted in RF24Network::networkFlags) prevents a node from responding to
+ * mesh nodes looking to connect to the network. Calling RF24Mesh::setChild() uses this flag
+ * accordingly.
+ */
 #define FLAG_NO_POLL 8
 
 class RF24;
@@ -179,24 +223,34 @@ class RF24;
  */
 struct RF24NetworkHeader
 {
-    uint16_t from_node; /** Logical address where the message was generated */
-    uint16_t to_node;   /** Logical address where the message is going */
-    uint16_t id;        /** Sequential message ID, incremented every time a new frame is constructed */
+    /** Logical address where the message was generated */
+    uint16_t from_node;
+
+    /** Logical address where the message is going */
+    uint16_t to_node;
+
+    /** Sequential message ID, incremented every time a new frame is constructed */
+    uint16_t id;
+
     /**
-     * Message Types:
+     * **Type of the packet.** 0 - 127 are user-defined types, 128 - 255 are reserved for system.
+     *
      * User message types 1 through 64 will NOT be acknowledged by the network, while message types 65 through 127 will receive a network ACK.
-     * System message types 192 through 255 will NOT be acknowledged by the network. Message types 128 through 192 will receive a network ACK. <br>
-     * <br><br>
+     * System message types 192 through 255 will NOT be acknowledged by the network. Message types 128 through 192 will receive a network ACK.
+     * @see @ref DEFINED_TYPES
      */
-    unsigned char type; /** <b>Type of the packet.</b> 0-127 are user-defined types, 128-255 are reserved for system */
+    unsigned char type;
 
     /**
+     * **Reserved for system use**
+     *
      * During fragmentation, it carries the fragment_id, and on the last fragment
-     * it carries the header_type.<br>
+     * it carries the header_type.
      */
-    unsigned char reserved; /** *Reserved for system use* */
+    unsigned char reserved;
 
-    static uint16_t next_id; /** The message ID of the next message to be sent (unused)*/
+    /** The message ID of the next message to be sent. This attribute is not sent with the header. */
+    static uint16_t next_id;
 
     /**
      * Default constructor
@@ -224,8 +278,8 @@ struct RF24NetworkHeader
      * @endcode
      *
      * @param _to The Octal format, logical node address where the message is going
-     * @param _type The type of message which follows.  Only 0-127 are allowed for
-     * user messages. Types 1-64 will not receive a network acknowledgement.
+     * @param _type The type of message which follows.  Only 0 - 127 are allowed for
+     * user messages. Types 1 - 64 will not receive a network acknowledgement.
      */
     RF24NetworkHeader(uint16_t _to, unsigned char _type = 0) : to_node(_to), id(next_id++), type(_type) {}
 
@@ -236,7 +290,7 @@ struct RF24NetworkHeader
      * internal static memory. This memory will get overridden next time
      * you call the method.
      *
-     * @return String representation of this object
+     * @return String representation of the object's significant members.
      */
     const char *toString(void) const;
 };
@@ -255,6 +309,7 @@ struct RF24NetworkFrame
 {
     /** Header which is sent with each message */
     RF24NetworkHeader header;
+
     /** The size in bytes of the payload length */
     uint16_t message_size;
 
@@ -263,9 +318,9 @@ struct RF24NetworkFrame
      * On Linux the message buffer is a standard byte array, equal in size to the defined MAX_PAYLOAD_SIZE
      */
     #if defined(RF24_LINUX)
-    uint8_t message_buffer[MAX_PAYLOAD_SIZE]; //< Array to store the message
+    uint8_t message_buffer[MAX_PAYLOAD_SIZE]; // Array to store the message
     #else
-    uint8_t *message_buffer; //< Pointer to the buffer storing the actual message
+    uint8_t *message_buffer; // Pointer to the buffer storing the actual message
     #endif
 
     /**
@@ -311,7 +366,7 @@ struct RF24NetworkFrame
 };
 
 /**
- * 2014-2020 - Optimized Network Layer for RF24 Radios
+ * 2014-2021 - Optimized Network Layer for RF24 Radios
  *
  * This class implements an OSI Network Layer using nRF24L01(+) radios driven
  * by RF24 library.
@@ -605,7 +660,7 @@ public:
     /**
      * This node's parent address
      *
-     * @return This node's parent address, or 65,535 (-1 when casted to a signed int16_t) if this is the master node.
+     * @return This node's parent address, or 65535 (-1 when casted to a signed int16_t) if this is the master node.
      */
     uint16_t parent() const;
 
