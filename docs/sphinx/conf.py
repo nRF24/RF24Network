@@ -41,7 +41,12 @@ language = "en"
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ["breathe", "sphinx_immaterial", "sphinx.ext.intersphinx"]
+extensions = [
+    "breathe",
+    "sphinx_immaterial",
+    "sphinx.ext.intersphinx",
+    "sphinx.ext.autosectionlabel",
+]
 
 # auto-reference links (using intersphinx extension)
 intersphinx_mapping = {"RF24": ("https://rf24.readthedocs.io/en/latest", None)}
@@ -56,14 +61,18 @@ exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
 # code-blocks will use this as their default syntax highlighting
 highlight_language = "c++"
+primary_domain = "cpp"
 
 # If true, '()' will be appended to :func: etc. cross-reference text.
-add_function_parentheses = True
+# add_function_parentheses = False
 
 # -- Options for breathe (XML output from doxygen) ---------------------------
 
 breathe_projects = {"RF24Network": "xml"}
 breathe_default_project = "RF24Network"
+breathe_show_define_initializer = True
+breathe_show_enumvalue_initializer = True
+breathe_domain_by_extension = { "h" : "cpp" }
 
 READTHEDOCS = os.environ.get("READTHEDOCS", None) == "True"
 

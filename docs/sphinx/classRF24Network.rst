@@ -6,17 +6,13 @@ RF24Network class
     .. doxygenfunction:: RF24Network::RF24Network
 
     .. seealso::
-        Use the :cpp:class:`RF24` class to create the radio object.
+        Use the :class:`RF24` class to create the radio object.
 
 Basic API
 ============
 
 .. doxygenfunction:: RF24Network::begin (uint16_t _node_address)
 .. doxygenfunction:: RF24Network::begin (uint8_t channel, uint16_t _node_address)
-
-.. seealso::
-    :cpp:func:`~RF24::setChannel()`
-
 .. doxygenfunction:: RF24Network::update
 .. doxygenfunction:: RF24Network::available
 .. doxygenfunction:: RF24Network::read

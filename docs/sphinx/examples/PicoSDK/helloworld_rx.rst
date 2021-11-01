@@ -1,4 +1,4 @@
-helloworld_rx.cpp
+helloworld_rx
 ==========================
 
 .. seealso::

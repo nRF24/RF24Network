@@ -1,4 +1,4 @@
-helloworld_tx.cpp
+helloworld_tx
 ==========================
 
 .. seealso::

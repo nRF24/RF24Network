@@ -64,10 +64,10 @@ void setup() {
 
 uint32_t sendTimer = 0;
 
-/**** Create a large array for data to be received ****
-* MAX_PAYLOAD_SIZE is defined in RF24Network_config.h
-* Payload sizes of ~1-2 KBytes or more are practical when radio conditions are good
-*/
+/* **** Create a large array for data to be received ****
+ * MAX_PAYLOAD_SIZE is defined in RF24Network_config.h
+ * Payload sizes of ~1-2 KBytes or more are practical when radio conditions are good
+ */
 #define EXTERNAL_DATA_MAX_SIZE  MAX_PAYLOAD_SIZE
 
 uint8_t dataBuffer[EXTERNAL_DATA_MAX_SIZE];
@@ -116,7 +116,7 @@ void loop() {
       RF24NetworkHeader header;                                    // Create an empty header
       uint16_t dataSize = network.peek(header);                    // Peek to get the size of the data
       uint32_t someVariable;
-      if (header.type = '32') {                                    // If a certain header type is recieved
+      if (header.type = 32) {                                      // If a certain header type is recieved
         network.read(header, &someVariable, sizeof(someVariable)); // Handle the data a specific way
         Serial.print(F("RX User Data:\nHeader Type "));
         Serial.print(header.type);
@@ -124,7 +124,7 @@ void loop() {
         Serial.println(someVariable);
       } else {
         network.read(header, &someVariable, 0);                    // Clear the user data from the buffer if
-        // some other header type is received
+                                                                   // some other header type is received
       }
     }
   }

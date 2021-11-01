@@ -109,7 +109,7 @@ network.txTimeout variable. Timeout periods of extended duration (500+) will gen
 are failing due to data collisions, it will only extend the duration of the errors. Extended duration timeouts
 should generally only be configured on leaf nodes that do not receive data.
 
-## Examples
+## Scenarios
 
 ### Example 1
 

@@ -72,9 +72,9 @@
 #define NETWORK_ADDR_RESPONSE 128
 
 /**
- * Messages of type @ref NETWORK_PING will be dropped automatically by the recipient.
- * A @ref NETWORK_ACK or automatic radio-ack will indicate to the sender whether the payload was
- * successful. The time it takes to successfully send a @ref NETWORK_PING is the round-trip-time.
+ * Messages of type NETWORK_PING will be dropped automatically by the recipient.
+ * A NETWORK_ACK or automatic radio-ack will indicate to the sender whether the payload was
+ * successful. The time it takes to successfully send a NETWORK_PING is the round-trip-time.
  */
 #define NETWORK_PING 130
 
@@ -89,7 +89,7 @@
  *
  * - **Arduino/AVR/Etc**
  *
- *   Data transmitted with the type set to @ref EXTERNAL_DATA_TYPE will not be loaded into the user cache.
+ *   Data transmitted with the type set to EXTERNAL_DATA_TYPE will not be loaded into the user cache.
  *
  * External systems can extract external data using the following process, while internal data types are cached in the user buffer, and accessed using network.read() :
  * @code
