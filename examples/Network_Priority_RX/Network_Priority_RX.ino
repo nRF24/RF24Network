@@ -123,8 +123,8 @@ void loop() {
         Serial.print(F(" Value "));
         Serial.println(someVariable);
       } else {
-        network.read(header, &someVariable, 0);                    // Clear the user data from the buffer if
-                                                                   // some other header type is received
+        // Clear the user data from the buffer if some other header type is received
+        network.read(header, &someVariable, 0);
       }
     }
   }
