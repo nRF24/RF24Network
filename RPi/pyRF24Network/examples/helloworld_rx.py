@@ -33,10 +33,13 @@ this_node = 0o0
 other_node = 0o1
 
 # initialize the radio
-radio.begin()
+if not radio.begin():
+    raise RuntimeError("radio hardware not responding")
+
+radio.channel = 90
 
 # initialize the network node
-network.begin(90, this_node)    # channel 90
+network.begin(this_node)
 
 # radio.printDetails()
 radio.printPrettyDetails()
@@ -50,10 +53,12 @@ while time.monotonic() - start <= 6:  # listen for 6 seconds
         print("payload length ", len(payload))
         millis, number = struct.unpack('<LL', bytes(payload))
         print(
-            "Received payload", number,
-            "at", millis,
-            "from", oct(header.from_node),
-            "to", oct(header.to_node)
+            "Received payload {} from {} to {} at (origin's timestamp) {}".format(
+                number,
+                oct(header.from_node),
+                oct(header.to_node),
+                millis,
+            )
         )
         start = time.monotonic()
     time.sleep(0.05)

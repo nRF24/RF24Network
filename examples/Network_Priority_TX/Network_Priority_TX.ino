@@ -43,11 +43,11 @@ uint8_t dataBuffer[33];
 void setup() {
 
   Serial.begin(115200);
-  if (!Serial) {
+  printf_begin(); // needed for RF24* libs' internal printf() calls
+  while (!Serial) {
     // some boards need this because of native USB capability
   }
   Serial.println(F("RF24Network/examples/Network_Separation_TX/"));
-  printf_begin(); //Used to enable printf on AVR devices
 
   if (!radio.begin()) {
     Serial.println(F("Radio hardware not responding!"));
@@ -55,7 +55,8 @@ void setup() {
       // hold in infinite loop
     }
   }
-  network.begin(/*channel*/ 90, /*node address*/ this_node);
+  radio.setChannel(90);
+  network.begin(/*node address*/ this_node);
   radio.printDetails();
 
   // Load our data buffer with numbered data

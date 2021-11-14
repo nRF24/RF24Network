@@ -2,6 +2,7 @@ name: Arduino CLI build
 
 on:
   pull_request:
+    types: [opened, reopened]
     paths:
       - ".github/workflows/build_arduino.yml"
       - "examples/**"
@@ -51,7 +52,7 @@ jobs:
           - "arduino:avr:ethernet"
           - "arduino:avr:fio"
           - "arduino:avr:bt"
-          # - "arduino:avr:LilyPad"  # board not found
+          # - "arduino:avr:LilyPad" # board not found
           - "arduino:avr:LilyPadUSB"
           - "arduino:avr:pro"
           - "arduino:avr:atmegang"

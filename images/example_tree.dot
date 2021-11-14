@@ -1,0 +1,63 @@
+graph network_hierarchy {
+    bgcolor="#323232A1"
+    node [
+        fontcolor="#FEFEFE"
+        fontsize=14
+        fontname=Arial
+    ]
+    subgraph cluster_hierarchy {
+        style = rounded
+        bgcolor="#24242400"
+        color="#24242400"
+        fontcolor = "#FEF9A9"
+        node [
+            style="filled"
+            color="#FEFEFE7f"
+        ]
+        edge [color="#FEFEFE" style="setlinewidth(2)"]
+        subgraph cluster_lvl_0 {
+            label = "Network Level 0 (master node)"
+            bgcolor = "#383838"
+            00 [
+                shape="circle"
+                style="radial"
+                fillcolor="#000000;0:#018268;0.85"
+            ]
+        }
+        subgraph cluster_lvl_1 {
+            label = "Network Level 1                                                                                    "
+            labeljust="l"
+            pad="15"
+            bgcolor = "#383838"
+            node [fillcolor="#3E0180"]
+            01 04
+        }
+        subgraph cluster_lvl_2 {
+            label = "Network Level 2                                                                                    "
+            bgcolor = "#383838"
+            node [fillcolor="#014B80"]
+            014 021 011
+        }
+        subgraph cluster_lvl_3 {
+            label = "Network Level 3                                                                                    "
+            bgcolor = "#383838"
+            node [fillcolor="#0E6902"]
+            0111 0121 0221 0114
+        }
+        subgraph cluster_lvl_4 {
+            label = "Network Level 4 (highest)"
+            labelloc="b"
+            // labeljust="l"
+            style = rounded
+            bgcolor = "#383838"
+            node [fillcolor="#80010B"]
+            01221 01114 02114 03114
+        }
+        00 -- 04 -- 014 -- 0114 -- 01114
+        00 -- 01 -- 011 -- 0111
+        01 -- 021 -- 0121
+        021 -- 0221 -- 01221
+        0114 -- 02114
+        0114 --03114
+    }
+}

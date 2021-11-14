@@ -2,7 +2,8 @@
 8000000/
 out/
 docs/html/
-docs/xml/
+docs/sphinx/xml/
+docs/_build/
 .*.swp
 .*.swo
 Session.vim
@@ -13,3 +14,19 @@ version.h
 *.bak
 PINS_*/
 *.exe
+build/
+.vscode/
+*CMakeUserPresets*.json
+*.tar.gz
+*env/
+
+# Cmake build-in-source generated stuff
+CMakeCache.txt
+CPackConfig.cmake
+CPackSourceConfig.cmake
+CMakeFiles
+DEBIAN
+cmake_install.cmake
+compile_commands.json
+# Makefile is modified when `cmake .` is run
+# Makefile # preserve old/traditional build system

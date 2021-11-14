@@ -1,11 +1,13 @@
 # Performance and Data Loss: Tuning the Network
+<!-- markdownlint-disable MD031-->
 Tips and examples for tuning the network and general operation.
 
 Observe:
+
 ![@image html images/topologyImage.jpg width=70% height=70%](https://github.com/nRF24/RF24Network/raw/master/images/topologyImage.jpg)
-    
 
 ## Understanding Radio Communication and Topology
+
 When a transmission takes place from one radio module to another, the receiving radio will communicate
 back to the sender with an acknowledgement (ACK) packet, to indicate success. If the sender does not
 receive an ACK, the radio automatically engages in a series of timed retries, at set intervals. The
@@ -16,27 +18,32 @@ When working over a radio network, some of these automated techniques can actual
 Retrying failed payloads over and over on a radio network can hinder communication for nearby nodes, or
 reduce throughput and errors on routing nodes.
 
-Radios in this network are linked by <b>addresses</b> assigned to <b>pipes</b>. Each radio can listen
+Radios in this network are linked by **addresses** assigned to **pipes**. Each radio can listen
 to 6 addresses on 6 pipes, therefore each radio has a parent pipe and 5 child pipes, which are used
 to form a tree structure. Nodes communicate directly with their parent and children nodes. Any other
 traffic to or from a node must be routed through the network.
 
 ## Topology of RF24Network
+
 Anybody who is familiar at all with IP networking should be able to easily understand RF24Network topology. The
 master node can be seen as the gateway, with up to 4 directly connected nodes. Each of those nodes creates a
 subnet below it, with up to 4 additional child nodes. The numbering scheme can also be related to IP addresses,
 for purposes of understanding the topology via subnetting. Nodes can have 5 children if multicast is disabled.
 
 ### Expressing RF24Network addresses in IP format
-As an example, we could designate the master node in theory, as Address 10.10.10.10 <br>
-The children nodes of the master would be 10.10.10.1, 10.10.10.2, 10.10.10.3, 10.10.10.4 and 10.10.10.5 <br>
-The children nodes of 10.10.10.1 would be 10.10.1.1, 10.10.2.1, 10.10.3.1, 10.10.4.1 and 10.10.5.1 <br>
 
-In RF24Network, the master is just 00  <br>
-Children of master are 01, 02, 03, 04, 05  <br>
-Children of 01 are 011, 021, 031, 041, 051  <br>
+As an example, we could designate the master node in theory, as Address `10.10.10.10`
+
+- The children nodes of the master would be `10.10.10.1`, `10.10.10.2`, `10.10.10.3`, `10.10.10.4` and `10.10.10.5`
+- The children nodes of `10.10.10.1` would be `10.10.1.1`, `10.10.2.1`, `10.10.3.1`, `10.10.4.1` and `10.10.5.1`
+
+In RF24Network, the master is just `00`
+
+- Children of master are `01`, `02`, `03`, `04`, `05`
+- Children of `01` are `011`, `021`, `031`, `041`, `051`
 
 ## Routing
+
 Routing of traffic is handled invisibly to the user, by the network layer. If the network addresses are
 assigned in accordance with the physical layout of the network, nodes will route traffic automatically
 as required. Users simply constuct a header containing the appropriate destination address, and the network
@@ -68,6 +75,7 @@ responding with an acknowledgement. If not requesting a response, and wanting to
 or not, users can utilize header types 65-127.
 
 ## Tuning Overview
+
 The RF24 radio modules are generally only capable of either sending or receiving data at any given
 time, but have built-in auto-retry mechanisms to prevent the loss of data. These values are adjusted
 automatically by the library on startup, but can be further adjusted to reduce data loss, and
@@ -75,6 +83,7 @@ thus increase throughput of the network. This page is intended to provide a gene
 operation within the context of the network library, and provide guidance for adjusting these values.
 
 ## Auto-Retry Timing
+
 The core radio library provides the functionality of adjusting the internal auto-retry interval of the
 radio modules. In the network configuration, the radios can be set to automatically retry failed
 transmissions at intervals ranging anywhere from 500us (0.5ms) up to 4000us (4ms). When operating any
@@ -86,6 +95,7 @@ groups of radios in direct communication. This value can be set manually by call
 and adjusting the value of X from 1 to 15 (steps of 250us).
 
 ## Auto-Retry Count and Extended Timeouts
+
 The core radio library also provides the ability to adjust the internal auto-retry count of the radio
 modules. The default setting is 15 automatic retries per payload, and can be extended by configuring
 the network.txTimeout variable. This default retry count should generally be left at 15, as per the
@@ -98,9 +108,10 @@ network.txTimeout variable. Timeout periods of extended duration (500+) will gen
 are failing due to data collisions, it will only extend the duration of the errors. Extended duration timeouts
 should generally only be configured on leaf nodes that do not receive data.
 
-## Examples
+## Scenarios
 
 ### Example 1
+
 Network with master node and three leaf nodes that send data to the master node. None of the leaf
 nodes need to receive data.
 
@@ -114,8 +125,8 @@ nodes need to receive data.
    Leaf 03: network.txTimeout = 653;
    ```
 
-
 ### Example 2
+
 Network with master node and three leaf nodes that send data to the master node. The second leaf
 node needs to receive configuration data from the master at set intervals of 1 second, and send data back to the
 master node. The other leaf nodes will send basic sensor information every few seconds, and a few dropped payloads
