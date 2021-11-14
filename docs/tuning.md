@@ -3,9 +3,8 @@
 Tips and examples for tuning the network and general operation.
 
 Observe:
-![
-   @image html topologyImage.jpg
-   ](http://github.com/nRF24/RF24Network/blob/master/images/topologyImage.jpg)
+
+![@image html images/topologyImage.jpg width=70% height=70%](https://github.com/nRF24/RF24Network/raw/master/images/topologyImage.jpg)
 
 ## Understanding Radio Communication and Topology
 
