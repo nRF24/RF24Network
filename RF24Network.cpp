@@ -644,7 +644,7 @@ bool RF24Network::multicast(RF24NetworkHeader &header, const void *message, uint
     // Fill out the header
     header.to_node = NETWORK_MULTICAST_ADDRESS;
     header.from_node = node_address;
-    return write(header, message, len, levelToAddress(level > 3 ? _multicast_level : level));
+    return write(header, message, len, levelToAddress(level > 4 ? _multicast_level : level));
 }
 #endif
 
