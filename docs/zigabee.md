@@ -19,6 +19,7 @@ Here are some comparisons between RF24Network and ZigBee.
 - In ZigBee networks, only leaf nodes can sleep
 - ZigBee nodes are configured using AT commands, or a separate Windows application.
   RF24 nodes are configured by recompiliing the firmware or writing to EEPROM.
+- A paper was written comparing the performance of Zigbee vs nRF24l01+, see [TMRh20s Blog](https://tmrh20.blogspot.com/2019/05/comparative-performance-analysis.html) for a detailed overview.
 
 ## Node Naming
 
