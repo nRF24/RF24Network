@@ -19,7 +19,7 @@ Retrying failed payloads over and over on a radio network can hinder communicati
 reduce throughput and errors on routing nodes.
 
 Radios in this network are linked by **addresses** assigned to **pipes**. Each radio can listen
-to 6 addresses on 6 pipes, therefore each radio has a parent pipe and 5 child pipes, which are used
+to 6 addresses on 6 pipes, therefore each radio has a parent pipe and 4-5 child pipes, which are used
 to form a tree structure. Nodes communicate directly with their parent and children nodes. Any other
 traffic to or from a node must be routed through the network.
 
@@ -41,6 +41,15 @@ In RF24Network, the master is just `00`
 
 - Children of master are `01`, `02`, `03`, `04`, `05`
 - Children of `01` are `011`, `021`, `031`, `041`, `051`
+
+## Multicast
+
+Multicast is enabled by default, which limits the master node to 5 child pipes and other nodes to 4. Nodes are 
+arranged in multicast 'levels' with the master node being level 0, nodes 01-05 are level 1, nodes n1-n5 are level 2,
+and so on. The multicast level of each node can be configured as desired by the user, or multicast can be
+disabled by editing RF24Network_config.h. For example, if all nodes are in range of the master node, all nodes can
+be configured to use multicast level 1, allowing the master node to contact all of them by sending a single payload.
+Multicasting is also used by the RF24Mesh layer for dynamic addressing requests.
 
 ## Routing
 
