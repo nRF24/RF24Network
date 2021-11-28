@@ -14,7 +14,7 @@ dropping network power consumption dramatically compared to previous capabilitie
 The displayed ``millis()`` count will give an indication of how much a node has been sleeping compared to the others, as ``millis()`` will
 not increment while a node sleeps.
 
-- Using this sketch, each node will send a ping to every other node in the network every few seconds.<br>
+- Using this sketch, each node will send a ping to every other node in the network every few seconds.
 - The RF24Network library will route the message across the mesh to the correct node.
 
 .. literalinclude:: ../../../../examples/Network_Ping_Sleep/Network_Ping_Sleep.ino
