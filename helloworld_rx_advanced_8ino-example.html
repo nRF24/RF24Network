@@ -23,7 +23,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">Newly Optimized RF24Network Layer
-   &#160;<span id="projectnumber">1.0.15</span>
+   &#160;<span id="projectnumber">1.0.16</span>
    </div>
    <div id="projectbrief">2020 - Optimized RF24 Network Layer for NRF24L01 radios</div>
   </td>
@@ -90,7 +90,7 @@ $(function() {
 <div class="line"><span class="keywordtype">void</span> setup(<span class="keywordtype">void</span>) {</div>
 <div class="line"> </div>
 <div class="line">  Serial.begin(115200);</div>
-<div class="line">  <span class="keywordflow">if</span> (!Serial) {</div>
+<div class="line">  <span class="keywordflow">while</span> (!Serial) {</div>
 <div class="line">    <span class="comment">// some boards need this because of native USB capability</span></div>
 <div class="line">  }</div>
 <div class="line">  Serial.println(F(<span class="stringliteral">&quot;RF24Network/examples/helloworld_rx_advanced/&quot;</span>));</div>
@@ -101,9 +101,10 @@ $(function() {
 <div class="line">      <span class="comment">// hold in infinite loop</span></div>
 <div class="line">    }</div>
 <div class="line">  }</div>
-<div class="line">  network.begin(<span class="comment">/*channel*/</span> 90, <span class="comment">/*node address*/</span> this_node);</div>
+<div class="line">  radio.setChannel(90);</div>
+<div class="line">  network.begin(<span class="comment">/*node address*/</span> this_node);</div>
 <div class="line"> </div>
-<div class="line">  printf_begin();       <span class="comment">// Used to enable printf on AVR devices</span></div>
+<div class="line">  printf_begin();       <span class="comment">// needed for RF24* libs&#39; internal printf() calls</span></div>
 <div class="line">  radio.printDetails(); <span class="comment">// requires printf support</span></div>
 <div class="line">}</div>
 <div class="line"> </div>
@@ -128,10 +129,10 @@ $(function() {
 <div class="line"> </div>
 <div class="line">    <span class="comment">// Uncomment below to print the entire payload</span></div>
 <div class="line">    <span class="comment">/*</span></div>
-<div class="line"><span class="comment">    for(uint32_t i=0; i&lt;payloadSize; i++) {</span></div>
+<div class="line"><span class="comment">    for(uint32_t i = 0; i &lt; payloadSize; i++) {</span></div>
 <div class="line"><span class="comment">      Serial.print(dataBuffer[i]);</span></div>
-<div class="line"><span class="comment">      Serial.print(&quot;: &quot;);</span></div>
-<div class="line"><span class="comment">      if(i%50 == 49) {</span></div>
+<div class="line"><span class="comment">      Serial.print(F(&quot;: &quot;));</span></div>
+<div class="line"><span class="comment">      if(i % 50 == 49) {</span></div>
 <div class="line"><span class="comment">        //Add a line break every 50 characters</span></div>
 <div class="line"><span class="comment">        Serial.println();</span></div>
 <div class="line"><span class="comment">      }</span></div>
@@ -141,13 +142,13 @@ $(function() {
 <div class="line">  }</div>
 <div class="line">}</div>
 <div class="ttc" id="aRF24Network_8h_html"><div class="ttname"><a href="RF24Network_8h.html">RF24Network.h</a></div></div>
-<div class="ttc" id="aRF24Network__config_8h_html_a6303f7392a2d06be5a121c54278d561b"><div class="ttname"><a href="RF24Network__config_8h.html#a6303f7392a2d06be5a121c54278d561b">MAX_PAYLOAD_SIZE</a></div><div class="ttdeci">#define MAX_PAYLOAD_SIZE</div><div class="ttdef"><b>Definition:</b> RF24Network_config.h:39</div></div>
-<div class="ttc" id="aclassRF24Network_html"><div class="ttname"><a href="classRF24Network.html">RF24Network</a></div><div class="ttdef"><b>Definition:</b> RF24Network.h:333</div></div>
-<div class="ttc" id="astructRF24NetworkHeader_html"><div class="ttname"><a href="structRF24NetworkHeader.html">RF24NetworkHeader</a></div><div class="ttdef"><b>Definition:</b> RF24Network.h:187</div></div>
+<div class="ttc" id="aRF24Network__config_8h_html_a6303f7392a2d06be5a121c54278d561b"><div class="ttname"><a href="RF24Network__config_8h.html#a6303f7392a2d06be5a121c54278d561b">MAX_PAYLOAD_SIZE</a></div><div class="ttdeci">#define MAX_PAYLOAD_SIZE</div><div class="ttdoc">Maximum size of fragmented network frames and fragmentation cache.</div><div class="ttdef"><b>Definition:</b> RF24Network_config.h:59</div></div>
+<div class="ttc" id="aclassRF24Network_html"><div class="ttname"><a href="classRF24Network.html">RF24Network</a></div><div class="ttdef"><b>Definition:</b> RF24Network.h:376</div></div>
+<div class="ttc" id="astructRF24NetworkHeader_html"><div class="ttname"><a href="structRF24NetworkHeader.html">RF24NetworkHeader</a></div><div class="ttdef"><b>Definition:</b> RF24Network.h:226</div></div>
 </div><!-- fragment --> </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Apr 13 2021 01:08:19 for Newly Optimized RF24Network Layer by&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1
+Generated on Sun Nov 28 2021 12:48:49 for Newly Optimized RF24Network Layer by&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1
 </small></address>
 </body>
 </html>

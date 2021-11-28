@@ -23,7 +23,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">Newly Optimized RF24Network Layer
-   &#160;<span id="projectnumber">1.0.15</span>
+   &#160;<span id="projectnumber">1.0.16</span>
    </div>
    <div id="projectbrief">2020 - Optimized RF24 Network Layer for NRF24L01 radios</div>
   </td>
@@ -75,10 +75,10 @@ Overview</h1>
 <p><a class="el" href="classRF24Network.html">RF24Network</a> uses a simple method of data compression to store the addresses using only 2 bytes, in a format designed to represent the network topology in an intuitive way. See the <a href="md_docs_tuning.html">Topology and Overview</a> page for more info regarding topology.</p>
 <h1><a class="anchor" id="autotoc_md2"></a>
 Decimal, Octal and Binary formats</h1>
-<p>Say we want to designate a logical address to a node, using a tree topology as defined by the manufacturer. In the simplest format, we could assign the first node the address of 1, the second 2 and so on. Since a single node can only connect to 6 other nodes (1 parent and 5 children) subnets need to be created if using more than 6 nodes.<br  />
- In this case the:</p><ul>
-<li>children of node 1 could simply be designated as 11,21,31,41, and 51</li>
-<li>children of node 2 could be designated as 12,22,32,42, and 52</li>
+<p>Say we want to designate a logical address to a node, using a tree topology as defined by the manufacturer. In the simplest format, we could assign the first node the address of 1, the second 2, and so on. Since a single node can only connect to 6 other nodes (1 parent and 5 children) subnets need to be created if using more than 6 nodes. In this case, the</p>
+<ul>
+<li>children of node 1 could simply be designated as 11, 21, 31, 41, and 51</li>
+<li>children of node 2 could be designated as 12, 22, 32, 42, and 52</li>
 </ul>
 <p>The above example is exactly how <a class="el" href="classRF24Network.html">RF24Network</a> manages the addresses, but they are represented in Octal format.</p>
 <h2><a class="anchor" id="autotoc_md3"></a>
@@ -100,17 +100,22 @@ Decimal, Octal and Binary</h2>
 <p>Since the numbers 0-7 can be represented in exactly three bits, each digit is represented by exactly 3 bits when viewed in octal format. This allows a very simple method of managing addresses via masking and bit shifting.</p>
 <h1><a class="anchor" id="autotoc_md4"></a>
 Displaying Addresses</h1>
-<p>When using Arduino devices, octal addresses can be printed in the following manner: </p><div class="fragment"><div class="line">uint16_t address = 0111;</div>
+<p>When using Arduino devices, octal addresses can be printed in the following manner:</p>
+<div class="fragment"><div class="line">uint16_t address = 0111;</div>
 <div class="line">Serial.println(address, OCT);</div>
-</div><!-- fragment --><p>Printf can also be used, if enabled, or if using linux/RPi </p><div class="fragment"><div class="line">uint16_t address = 0111;</div>
+</div><!-- fragment --><p>Printf can also be used, if enabled, or if using linux/RPi</p>
+<div class="fragment"><div class="line">uint16_t address = 0111;</div>
 <div class="line">printf(<span class="stringliteral">&quot;0%o\n&quot;</span>, address);</div>
-</div><!-- fragment --><p>See <a href="http://www.cplusplus.com/doc/hex/">http://www.cplusplus.com/doc/hex/</a> for more information<br  />
- See the [Topology and Overview]("md_docs_tuning.html") page for more info regarding topology. </p>
+</div><!-- fragment --><dl class="section see"><dt>See also</dt><dd><ul>
+<li><a href="http://www.cplusplus.com/doc/hex/">This cplusplus.com tutorial</a> for more information number bases.</li>
+<li>The <a href="md_docs_tuning.html">Topology and Overview page</a> for more information regarding network topology. </li>
+</ul>
+</dd></dl>
 </div></div><!-- contents -->
 </div><!-- PageDoc -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Apr 13 2021 01:08:19 for Newly Optimized RF24Network Layer by&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1
+Generated on Sun Nov 28 2021 12:48:49 for Newly Optimized RF24Network Layer by&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1
 </small></address>
 </body>
 </html>

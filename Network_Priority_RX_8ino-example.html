@@ -23,7 +23,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">Newly Optimized RF24Network Layer
-   &#160;<span id="projectnumber">1.0.15</span>
+   &#160;<span id="projectnumber">1.0.16</span>
    </div>
    <div id="projectbrief">2020 - Optimized RF24 Network Layer for NRF24L01 radios</div>
   </td>
@@ -86,11 +86,8 @@ $(function() {
 <div class="line"><span class="keywordtype">void</span> setup() {</div>
 <div class="line"> </div>
 <div class="line">  Serial.begin(115200);</div>
-<div class="line">  <span class="keywordflow">if</span> (!Serial) {</div>
-<div class="line">    <span class="comment">// some boards need this because of native USB capability</span></div>
-<div class="line">  }</div>
-<div class="line">  printf_begin(); <span class="comment">//Used to enable printf on AVR devices</span></div>
-<div class="line">  <span class="keywordflow">if</span> (!Serial) {</div>
+<div class="line">  printf_begin(); <span class="comment">// needed for RF24* libs&#39; internal printf() calls</span></div>
+<div class="line">  <span class="keywordflow">while</span> (!Serial) {</div>
 <div class="line">    <span class="comment">// some boards need this because of native USB capability</span></div>
 <div class="line">  }</div>
 <div class="line">  Serial.println(F(<span class="stringliteral">&quot;RF24Network/examples/Network_Separation_RX/&quot;</span>));</div>
@@ -101,7 +98,8 @@ $(function() {
 <div class="line">      <span class="comment">// hold in infinite loop</span></div>
 <div class="line">    }</div>
 <div class="line">  }</div>
-<div class="line">  network.begin(<span class="comment">/*channel*/</span> 90, <span class="comment">/*node address*/</span> this_node);</div>
+<div class="line">  radio.setChannel(90);</div>
+<div class="line">  network.begin(<span class="comment">/*node address*/</span> this_node);</div>
 <div class="line">  radio.printDetails();</div>
 <div class="line"> </div>
 <div class="line">}<span class="comment">//setup</span></div>
@@ -109,10 +107,10 @@ $(function() {
 <div class="line"> </div>
 <div class="line">uint32_t sendTimer = 0;</div>
 <div class="line"> </div>
-<div class="line"><span class="comment">/**** Create a large array for data to be received ****</span></div>
-<div class="line"><span class="comment">* MAX_PAYLOAD_SIZE is defined in RF24Network_config.h</span></div>
-<div class="line"><span class="comment">* Payload sizes of ~1-2 KBytes or more are practical when radio conditions are good</span></div>
-<div class="line"><span class="comment">*/</span></div>
+<div class="line"><span class="comment">/* **** Create a large array for data to be received ****</span></div>
+<div class="line"><span class="comment"> * MAX_PAYLOAD_SIZE is defined in RF24Network_config.h</span></div>
+<div class="line"><span class="comment"> * Payload sizes of ~1-2 KBytes or more are practical when radio conditions are good</span></div>
+<div class="line"><span class="comment"> */</span></div>
 <div class="line"><span class="preprocessor">#define EXTERNAL_DATA_MAX_SIZE  MAX_PAYLOAD_SIZE</span></div>
 <div class="line"> </div>
 <div class="line">uint8_t dataBuffer[EXTERNAL_DATA_MAX_SIZE];</div>
@@ -140,12 +138,12 @@ $(function() {
 <div class="line">    memcpy(&amp;dataBuffer, network.frag_ptr-&gt;message_buffer, network.frag_ptr-&gt;message_size);</div>
 <div class="line"> </div>
 <div class="line">    <span class="comment">// Handle the external data however...</span></div>
-<div class="line">    Serial.print(<span class="stringliteral">&quot;External Data RX, size: &quot;</span>);</div>
+<div class="line">    Serial.print(F(<span class="stringliteral">&quot;External Data RX, size: &quot;</span>));</div>
 <div class="line">    Serial.println(network.frag_ptr-&gt;message_size);</div>
 <div class="line"> </div>
 <div class="line">    <span class="keywordflow">for</span> (uint16_t i = 0; i &lt; network.frag_ptr-&gt;message_size; i++) {</div>
 <div class="line">      Serial.print(dataBuffer[i]);</div>
-<div class="line">      Serial.print(<span class="stringliteral">&quot;:&quot;</span>);</div>
+<div class="line">      Serial.print(F(<span class="stringliteral">&quot;:&quot;</span>));</div>
 <div class="line">    }</div>
 <div class="line">    Serial.println();</div>
 <div class="line">  }</div>
@@ -161,28 +159,28 @@ $(function() {
 <div class="line">      <a name="_a2"></a><a class="code" href="structRF24NetworkHeader.html">RF24NetworkHeader</a> header;                                    <span class="comment">// Create an empty header</span></div>
 <div class="line">      uint16_t dataSize = network.peek(header);                    <span class="comment">// Peek to get the size of the data</span></div>
 <div class="line">      uint32_t someVariable;</div>
-<div class="line">      <span class="keywordflow">if</span> (header.<a name="a3"></a><a class="code" href="structRF24NetworkHeader.html#ac99ab14e561670f4445d1fea7775e2db">type</a> = <span class="stringliteral">&#39;32&#39;</span>) {                                    <span class="comment">// If a certain header type is recieved</span></div>
+<div class="line">      <span class="keywordflow">if</span> (header.<a name="a3"></a><a class="code" href="structRF24NetworkHeader.html#ac99ab14e561670f4445d1fea7775e2db">type</a> = 32) {                                      <span class="comment">// If a certain header type is recieved</span></div>
 <div class="line">        network.read(header, &amp;someVariable, <span class="keyword">sizeof</span>(someVariable)); <span class="comment">// Handle the data a specific way</span></div>
-<div class="line">        Serial.print(<span class="stringliteral">&quot;RX User Data:\nHeader Type &quot;</span>);</div>
+<div class="line">        Serial.print(F(<span class="stringliteral">&quot;RX User Data:\nHeader Type &quot;</span>));</div>
 <div class="line">        Serial.print(header.<a class="code" href="structRF24NetworkHeader.html#ac99ab14e561670f4445d1fea7775e2db">type</a>);</div>
-<div class="line">        Serial.print(<span class="stringliteral">&quot; Value &quot;</span>);</div>
+<div class="line">        Serial.print(F(<span class="stringliteral">&quot; Value &quot;</span>));</div>
 <div class="line">        Serial.println(someVariable);</div>
 <div class="line">      } <span class="keywordflow">else</span> {</div>
-<div class="line">        network.read(header, &amp;someVariable, 0);                    <span class="comment">// Clear the user data from the buffer if</span></div>
-<div class="line">        <span class="comment">// some other header type is received</span></div>
+<div class="line">        <span class="comment">// Clear the user data from the buffer if some other header type is received</span></div>
+<div class="line">        network.read(header, &amp;someVariable, 0);</div>
 <div class="line">      }</div>
 <div class="line">    }</div>
 <div class="line">  }</div>
 <div class="line">}<span class="comment">//loop</span></div>
 <div class="ttc" id="aRF24Network_8h_html"><div class="ttname"><a href="RF24Network_8h.html">RF24Network.h</a></div></div>
-<div class="ttc" id="aclassRF24Network_html"><div class="ttname"><a href="classRF24Network.html">RF24Network</a></div><div class="ttdef"><b>Definition:</b> RF24Network.h:333</div></div>
-<div class="ttc" id="agroup__DEFINED__TYPES_html_gac6bbd2772e776d10ca7c5f3c7eddf982"><div class="ttname"><a href="group__DEFINED__TYPES.html#gac6bbd2772e776d10ca7c5f3c7eddf982">EXTERNAL_DATA_TYPE</a></div><div class="ttdeci">#define EXTERNAL_DATA_TYPE</div><div class="ttdef"><b>Definition:</b> RF24Network.h:93</div></div>
-<div class="ttc" id="astructRF24NetworkHeader_html"><div class="ttname"><a href="structRF24NetworkHeader.html">RF24NetworkHeader</a></div><div class="ttdef"><b>Definition:</b> RF24Network.h:187</div></div>
-<div class="ttc" id="astructRF24NetworkHeader_html_ac99ab14e561670f4445d1fea7775e2db"><div class="ttname"><a href="structRF24NetworkHeader.html#ac99ab14e561670f4445d1fea7775e2db">RF24NetworkHeader::type</a></div><div class="ttdeci">unsigned char type</div><div class="ttdef"><b>Definition:</b> RF24Network.h:197</div></div>
+<div class="ttc" id="aclassRF24Network_html"><div class="ttname"><a href="classRF24Network.html">RF24Network</a></div><div class="ttdef"><b>Definition:</b> RF24Network.h:376</div></div>
+<div class="ttc" id="agroup__DEFINED__TYPES_html_gac6bbd2772e776d10ca7c5f3c7eddf982"><div class="ttname"><a href="group__DEFINED__TYPES.html#gac6bbd2772e776d10ca7c5f3c7eddf982">EXTERNAL_DATA_TYPE</a></div><div class="ttdeci">#define EXTERNAL_DATA_TYPE</div><div class="ttdef"><b>Definition:</b> RF24Network.h:103</div></div>
+<div class="ttc" id="astructRF24NetworkHeader_html"><div class="ttname"><a href="structRF24NetworkHeader.html">RF24NetworkHeader</a></div><div class="ttdef"><b>Definition:</b> RF24Network.h:226</div></div>
+<div class="ttc" id="astructRF24NetworkHeader_html_ac99ab14e561670f4445d1fea7775e2db"><div class="ttname"><a href="structRF24NetworkHeader.html#ac99ab14e561670f4445d1fea7775e2db">RF24NetworkHeader::type</a></div><div class="ttdeci">unsigned char type</div><div class="ttdef"><b>Definition:</b> RF24Network.h:243</div></div>
 </div><!-- fragment --> </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Apr 13 2021 01:08:19 for Newly Optimized RF24Network Layer by&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1
+Generated on Sun Nov 28 2021 12:48:49 for Newly Optimized RF24Network Layer by&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1
 </small></address>
 </body>
 </html>

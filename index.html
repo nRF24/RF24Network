@@ -23,7 +23,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">Newly Optimized RF24Network Layer
-   &#160;<span id="projectnumber">1.0.15</span>
+   &#160;<span id="projectnumber">1.0.16</span>
    </div>
    <div id="projectbrief">2020 - Optimized RF24 Network Layer for NRF24L01 radios</div>
   </td>
@@ -68,38 +68,39 @@ $(function() {
 <div class="title">Network Layer for RF24 Radios </div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p><a class="anchor" id="md_docs_main_page"></a>This class implements an <a href="http://en.wikipedia.org/wiki/Network_layer">OSI Network Layer</a> using nRF24L01(+) radios driven by the newly optimized <a href="http://nRF24.github.com/RF24/">RF24 library fork</a>.</p>
-<dl class="section see"><dt>See also</dt><dd><a href="http://nRF24.github.io/RF24/index.html">http://nRF24.github.io/RF24/index.html</a> for general RF24 configuration and setup</dd>
-<dd>
-Also, <a href="http://nRF24.github.io/RF24/md_docs_linux_install.html">Linux Installation</a> and <a href="http://nRF24.github.io/RF24/md_docs_rpi_general.html">General Linux/RPi configuration and setup</a> documentation</dd></dl>
+<div class="textblock"><p><a class="anchor" id="md_docs_main_page"></a> This class implements an <a href="http://en.wikipedia.org/wiki/Network_layer">OSI Network Layer</a> using nRF24L01(+) radios driven by the newly optimized <a href="http://nRF24.github.com/RF24/">RF24 library fork</a>.</p>
+<dl class="section see"><dt>See also</dt><dd><a href="http://nRF24.github.io/RF24/">RF24 Library docs</a> for general RF24 configuration and setup.<ul>
+<li><a href="http://nRF24.github.io/RF24/md_docs_linux_install.html">Linux Installation</a> and <a href="http://nRF24.github.io/RF24/md_docs_rpi_general.html">General Linux/RPi configuration and setup</a> documentation</li>
+</ul>
+</dd></dl>
 <h1><a class="anchor" id="autotoc_md7"></a>
 Purpose/Goal</h1>
 <p>Original: Create an alternative to ZigBee radios for Arduino communication.</p>
 <p>New: Enhance the current functionality for maximum efficiency, reliability, and speed</p>
 <p>Xbees are excellent little radios, backed up by a mature and robust standard protocol stack. They are also expensive.</p>
 <p>For many Arduino uses, they seem like overkill. So I am working to improve the current standard for nRF24L01 radios. The best RF24 modules are available for less than $6 from many sources. With the <a class="el" href="classRF24Network.html">RF24Network</a> layer, I hope to cover many common communication scenarios.</p>
-<p>Please see <a href="https://tmrh20.blogspot.com/2019/05/comparative-performance-analysis.html">https://tmrh20.blogspot.com/2019/05/comparative-performance-analysis.html</a> for a comparison against the ZigBee protocols</p>
+<p>Please see <a href="https://tmrh20.blogspot.com/2019/05/comparative-performance-analysis.html">TMRh20's blog post</a> for a comparison against the ZigBee protocols</p>
 <h1><a class="anchor" id="autotoc_md8"></a>
 News</h1>
 <p>Please see the recent changes listed in <a href="https://github.com/nRF24/RF24Network/releases">the github releases page</a></p>
 <h1><a class="anchor" id="autotoc_md9"></a>
 Features</h1>
 <h2><a class="anchor" id="autotoc_md10"></a>
-The layer provides:</h2>
+The layer provides</h2>
 <ul>
 <li>Network ACKs: Efficient acknowledgement of network-wide transmissions, via dynamic radio acks and network protocol acks.</li>
 <li>Updated addressing standard for optimal radio transmission.</li>
 <li>Extended timeouts and staggered timeout intervals. The new txTimeout variable allows fully automated extended timeout periods via auto-retry/auto-reUse of payloads.</li>
-<li>Optimization to the core library provides improvements to reliability, speed and efficiency. See <a href="https://nRF24.github.io/RF24">https://nRF24.github.io/RF24</a> for more info.</li>
+<li>Optimization to the core library provides improvements to reliability, speed and efficiency. See <a href="https://nRF24.github.io/RF24">RF24 library documentation</a> for more info.</li>
 <li>Built in sleep mode using interrupts. (Still under development &ndash; enable via <a class="el" href="RF24Network__config_8h.html">RF24Network_config.h</a>)</li>
 <li>Host Addressing. Each node has a logical address on the local network.</li>
 <li>Message Forwarding. Messages can be sent from one node to any other, and this layer will get them there no matter how many hops it takes.</li>
 <li>Ad-hoc Joining. A node can join a network without any changes to any existing nodes.</li>
 </ul>
 <h2><a class="anchor" id="autotoc_md11"></a>
-The layer does not provide:</h2>
+The layer does not provide</h2>
 <ul>
-<li>Dynamic address assignment. (See <a href="https://github.com/nRF24/RF24Mesh">RF24Mesh</a>)</li>
+<li>Dynamic address assignment (See <a href="https://github.com/nRF24/RF24Mesh">RF24Mesh</a>)</li>
 <li>Layer 4 protocols (TCP/IP - See <a href="https://github.com/nRF24/RF24Ethernet">RF24Ethernet</a> and <a href="https://github.com/nRF24/RF24Gateway">RF24Gateway</a>)</li>
 </ul>
 <h1><a class="anchor" id="autotoc_md12"></a>
@@ -110,7 +111,7 @@ How to learn more</h1>
 <li><a href="md_docs_addressing.html">Addressing format</a></li>
 <li><a href="md_docs_tuning.html">Topology and Overview</a></li>
 <li><a href="https://github.com/TMRh20/RF24Network/archive/Development.zip">Download Current Development Package</a></li>
-<li><a href="examples.html">Examples Page</a>. Start with <a href="helloworld_rx_8ino-example.html">helloworld_rx</a> and <a href="helloworld_tx_8ino-example.html">helloworld_tx</a>.</li>
+<li><a href="examples.html">Examples Page</a>. Start with <code>helloworld_*</code> examples.</li>
 </ul>
 <h2><a class="anchor" id="autotoc_md13"></a>
 Additional Information &amp; Add-ons</h2>
@@ -134,18 +135,10 @@ Octal Addressing and Topology</h1>
 <li>Node 0321 is the third child of node 021, an so on.</li>
 <li>The largest node address is 05555, so up to 781 nodes are allowed on a single channel. An example topology is shown below, with 5 nodes in direct communication with the master node, and multiple leaf nodes spread out at a distance, using intermediate nodes to reach other nodes.</li>
 </ul>
-<table class="markdownTable">
-<tr class="markdownTableHead">
-<th class="markdownTableHeadNone"></th><th class="markdownTableHeadNone"></th><th class="markdownTableHeadNone">00   </th><th class="markdownTableHeadNone"></th><th class="markdownTableHeadNone"></th><th class="markdownTableHeadNone">00   </th><th class="markdownTableHeadNone"></th><th class="markdownTableHeadNone"></th><th class="markdownTableHeadNone"></th><th class="markdownTableHeadNone">Master Node (00)    </th></tr>
-<tr class="markdownTableRowOdd">
-<td class="markdownTableBodyNone"></td><td class="markdownTableBodyNone"></td><td class="markdownTableBodyNone">01   </td><td class="markdownTableBodyNone"></td><td class="markdownTableBodyNone"></td><td class="markdownTableBodyNone">04   </td><td class="markdownTableBodyNone"></td><td class="markdownTableBodyNone"></td><td class="markdownTableBodyNone"></td><td class="markdownTableBodyNone">1st level children of master (00)    </td></tr>
-<tr class="markdownTableRowEven">
-<td class="markdownTableBodyNone"></td><td class="markdownTableBodyNone">011   </td><td class="markdownTableBodyNone"></td><td class="markdownTableBodyNone">021   </td><td class="markdownTableBodyNone"></td><td class="markdownTableBodyNone"></td><td class="markdownTableBodyNone">014   </td><td class="markdownTableBodyNone"></td><td class="markdownTableBodyNone"></td><td class="markdownTableBodyNone">2nd level children of master. Children of 1st level.    </td></tr>
-<tr class="markdownTableRowOdd">
-<td class="markdownTableBodyNone">111   </td><td class="markdownTableBodyNone"></td><td class="markdownTableBodyNone"></td><td class="markdownTableBodyNone">121   </td><td class="markdownTableBodyNone">221   </td><td class="markdownTableBodyNone"></td><td class="markdownTableBodyNone"></td><td class="markdownTableBodyNone">114   </td><td class="markdownTableBodyNone"></td><td class="markdownTableBodyNone">3rd level children of master. Children of 2nd level.    </td></tr>
-<tr class="markdownTableRowEven">
-<td class="markdownTableBodyNone"></td><td class="markdownTableBodyNone"></td><td class="markdownTableBodyNone"></td><td class="markdownTableBodyNone"></td><td class="markdownTableBodyNone">1221   </td><td class="markdownTableBodyNone"></td><td class="markdownTableBodyNone">1114   </td><td class="markdownTableBodyNone">2114   </td><td class="markdownTableBodyNone">3114   </td><td class="markdownTableBodyNone">4th level children of master. Children of 3rd level.   </td></tr>
-</table>
+<p>![ </p><div class="image">
+<object type="image/svg+xml" data="example_tree.svg" style="pointer-events: none;"></object>
+</div>
+<p> ](<a href="https://github.com/nRF24/RF24Network/blob/CMake-4-Linux/images/example_tree.svg">https://github.com/nRF24/RF24Network/blob/CMake-4-Linux/images/example_tree.svg</a>)</p>
 <h1><a class="anchor" id="autotoc_md16"></a>
 How routing is handled</h1>
 <p>When sending a message using <a class="el" href="classRF24Network.html#ac8e9571bb3d2c20d00955b8f5c15b541">RF24Network::write()</a>, you fill in the header with the logical node address. The network layer figures out the right path to find that node, and sends it through the system until it gets to the right place. This works even if the two nodes are far separated, as it will send the message down to the base node, and then back out to the final destination.</p>
@@ -161,7 +154,7 @@ Directionality</h1>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Apr 13 2021 01:08:19 for Newly Optimized RF24Network Layer by&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1
+Generated on Sun Nov 28 2021 12:48:49 for Newly Optimized RF24Network Layer by&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1
 </small></address>
 </body>
 </html>

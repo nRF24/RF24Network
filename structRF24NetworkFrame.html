@@ -23,7 +23,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">Newly Optimized RF24Network Layer
-   &#160;<span id="projectnumber">1.0.15</span>
+   &#160;<span id="projectnumber">1.0.16</span>
    </div>
    <div id="projectbrief">2020 - Optimized RF24 Network Layer for NRF24L01 radios</div>
   </td>
@@ -79,10 +79,10 @@ $(function() {
 Public Member Functions</h2></td></tr>
 <tr class="memitem:af6598f176be18e6c64173627674672f2"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structRF24NetworkFrame.html#af6598f176be18e6c64173627674672f2">RF24NetworkFrame</a> ()</td></tr>
 <tr class="separator:af6598f176be18e6c64173627674672f2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a184eb90d3503111aada5f54f66ed88fb"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structRF24NetworkFrame.html#a184eb90d3503111aada5f54f66ed88fb">RF24NetworkFrame</a> (<a class="el" href="structRF24NetworkHeader.html">RF24NetworkHeader</a> &amp;_header, const void *_message=NULL, uint16_t _len=0)</td></tr>
+<tr class="separator:a184eb90d3503111aada5f54f66ed88fb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a057d001f6896cb43d55619f73c8f43b6"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structRF24NetworkFrame.html#a057d001f6896cb43d55619f73c8f43b6">RF24NetworkFrame</a> (<a class="el" href="structRF24NetworkHeader.html">RF24NetworkHeader</a> &amp;_header, uint16_t _message_size)</td></tr>
 <tr class="separator:a057d001f6896cb43d55619f73c8f43b6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0bdd894be7e7002c38602db10ef09bf2"><td class="memItemLeft" align="right" valign="top">const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structRF24NetworkFrame.html#a0bdd894be7e7002c38602db10ef09bf2">toString</a> (void) const</td></tr>
-<tr class="separator:a0bdd894be7e7002c38602db10ef09bf2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
@@ -97,13 +97,13 @@ Public Attributes</h2></td></tr>
 <div class="textblock"><p>Frame structure for internal message handling, and for use by external applications</p>
 <p>The actual frame put over the air consists of a header (8-bytes) and a message payload (Up to 24-bytes)<br  />
  When data is received, it is stored using the <a class="el" href="structRF24NetworkFrame.html">RF24NetworkFrame</a> structure, which includes:</p><ol type="1">
-<li>The header</li>
+<li>The header containing information about routing the message and the message type</li>
 <li>The size of the included message</li>
 <li>The 'message' or data being received </li>
 </ol>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="af6598f176be18e6c64173627674672f2"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af6598f176be18e6c64173627674672f2">&#9670;&nbsp;</a></span>RF24NetworkFrame() <span class="overload">[1/2]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#af6598f176be18e6c64173627674672f2">&#9670;&nbsp;</a></span>RF24NetworkFrame() <span class="overload">[1/3]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -129,8 +129,60 @@ Public Attributes</h2></td></tr>
 
 </div>
 </div>
+<a id="a184eb90d3503111aada5f54f66ed88fb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a184eb90d3503111aada5f54f66ed88fb">&#9670;&nbsp;</a></span>RF24NetworkFrame() <span class="overload">[2/3]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">RF24NetworkFrame::RF24NetworkFrame </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structRF24NetworkHeader.html">RF24NetworkHeader</a> &amp;&#160;</td>
+          <td class="paramname"><em>_header</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const void *&#160;</td>
+          <td class="paramname"><em>_message</em> = <code>NULL</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint16_t&#160;</td>
+          <td class="paramname"><em>_len</em> = <code>0</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p><b>Constructor for Linux platforms</b> - create a network frame with data Frames are constructed and handled differently on Arduino/AVR and Linux devices (<code>#if defined RF24_LINUX</code>)</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">_header</td><td>The <a class="el" href="classRF24Network.html">RF24Network</a> header to be stored in the frame </td></tr>
+    <tr><td class="paramname">_message</td><td>The 'message' or data. </td></tr>
+    <tr><td class="paramname">_len</td><td>The size of the 'message' or data.</td></tr>
+  </table>
+  </dd>
+</dl>
+<p>Frames are used internally and by external systems. See <a class="el" href="structRF24NetworkHeader.html">RF24NetworkHeader</a>. </p>
+
+</div>
+</div>
 <a id="a057d001f6896cb43d55619f73c8f43b6"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a057d001f6896cb43d55619f73c8f43b6">&#9670;&nbsp;</a></span>RF24NetworkFrame() <span class="overload">[2/2]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a057d001f6896cb43d55619f73c8f43b6">&#9670;&nbsp;</a></span>RF24NetworkFrame() <span class="overload">[3/3]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -162,18 +214,8 @@ Public Attributes</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Constructor - create a network frame with data Frames are constructed and handled differently on Arduino/AVR and Linux devices (defined RF24_LINUX)</p>
-<p><br  />
- <b>Linux:</b> </p><dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">_header</td><td>The <a class="el" href="classRF24Network.html">RF24Network</a> header to be stored in the frame </td></tr>
-    <tr><td class="paramname">_message</td><td>The 'message' or data. </td></tr>
-    <tr><td class="paramname">_len</td><td>The size of the 'message' or data.</td></tr>
-  </table>
-  </dd>
-</dl>
-<p><br  />
- <b>Arduino/AVR/Etc.</b> </p><dl class="section see"><dt>See also</dt><dd><a class="el" href="classRF24Network.html#a1c994c5fdcb2173b187c52b641aaeae0">RF24Network.frag_ptr</a> </dd></dl>
+<p><b>Constructor for Arduino/AVR/etc. platforms</b> - create a network frame with data Frames are constructed and handled differently on Arduino/AVR and Linux devices (<code>#if defined RF24_LINUX</code>)</p>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="classRF24Network.html#a1c994c5fdcb2173b187c52b641aaeae0">RF24Network.frag_ptr</a> </dd></dl>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">_header</td><td>The <a class="el" href="classRF24Network.html">RF24Network</a> header to be stored in the frame </td></tr>
@@ -182,28 +224,6 @@ Public Attributes</h2></td></tr>
   </dd>
 </dl>
 <p>Frames are used internally and by external systems. See <a class="el" href="structRF24NetworkHeader.html">RF24NetworkHeader</a>. </p>
-
-</div>
-</div>
-<h2 class="groupheader">Member Function Documentation</h2>
-<a id="a0bdd894be7e7002c38602db10ef09bf2"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0bdd894be7e7002c38602db10ef09bf2">&#9670;&nbsp;</a></span>toString()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">const char* RF24NetworkFrame::toString </td>
-          <td>(</td>
-          <td class="paramtype">void&#160;</td>
-          <td class="paramname"></td><td>)</td>
-          <td> const</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Create debugging string</p>
-<p>Useful for debugging. Dumps all members into a single string, using internal static memory. This memory will get overridden next time you call the method.</p>
-<dl class="section return"><dt>Returns</dt><dd>String representation of this object </dd></dl>
 
 </div>
 </div>
@@ -219,6 +239,7 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Header which is sent with each message </p>
 
 </div>
 </div>
@@ -233,7 +254,7 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Header which is sent with each message </p>
+<p>The size in bytes of the payload length </p>
 
 </div>
 </div>
@@ -248,14 +269,14 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>The size in bytes of the payload length On Arduino, the message buffer is just a pointer, and can be pointed to any memory location. On Linux the message buffer is a standard byte array, equal in size to the defined MAX_PAYLOAD_SIZE </p>
+<p>On Arduino, the message buffer is just a pointer, and can be pointed to any memory location. On Linux the message buffer is a standard byte array, equal in size to the defined MAX_PAYLOAD_SIZE </p>
 
 </div>
 </div>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Apr 13 2021 01:08:19 for Newly Optimized RF24Network Layer by&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1
+Generated on Sun Nov 28 2021 12:48:49 for Newly Optimized RF24Network Layer by&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1
 </small></address>
 </body>
 </html>

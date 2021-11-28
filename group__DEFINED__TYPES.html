@@ -23,7 +23,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">Newly Optimized RF24Network Layer
-   &#160;<span id="projectnumber">1.0.15</span>
+   &#160;<span id="projectnumber">1.0.16</span>
    </div>
    <div id="projectbrief">2020 - Optimized RF24 Network Layer for NRF24L01 radios</div>
   </td>
@@ -94,11 +94,11 @@ Macros</h2></td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <p><b>Reserved network message types</b></p>
-<p>The network will determine whether to automatically acknowledge payloads based on their general type <br  />
-</p>
-<p><b>User types</b> (1-127) 1-64 will NOT be acknowledged <br  />
- <b>System types</b> (128-255) 192 through 255 will NOT be acknowledged<br  />
-</p>
+<p>The network will determine whether to automatically acknowledge payloads based on their general <code><a class="el" href="structRF24NetworkHeader.html#ac99ab14e561670f4445d1fea7775e2db">RF24NetworkHeader::type</a></code>.</p>
+<ul>
+<li><b>User types</b> (1 - 127) 1 - 64 will NOT be acknowledged</li>
+<li><b>System types</b> (128 - 255) 192 - 255 will NOT be acknowledged</li>
+</ul>
 <p>System types can also contain message data. </p>
 <h2 class="groupheader">Macro Definition Documentation</h2>
 <a id="ga25ad7c77b5ffa6acd7a5d9002a25a71b"></a>
@@ -112,10 +112,10 @@ Macros</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>A NETWORK_ADDR_RESPONSE type is utilized to manually route custom messages containing a single <a class="el" href="classRF24Network.html">RF24Network</a> address</p>
+<p>A <a class="el" href="group__DEFINED__TYPES.html#ga25ad7c77b5ffa6acd7a5d9002a25a71b">NETWORK_ADDR_RESPONSE</a> type is utilized to manually route custom messages containing a single <a class="el" href="classRF24Network.html">RF24Network</a> address.</p>
 <p>Used by RF24Mesh</p>
-<p>If a node receives a message of this type that is directly addressed to it, it will read the included message, and forward the payload on to the proper recipient. <br  />
- This allows nodes to forward multicast messages to the master node, receive a response, and forward it back to the requester. </p>
+<p>If a node receives a message of this type that is directly addressed to it, it will read the included message, and forward the payload on to the proper recipient.</p>
+<p>This allows nodes to forward multicast messages to the master node, receive a response, and forward it back to the requester. </p>
 
 </div>
 </div>
@@ -146,14 +146,20 @@ Macros</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <p>External data types are used to define messages that will be passed to an external data system. This allows <a class="el" href="classRF24Network.html">RF24Network</a> to route and pass any type of data, such as TCP/IP frames, while still being able to utilize standard <a class="el" href="classRF24Network.html">RF24Network</a> messages etc.</p>
-<p><b>Linux</b> Linux devices (defined RF24_LINUX) will buffer all data types in the user cache.</p>
-<p><b>Arduino/AVR/Etc:</b> Data transmitted with the type set to EXTERNAL_DATA_TYPE will not be loaded into the user cache. <br  />
- External systems can extract external data using the following process, while internal data types are cached in the user buffer, and accessed using network.read() : </p><div class="fragment"><div class="line">uint8_t return_type = network.update();</div>
+<ul>
+<li><p class="startli"><b>Linux</b></p>
+<p class="startli">Linux devices (defined with <code>RF24_LINUX</code> macro) will buffer all data types in the user cache.</p>
+</li>
+<li><p class="startli"><b>Arduino/AVR/Etc</b></p>
+<p class="startli">Data transmitted with the type set to EXTERNAL_DATA_TYPE will not be loaded into the user cache.</p>
+</li>
+</ul>
+<p>External systems can extract external data using the following process, while internal data types are cached in the user buffer, and accessed using network.read() : </p><div class="fragment"><div class="line">uint8_t return_type = network.update();</div>
 <div class="line"><span class="keywordflow">if</span>(return_type == <a class="code" href="group__DEFINED__TYPES.html#gac6bbd2772e776d10ca7c5f3c7eddf982">EXTERNAL_DATA_TYPE</a>){</div>
 <div class="line">    uint16_t size = network.frag_ptr-&gt;message_size;</div>
 <div class="line">    memcpy(&amp;myDataBuffer, network.frag_ptr-&gt;message_buffer, network.frag_ptr-&gt;message_size);</div>
 <div class="line">}</div>
-<div class="ttc" id="agroup__DEFINED__TYPES_html_gac6bbd2772e776d10ca7c5f3c7eddf982"><div class="ttname"><a href="group__DEFINED__TYPES.html#gac6bbd2772e776d10ca7c5f3c7eddf982">EXTERNAL_DATA_TYPE</a></div><div class="ttdeci">#define EXTERNAL_DATA_TYPE</div><div class="ttdef"><b>Definition:</b> RF24Network.h:93</div></div>
+<div class="ttc" id="agroup__DEFINED__TYPES_html_gac6bbd2772e776d10ca7c5f3c7eddf982"><div class="ttname"><a href="group__DEFINED__TYPES.html#gac6bbd2772e776d10ca7c5f3c7eddf982">EXTERNAL_DATA_TYPE</a></div><div class="ttdeci">#define EXTERNAL_DATA_TYPE</div><div class="ttdef"><b>Definition:</b> RF24Network.h:103</div></div>
 </div><!-- fragment --> <dl class="section examples"><dt>Examples</dt><dd><a class="el" href="Network_Priority_RX_8ino-example.html#a1">Network_Priority_RX.ino</a>, and <a class="el" href="Network_Priority_TX_8ino-example.html#a2">Network_Priority_TX.ino</a>.</dd>
 </dl>
 
@@ -200,7 +206,7 @@ Macros</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Messages of this type indicate the last fragment in a sequence of message fragments. Messages of this type do not receive a NETWORK_ACK </p>
+<p>Messages of this type indicate the last fragment in a sequence of message fragments. Messages of this type do not receive a <a class="el" href="group__DEFINED__TYPES.html#gac60baa80629bef34c13bd6a171f278c7">NETWORK_ACK</a> </p>
 
 </div>
 </div>
@@ -215,11 +221,18 @@ Macros</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Messages of this type are used internally, to signal the sender that a transmission has been completed. <a class="el" href="classRF24Network.html">RF24Network</a> does not directly have a built-in transport layer protocol, so message delivery is not 100% guaranteed.<br  />
- Messages can be lost via corrupted dynamic payloads, or a NETWORK_ACK can fail, while the message was actually successful.</p>
-<p>NETWORK_ACK messages can be utilized as a traffic/flow control mechanism, since transmitting nodes will be forced to wait until the payload is transmitted across the network and acknowledged, before sending additional data.</p>
-<p>In the event that the transmitting device will be waiting for a direct response, manually sent by the recipient, a NETWORK_ACK is not required. <br  />
- User messages utilizing a 'type' with a decimal value of 64 or less will not be acknowledged across the network via NETWORK_ACK messages. </p>
+<p>Messages of this type signal the sender that a network-wide transmission has been completed.</p>
+<ul>
+<li><b>Not fool-proof</b> <dl class="section user"><dt></dt><dd><a class="el" href="classRF24Network.html">RF24Network</a> does not directly have a built-in transport layer protocol, so message delivery is not 100% guaranteed. Messages can be lost via corrupted dynamic payloads, or a NETWORK_ACK can fail (despite successful transmission of the message).</dd></dl>
+</li>
+<li><b>Traffic analysis</b> <dl class="section user"><dt></dt><dd>NETWORK_ACK messages can be utilized as a traffic/flow control mechanism. Transmitting nodes that emit NETWORK_ACK qualifying messages will be forced to wait, before sending additional data, until the payload is transmitted across the network and acknowledged.</dd></dl>
+</li>
+<li><b>Different from Radio ACK Packets</b> <dl class="section user"><dt></dt><dd>In the event that the transmitting device will be sending directly to a parent or child node, a NETWORK_ACK is not required. This is because the radio's auto-ack feature is utilized for connections between directly related network nodes. For example: nodes <code>01</code> and <code>011</code> use the radio's auto-ack feature for transmissions between them, but nodes <code>01</code> and <code>02</code> do not use the radio's auto-ack feature for transmissions between them as messages will be routed through other nodes. </dd></dl>
+<dl class="section user"><dt></dt><dd>Multicasted messages do use the radio's auto-ack feature because of the hardware limitations of nRF24L01 transceivers. This applies to all multicasted messages (directly related nodes or otherwise).</dd></dl>
+<dl class="section remark"><dt>Remarks</dt><dd>Remember, user messages types with a decimal value of 64 or less will not be acknowledged across the network via NETWORK_ACK messages.</dd></dl>
+<dl class="section note"><dt>Note</dt><dd>NETWORK_ACK messages are only sent by the last node in the route to a target node. ie: When node <code>00</code> sends an instigating message to node <code>011</code>, node <code>01</code> will send the NETWORK_ACK message to <code>00</code> upon sucessful delivery of instigating message to node <code>011</code>. </dd></dl>
+</li>
+</ul>
 
 </div>
 </div>
@@ -258,7 +271,7 @@ Macros</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Apr 13 2021 01:08:19 for Newly Optimized RF24Network Layer by&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1
+Generated on Sun Nov 28 2021 12:48:49 for Newly Optimized RF24Network Layer by&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1
 </small></address>
 </body>
 </html>

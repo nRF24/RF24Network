@@ -23,7 +23,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">Newly Optimized RF24Network Layer
-   &#160;<span id="projectnumber">1.0.15</span>
+   &#160;<span id="projectnumber">1.0.16</span>
    </div>
    <div id="projectbrief">2020 - Optimized RF24 Network Layer for NRF24L01 radios</div>
   </td>
@@ -76,12 +76,25 @@ $(function() {
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="define-members"></a>
 Macros</h2></td></tr>
 <tr class="memitem:ad24658d1cd8d37f7bd9f78f79624f81e"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="RF24Network__config_8h.html#ad24658d1cd8d37f7bd9f78f79624f81e">NETWORK_DEFAULT_ADDRESS</a>&#160;&#160;&#160;04444</td></tr>
+<tr class="memdesc:ad24658d1cd8d37f7bd9f78f79624f81e"><td class="mdescLeft">&#160;</td><td class="mdescRight">A reserved valid address for use with RF24Mesh (when a mesh node requests an assigned address)  <a href="RF24Network__config_8h.html#ad24658d1cd8d37f7bd9f78f79624f81e">More...</a><br /></td></tr>
 <tr class="separator:ad24658d1cd8d37f7bd9f78f79624f81e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9384801ca5f2283143ab651994179e8c"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="RF24Network__config_8h.html#a9384801ca5f2283143ab651994179e8c">NETWORK_MULTICAST_ADDRESS</a>&#160;&#160;&#160;0100</td></tr>
+<tr class="memdesc:a9384801ca5f2283143ab651994179e8c"><td class="mdescLeft">&#160;</td><td class="mdescRight">A sentinel address value for multicasting purposes.  <a href="RF24Network__config_8h.html#a9384801ca5f2283143ab651994179e8c">More...</a><br /></td></tr>
+<tr class="separator:a9384801ca5f2283143ab651994179e8c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acd1e22fa0e2085482a2049c6339b53dc"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="RF24Network__config_8h.html#acd1e22fa0e2085482a2049c6339b53dc">NETWORK_AUTO_ROUTING</a>&#160;&#160;&#160;070</td></tr>
+<tr class="memdesc:acd1e22fa0e2085482a2049c6339b53dc"><td class="mdescLeft">&#160;</td><td class="mdescRight">A sentinel value for internally indicating that the frame should be automatically routed as necessary.  <a href="RF24Network__config_8h.html#acd1e22fa0e2085482a2049c6339b53dc">More...</a><br /></td></tr>
+<tr class="separator:acd1e22fa0e2085482a2049c6339b53dc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aff1e5ff5e11dd91d16cc45b8f73d2e94"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="RF24Network__config_8h.html#aff1e5ff5e11dd91d16cc45b8f73d2e94">SLOW_ADDR_POLL_RESPONSE</a>&#160;&#160;&#160;10</td></tr>
+<tr class="memdesc:aff1e5ff5e11dd91d16cc45b8f73d2e94"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adds a delay to node prior to transmitting <a class="el" href="group__DEFINED__TYPES.html#ga25ad7c77b5ffa6acd7a5d9002a25a71b">NETWORK_ADDR_RESPONSE</a> messages.  <a href="RF24Network__config_8h.html#aff1e5ff5e11dd91d16cc45b8f73d2e94">More...</a><br /></td></tr>
+<tr class="separator:aff1e5ff5e11dd91d16cc45b8f73d2e94"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afa838938e02d347e06289d76ed8f2bf0"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="RF24Network__config_8h.html#afa838938e02d347e06289d76ed8f2bf0">RF24NetworkMulticast</a></td></tr>
+<tr class="memdesc:afa838938e02d347e06289d76ed8f2bf0"><td class="mdescLeft">&#160;</td><td class="mdescRight">When defined, this will allow the use of multicasting messages.  <a href="RF24Network__config_8h.html#afa838938e02d347e06289d76ed8f2bf0">More...</a><br /></td></tr>
 <tr class="separator:afa838938e02d347e06289d76ed8f2bf0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6303f7392a2d06be5a121c54278d561b"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="RF24Network__config_8h.html#a6303f7392a2d06be5a121c54278d561b">MAX_PAYLOAD_SIZE</a>&#160;&#160;&#160;144</td></tr>
+<tr class="memdesc:a6303f7392a2d06be5a121c54278d561b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Maximum size of fragmented network frames and fragmentation cache.  <a href="RF24Network__config_8h.html#a6303f7392a2d06be5a121c54278d561b">More...</a><br /></td></tr>
 <tr class="separator:a6303f7392a2d06be5a121c54278d561b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7d4c071d4189c387b2d764a6a4b9283c"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="RF24Network__config_8h.html#a7d4c071d4189c387b2d764a6a4b9283c">MAIN_BUFFER_SIZE</a>&#160;&#160;&#160;(<a class="el" href="RF24Network__config_8h.html#a6303f7392a2d06be5a121c54278d561b">MAX_PAYLOAD_SIZE</a> + <a class="el" href="RF24Network_8h.html#a6a4e3b4099bd5e93bfec5835b2379eb8">FRAME_HEADER_SIZE</a>)</td></tr>
+<tr class="memdesc:a7d4c071d4189c387b2d764a6a4b9283c"><td class="mdescLeft">&#160;</td><td class="mdescRight">The allocated size of the incoming frame buffer.  <a href="RF24Network__config_8h.html#a7d4c071d4189c387b2d764a6a4b9283c">More...</a><br /></td></tr>
 <tr class="separator:a7d4c071d4189c387b2d764a6a4b9283c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad899459e243820796dd98c2afb044218"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="RF24Network__config_8h.html#ad899459e243820796dd98c2afb044218">ENABLE_DYNAMIC_PAYLOADS</a></td></tr>
 <tr class="separator:ad899459e243820796dd98c2afb044218"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -99,6 +112,57 @@ Macros</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>A reserved valid address for use with RF24Mesh (when a mesh node requests an assigned address) </p>
+
+</div>
+</div>
+<a id="a9384801ca5f2283143ab651994179e8c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9384801ca5f2283143ab651994179e8c">&#9670;&nbsp;</a></span>NETWORK_MULTICAST_ADDRESS</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define NETWORK_MULTICAST_ADDRESS&#160;&#160;&#160;0100</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>A sentinel address value for multicasting purposes. </p>
+
+</div>
+</div>
+<a id="acd1e22fa0e2085482a2049c6339b53dc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acd1e22fa0e2085482a2049c6339b53dc">&#9670;&nbsp;</a></span>NETWORK_AUTO_ROUTING</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define NETWORK_AUTO_ROUTING&#160;&#160;&#160;070</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>A sentinel value for internally indicating that the frame should be automatically routed as necessary. </p>
+
+</div>
+</div>
+<a id="aff1e5ff5e11dd91d16cc45b8f73d2e94"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aff1e5ff5e11dd91d16cc45b8f73d2e94">&#9670;&nbsp;</a></span>SLOW_ADDR_POLL_RESPONSE</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define SLOW_ADDR_POLL_RESPONSE&#160;&#160;&#160;10</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Adds a delay to node prior to transmitting <a class="el" href="group__DEFINED__TYPES.html#ga25ad7c77b5ffa6acd7a5d9002a25a71b">NETWORK_ADDR_RESPONSE</a> messages. </p>
+<p>By default this is undefined for speed. This defined number of milliseconds is only applied to the master node when replying to a child trying to connect to the mesh network. </p><dl class="section note"><dt>Note</dt><dd>It is advised to define this if any child node is running CircuitPython because the execution speed in pure python is inherently slower than it is in C++. </dd></dl>
+
 </div>
 </div>
 <a id="afa838938e02d347e06289d76ed8f2bf0"></a>
@@ -113,6 +177,8 @@ Macros</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>When defined, this will allow the use of multicasting messages. </p>
+
 </div>
 </div>
 <a id="a6303f7392a2d06be5a121c54278d561b"></a>
@@ -126,10 +192,13 @@ Macros</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>System defines Maximum size of fragmented network frames and fragmentation cache.</p>
-<dl class="section note"><dt>Note</dt><dd>: This buffer can now be any size &gt; 24. Previously need to be a multiple of 24. </dd>
+
+<p>Maximum size of fragmented network frames and fragmentation cache. </p>
+<dl class="section note"><dt>Note</dt><dd>This buffer can now be any size &gt; 24. Previously this needed to be a multiple of 24 (changed in v1.0.15). </dd>
 <dd>
-: If used with RF24Ethernet, this value is used to set the buffer sizes. </dd></dl>
+If used with RF24Ethernet, this value is used to set the buffer sizes. </dd>
+<dd>
+For nodes driven by an ATTiny based chip, this is set to 72. However, defining <code>DISABLE_FRAGMENTION</code> truncates the actual transmitted payload to 24 bytes (which is also the default behavior on ATTiny devices). </dd></dl>
 <dl class="section examples"><dt>Examples</dt><dd><a class="el" href="helloworld_rx_advanced_8ino-example.html#a1">helloworld_rx_advanced.ino</a>, and <a class="el" href="helloworld_tx_advanced_8ino-example.html#a1">helloworld_tx_advanced.ino</a>.</dd>
 </dl>
 
@@ -146,7 +215,9 @@ Macros</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>The size of the main buffer. This is the user-cache, where incoming data is stored. Data is stored using Frames: Header (8-bytes) + Frame_Size (2-bytes) + Data (?-bytes) </p>
+
+<p>The allocated size of the incoming frame buffer. </p>
+<p>This is the user-cache, where incoming data is stored. Data is stored using Frames: Header (8 bytes) + Message_Size (2 bytes) + Message_Data (? bytes) </p><dl class="section note"><dt>Note</dt><dd>Over-The-Air (OTA) transmissions don't include the message size in the transmitted packet. </dd></dl>
 
 </div>
 </div>
@@ -161,14 +232,14 @@ Macros</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Disable user payloads. Saves memory when used with RF24Ethernet or software that uses external data. Enable tracking of success and failures for all transmissions, routed and user initiated Enable dynamic payloads - If using different types of NRF24L01 modules, some may be incompatible when using this feature </p>
+<p>Enable dynamic payloads - If using different types of nRF24L01 modules, some may be incompatible when using this feature </p>
 
 </div>
 </div>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Apr 13 2021 01:08:19 for Newly Optimized RF24Network Layer by&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1
+Generated on Sun Nov 28 2021 12:48:49 for Newly Optimized RF24Network Layer by&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1
 </small></address>
 </body>
 </html>

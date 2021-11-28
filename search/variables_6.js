@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['to_5fnode_122',['to_node',['../structRF24NetworkHeader.html#adb8d6d05bb359b4b89322d15055e73a1',1,'RF24NetworkHeader']]],
-  ['txtimeout_123',['txTimeout',['../classRF24Network.html#a8838b42717e7c9da37213b020db1f88c',1,'RF24Network']]],
-  ['type_124',['type',['../structRF24NetworkHeader.html#ac99ab14e561670f4445d1fea7775e2db',1,'RF24NetworkHeader']]]
+  ['networkflags_124',['networkFlags',['../classRF24Network.html#a476806538919b167465181ab872e0cad',1,'RF24Network']]],
+  ['next_5fid_125',['next_id',['../structRF24NetworkHeader.html#af02a00fa410f6c34bb395f7d0afe2bfd',1,'RF24NetworkHeader']]],
+  ['node_5faddress_126',['node_address',['../classRF24Network.html#a17017b584633bb969d004c4c43ca5c82',1,'RF24Network']]]
 ];

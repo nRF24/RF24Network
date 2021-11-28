@@ -23,7 +23,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">Newly Optimized RF24Network Layer
-   &#160;<span id="projectnumber">1.0.15</span>
+   &#160;<span id="projectnumber">1.0.16</span>
    </div>
    <div id="projectbrief">2020 - Optimized RF24 Network Layer for NRF24L01 radios</div>
   </td>
@@ -132,7 +132,7 @@ Static Public Attributes</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>The message ID of the next message to be sent (unused) Default constructor</p>
+<p>Default constructor</p>
 <p>Simply constructs a blank header </p>
 
 </div>
@@ -180,11 +180,11 @@ Static Public Attributes</h2></td></tr>
 <div class="line"><a class="code" href="structRF24NetworkHeader.html">RF24NetworkHeader</a> header(recipient_address, <span class="charliteral">&#39;t&#39;</span>);</div>
 <div class="line"> </div>
 <div class="line">network.write(header, &amp;message, <span class="keyword">sizeof</span>(message));</div>
-<div class="ttc" id="astructRF24NetworkHeader_html"><div class="ttname"><a href="structRF24NetworkHeader.html">RF24NetworkHeader</a></div><div class="ttdef"><b>Definition:</b> RF24Network.h:187</div></div>
+<div class="ttc" id="astructRF24NetworkHeader_html"><div class="ttname"><a href="structRF24NetworkHeader.html">RF24NetworkHeader</a></div><div class="ttdef"><b>Definition:</b> RF24Network.h:226</div></div>
 </div><!-- fragment --><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">_to</td><td>The Octal format, logical node address where the message is going </td></tr>
-    <tr><td class="paramname">_type</td><td>The type of message which follows. Only 0-127 are allowed for user messages. Types 1-64 will not receive a network acknowledgement. </td></tr>
+    <tr><td class="paramname">_type</td><td>The type of message which follows. Only 0 - 127 are allowed for user messages. Types 1 - 64 will not receive a network acknowledgement. </td></tr>
   </table>
   </dd>
 </dl>
@@ -209,7 +209,7 @@ Static Public Attributes</h2></td></tr>
 </div><div class="memdoc">
 <p>Create debugging string</p>
 <p>Useful for debugging. Dumps all members into a single string, using internal static memory. This memory will get overridden next time you call the method.</p>
-<dl class="section return"><dt>Returns</dt><dd>String representation of this object </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>String representation of the object's significant members. </dd></dl>
 
 </div>
 </div>
@@ -225,6 +225,7 @@ Static Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Logical address where the message was generated </p>
 <dl class="section examples"><dt>Examples</dt><dd><a class="el" href="Network_Ping_8ino-example.html#a3">Network_Ping.ino</a>, and <a class="el" href="Network_Ping_Sleep_8ino-example.html#a3">Network_Ping_Sleep.ino</a>.</dd>
 </dl>
 
@@ -241,7 +242,7 @@ Static Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Logical address where the message was generated </p>
+<p>Logical address where the message is going </p>
 
 </div>
 </div>
@@ -256,7 +257,7 @@ Static Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Logical address where the message is going </p>
+<p>Sequential message ID, incremented every time a new frame is constructed </p>
 
 </div>
 </div>
@@ -271,10 +272,8 @@ Static Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Sequential message ID, incremented every time a new frame is constructed Message Types: User message types 1 through 64 will NOT be acknowledged by the network, while message types 65 through 127 will receive a network ACK. System message types 192 through 255 will NOT be acknowledged by the network. Message types 128 through 192 will receive a network ACK. <br  />
- <br  />
-<br  />
- </p>
+<p><b>Type of the packet.</b> 0 - 127 are user-defined types, 128 - 255 are reserved for system.</p>
+<p>User message types 1 through 64 will NOT be acknowledged by the network, while message types 65 through 127 will receive a network ACK. System message types 192 through 255 will NOT be acknowledged by the network. Message types 128 through 192 will receive a network ACK. </p><dl class="section see"><dt>See also</dt><dd><a class="el" href="group__DEFINED__TYPES.html">Reserved System Message Types</a> </dd></dl>
 <dl class="section examples"><dt>Examples</dt><dd><a class="el" href="Network_Ping_8ino-example.html#a2">Network_Ping.ino</a>, <a class="el" href="Network_Ping_Sleep_8ino-example.html#a2">Network_Ping_Sleep.ino</a>, and <a class="el" href="Network_Priority_RX_8ino-example.html#a3">Network_Priority_RX.ino</a>.</dd>
 </dl>
 
@@ -291,8 +290,8 @@ Static Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p><b>Type of the packet.</b> 0-127 are user-defined types, 128-255 are reserved for system During fragmentation, it carries the fragment_id, and on the last fragment it carries the header_type.<br  />
- </p>
+<p><b>Reserved for system use</b></p>
+<p>During fragmentation, it carries the fragment_id, and on the last fragment it carries the header_type. </p>
 
 </div>
 </div>
@@ -315,14 +314,14 @@ Static Public Attributes</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p><em>Reserved for system use</em> </p>
+<p>The message ID of the next message to be sent. This attribute is not sent with the header. </p>
 
 </div>
 </div>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Apr 13 2021 01:08:19 for Newly Optimized RF24Network Layer by&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1
+Generated on Sun Nov 28 2021 12:48:49 for Newly Optimized RF24Network Layer by&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1
 </small></address>
 </body>
 </html>

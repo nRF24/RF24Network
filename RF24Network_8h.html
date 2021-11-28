@@ -23,7 +23,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">Newly Optimized RF24Network Layer
-   &#160;<span id="projectnumber">1.0.15</span>
+   &#160;<span id="projectnumber">1.0.16</span>
    </div>
    <div id="projectbrief">2020 - Optimized RF24 Network Layer for NRF24L01 radios</div>
   </td>
@@ -128,10 +128,6 @@ Macros</h2></td></tr>
 <tr class="separator:a6a4e3b4099bd5e93bfec5835b2379eb8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3701f6ea99dcf399641f2ad29303f8cc"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="RF24Network_8h.html#a3701f6ea99dcf399641f2ad29303f8cc">USE_CURRENT_CHANNEL</a>&#160;&#160;&#160;255</td></tr>
 <tr class="separator:a3701f6ea99dcf399641f2ad29303f8cc"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae845edab6bed91d670b2e7ea91ac8e19"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="RF24Network_8h.html#ae845edab6bed91d670b2e7ea91ac8e19">FLAG_HOLD_INCOMING</a>&#160;&#160;&#160;1</td></tr>
-<tr class="separator:ae845edab6bed91d670b2e7ea91ac8e19"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af39e764c8eccc1735a3d395c501945f5"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="RF24Network_8h.html#af39e764c8eccc1735a3d395c501945f5">FLAG_BYPASS_HOLDS</a>&#160;&#160;&#160;2</td></tr>
-<tr class="separator:af39e764c8eccc1735a3d395c501945f5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a00fc52e4f9f6e4716c365bf201163b7e"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="RF24Network_8h.html#a00fc52e4f9f6e4716c365bf201163b7e">FLAG_FAST_FRAG</a>&#160;&#160;&#160;4</td></tr>
 <tr class="separator:a00fc52e4f9f6e4716c365bf201163b7e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4b3df085f3e9afddfa6d9647cd142c44"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="RF24Network_8h.html#a4b3df085f3e9afddfa6d9647cd142c44">FLAG_NO_POLL</a>&#160;&#160;&#160;8</td></tr>
@@ -193,7 +189,6 @@ Macros</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Internal defines for handling written payloads </p>
 
 </div>
 </div>
@@ -292,36 +287,7 @@ Macros</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-
-</div>
-</div>
-<a id="ae845edab6bed91d670b2e7ea91ac8e19"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae845edab6bed91d670b2e7ea91ac8e19">&#9670;&nbsp;</a></span>FLAG_HOLD_INCOMING</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define FLAG_HOLD_INCOMING&#160;&#160;&#160;1</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Internal defines for handling internal payloads - prevents reading additional data from the radio when buffers are full </p>
-
-</div>
-</div>
-<a id="af39e764c8eccc1735a3d395c501945f5"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af39e764c8eccc1735a3d395c501945f5">&#9670;&nbsp;</a></span>FLAG_BYPASS_HOLDS</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define FLAG_BYPASS_HOLDS&#160;&#160;&#160;2</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>FLAG_BYPASS_HOLDS is mainly for use with RF24Mesh as follows: a: Ensure no data in radio buffers, else exit b: Address is changed to multicast address for renewal c: Holds Cleared (bypass flag is set) d: Address renewal takes place and is set e: Holds Enabled (bypass flag off) </p>
+<p>A sentinel value signifying that the current radio channel should be unchanged when setting up the network node with <a class="el" href="classRF24Network.html#abf0da46b2e78b2010171c9f20cba8bae">RF24Network::begin(uint8_t _channel, uint16_t _node_address)</a>. </p>
 
 </div>
 </div>
@@ -336,6 +302,7 @@ Macros</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>This flag (when asserted in <a class="el" href="classRF24Network.html#a476806538919b167465181ab872e0cad">RF24Network::networkFlags</a>) prevents repetitively configuring the radio during transmission of fragmented messages. </p>
 
 </div>
 </div>
@@ -350,13 +317,14 @@ Macros</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>This flag (when asserted in <a class="el" href="classRF24Network.html#a476806538919b167465181ab872e0cad">RF24Network::networkFlags</a>) prevents a node from responding to mesh nodes looking to connect to the network. Calling RF24Mesh::setChild() uses this flag accordingly. </p>
 
 </div>
 </div>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Apr 13 2021 01:08:19 for Newly Optimized RF24Network Layer by&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1
+Generated on Sun Nov 28 2021 12:48:49 for Newly Optimized RF24Network Layer by&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1
 </small></address>
 </body>
 </html>

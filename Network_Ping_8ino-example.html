@@ -23,7 +23,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">Newly Optimized RF24Network Layer
-   &#160;<span id="projectnumber">1.0.15</span>
+   &#160;<span id="projectnumber">1.0.16</span>
    </div>
    <div id="projectbrief">2020 - Optimized RF24 Network Layer for NRF24L01 radios</div>
   </td>
@@ -121,15 +121,14 @@ $(function() {
 <div class="line"><span class="keywordtype">void</span> setup() {</div>
 <div class="line"> </div>
 <div class="line">  Serial.begin(115200);</div>
-<div class="line">  printf_begin();</div>
-<div class="line">  <span class="keywordflow">if</span> (!Serial) {</div>
+<div class="line">  printf_begin(); <span class="comment">// needed for RF24* libs&#39; internal printf() calls</span></div>
+<div class="line">  <span class="keywordflow">while</span> (!Serial) {</div>
 <div class="line">    <span class="comment">// some boards need this because of native USB capability</span></div>
 <div class="line">  }</div>
 <div class="line">  Serial.println(F(<span class="stringliteral">&quot;RF24Network/examples/meshping/&quot;</span>));</div>
 <div class="line"> </div>
 <div class="line">  this_node = node_address_set[NODE_ADDRESS];            <span class="comment">// Which node are we?</span></div>
 <div class="line"> </div>
-<div class="line">  SPI.begin();                                           <span class="comment">// Bring up the RF network</span></div>
 <div class="line">  <span class="keywordflow">if</span> (!radio.begin()) {</div>
 <div class="line">    Serial.println(F(<span class="stringliteral">&quot;Radio hardware not responding!&quot;</span>));</div>
 <div class="line">    <span class="keywordflow">while</span> (1) {</div>
@@ -137,8 +136,8 @@ $(function() {
 <div class="line">    }</div>
 <div class="line">  }</div>
 <div class="line">  radio.setPALevel(RF24_PA_HIGH);</div>
-<div class="line">  network.begin(<span class="comment">/*channel*/</span> 100, <span class="comment">/*node address*/</span> this_node );</div>
-<div class="line"> </div>
+<div class="line">  radio.setChannel(100);</div>
+<div class="line">  network.begin(<span class="comment">/*node address*/</span> this_node);</div>
 <div class="line">}</div>
 <div class="line"> </div>
 <div class="line"><span class="keywordtype">void</span> loop() {</div>
@@ -278,14 +277,14 @@ $(function() {
 <div class="line">  }</div>
 <div class="line">}</div>
 <div class="ttc" id="aRF24Network_8h_html"><div class="ttname"><a href="RF24Network_8h.html">RF24Network.h</a></div></div>
-<div class="ttc" id="aclassRF24Network_html"><div class="ttname"><a href="classRF24Network.html">RF24Network</a></div><div class="ttdef"><b>Definition:</b> RF24Network.h:333</div></div>
-<div class="ttc" id="astructRF24NetworkHeader_html"><div class="ttname"><a href="structRF24NetworkHeader.html">RF24NetworkHeader</a></div><div class="ttdef"><b>Definition:</b> RF24Network.h:187</div></div>
-<div class="ttc" id="astructRF24NetworkHeader_html_ac99ab14e561670f4445d1fea7775e2db"><div class="ttname"><a href="structRF24NetworkHeader.html#ac99ab14e561670f4445d1fea7775e2db">RF24NetworkHeader::type</a></div><div class="ttdeci">unsigned char type</div><div class="ttdef"><b>Definition:</b> RF24Network.h:197</div></div>
-<div class="ttc" id="astructRF24NetworkHeader_html_aff9461f6546b5b7c87465809eb4f9f56"><div class="ttname"><a href="structRF24NetworkHeader.html#aff9461f6546b5b7c87465809eb4f9f56">RF24NetworkHeader::from_node</a></div><div class="ttdeci">uint16_t from_node</div><div class="ttdef"><b>Definition:</b> RF24Network.h:188</div></div>
+<div class="ttc" id="aclassRF24Network_html"><div class="ttname"><a href="classRF24Network.html">RF24Network</a></div><div class="ttdef"><b>Definition:</b> RF24Network.h:376</div></div>
+<div class="ttc" id="astructRF24NetworkHeader_html"><div class="ttname"><a href="structRF24NetworkHeader.html">RF24NetworkHeader</a></div><div class="ttdef"><b>Definition:</b> RF24Network.h:226</div></div>
+<div class="ttc" id="astructRF24NetworkHeader_html_ac99ab14e561670f4445d1fea7775e2db"><div class="ttname"><a href="structRF24NetworkHeader.html#ac99ab14e561670f4445d1fea7775e2db">RF24NetworkHeader::type</a></div><div class="ttdeci">unsigned char type</div><div class="ttdef"><b>Definition:</b> RF24Network.h:243</div></div>
+<div class="ttc" id="astructRF24NetworkHeader_html_aff9461f6546b5b7c87465809eb4f9f56"><div class="ttname"><a href="structRF24NetworkHeader.html#aff9461f6546b5b7c87465809eb4f9f56">RF24NetworkHeader::from_node</a></div><div class="ttdeci">uint16_t from_node</div><div class="ttdef"><b>Definition:</b> RF24Network.h:228</div></div>
 </div><!-- fragment --> </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Apr 13 2021 01:08:19 for Newly Optimized RF24Network Layer by&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1
+Generated on Sun Nov 28 2021 12:48:49 for Newly Optimized RF24Network Layer by&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1
 </small></address>
 </body>
 </html>
