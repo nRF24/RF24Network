@@ -26,7 +26,7 @@ RPI=$(shell cat /proc/cpuinfo | grep Hardware | grep -c BCM2709)
 endif
 
 pigpio_detected=0
-ifeq $(wildcard "/usr/lib/libpigpio.so")
+ifneq ("$(wildcard "/usr/lib/libpigpio.so")", "")
 pigpio_detected=1
 endif
 
