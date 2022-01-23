@@ -19,10 +19,16 @@ message(STATUS "using RF24 library: ${RF24}")
 find_library(RF24Network rf24network REQUIRED)
 message(STATUS "using RF24Network library: ${RF24Network}")
 
+find_library(LibPIGPIO pigpio)
+
 foreach(example ${EXAMPLES_LIST})
     # make a target
     add_executable(${example} ${example}.cpp)
-
     # link the RF24 lib to the target. Notice we specify pthread as a linked lib here
-    target_link_libraries(${example} PUBLIC ${RF24} pthread ${RF24Network})
+    if ("${LibPIGPIO}" STREQUAL "LibPIGPIO-NOTFOUND")
+        target_link_libraries(${example} PUBLIC ${RF24} pthread ${RF24Network})
+    else()
+        message(STATUS "linking to ${LibPIGPIO} for interrupt support")
+        target_link_libraries(${example} PUBLIC ${RF24} pthread ${RF24Network} ${LibPIGPIO})
+    endif()
 endforeach()
