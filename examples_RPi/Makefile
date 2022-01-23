@@ -34,10 +34,10 @@ ifeq "$(RPI)" "1"
 # The recommended compiler flags for the Raspberry Pi
 CCFLAGS=-Ofast -mfpu=vfp -mfloat-abi=hard -march=$(ARCH) -mtune=arm1176jzf-s -std=c++0x
 ifeq "$(pigpio_detected)" "1"
-CCFLAGS=$(CCFLAGS) -lpigpio
+CCFLAGS=-Ofast -mfpu=vfp -mfloat-abi=hard -march=$(ARCH) -mtune=arm1176jzf-s -std=c++0x -lpigpio
 endif
 else
-CCFLAGS=$(CCFLAGS) -DRF24_NO_INTERRUPT
+CCFLAGS=-DRF24_NO_INTERRUPT
 endif
 
 # define all programs
