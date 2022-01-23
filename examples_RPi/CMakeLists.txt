@@ -20,6 +20,9 @@ find_library(RF24Network rf24network REQUIRED)
 message(STATUS "using RF24Network library: ${RF24Network}")
 
 find_library(LibPIGPIO pigpio)
+if (NOT "${LibPIGPIO}" STREQUAL "LibPIGPIO-NOTFOUND")
+    message(STATUS "linking to ${LibPIGPIO} for interrupt support")
+endif()
 
 foreach(example ${EXAMPLES_LIST})
     # make a target
@@ -28,7 +31,6 @@ foreach(example ${EXAMPLES_LIST})
     if ("${LibPIGPIO}" STREQUAL "LibPIGPIO-NOTFOUND")
         target_link_libraries(${example} PUBLIC ${RF24} pthread ${RF24Network})
     else()
-        message(STATUS "linking to ${LibPIGPIO} for interrupt support")
         target_link_libraries(${example} PUBLIC ${RF24} pthread ${RF24Network} ${LibPIGPIO})
     endif()
 endforeach()
