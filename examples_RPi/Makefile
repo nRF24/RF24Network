@@ -25,20 +25,11 @@ ifneq "${RPI}" "1"
 RPI=$(shell cat /proc/cpuinfo | grep Hardware | grep -c BCM2709)
 endif
 
-pigpio_detected=0
-ifeq ($(wildcard "/usr/lib/libpigpio.so"))
-pigpio_detected=1
-endif
-
 ifeq "$(RPI)" "1"
 # The recommended compiler flags for the Raspberry Pi
 CCFLAGS=-Ofast -mfpu=vfp -mfloat-abi=hard -march=$(ARCH) -mtune=arm1176jzf-s -std=c++0x
-ifeq "$(pigpio_detected)" "1"
-CCFLAGS=$(CCFLAGS) -lpigpio
 endif
-else
-CCFLAGS=$(CCFLAGS) -DRF24_NO_INTERRUPT
-endif
+
 
 # define all programs
 PROGRAMS = rx-test helloworld_rx helloworld_tx
