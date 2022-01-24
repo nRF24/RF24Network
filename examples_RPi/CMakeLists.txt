@@ -7,7 +7,7 @@ set(EXAMPLES_LIST
     rx-test
 )
 
-project(RF24LogExamples)
+project(RF24NetworkExamples)
 add_compile_options(-Ofast -Wall) # passing the compiler a `-pthread` flag doesn't work here
 
 # detect the CPU make and type
