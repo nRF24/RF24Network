@@ -30,7 +30,6 @@ ifeq "$(RPI)" "1"
 CCFLAGS=-Ofast -mfpu=vfp -mfloat-abi=hard -march=$(ARCH) -mtune=arm1176jzf-s -std=c++0x
 endif
 
-
 # define all programs
 PROGRAMS = rx-test helloworld_rx helloworld_tx
 SOURCES = ${PROGRAMS:=.cpp}

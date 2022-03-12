@@ -20,6 +20,9 @@ include(${CMAKE_CURRENT_LIST_DIR}/cmake/PreventInSourceBuilds.cmake)
 # get library info from Arduino IDE's required library.properties file
 include(${CMAKE_CURRENT_LIST_DIR}/cmake/GetLibInfo.cmake) # sets the variable LibTargetName
 
+# detect any applicable external libs (like pigpio)
+include(cmake/AutoConfig_RF24_DRIVER.cmake)
+
 # Link this 'library' to set the c++ standard / compile-time options requested
 add_library(${LibTargetName}_project_options INTERFACE)
 target_compile_features(${LibTargetName}_project_options INTERFACE cxx_std_17)
@@ -72,7 +75,7 @@ if(NOT DEFINED USE_RF24_LIB_SRC)
 endif()
 
 ###########################
-# create target for bulding the RF24Log lib
+# create target for bulding the RF24Network lib
 ###########################
 add_library(${LibTargetName} SHARED
     RF24Network.cpp
@@ -148,9 +151,14 @@ if(DEFINED SLOW_ADDR_POLL_RESPONSE)
     message(STATUS "SLOW_ADDR_POLL_RESPONSE set to ${SLOW_ADDR_POLL_RESPONSE}")
     target_compile_definitions(${LibTargetName} PUBLIC SLOW_ADDR_POLL_RESPONSE=${SLOW_ADDR_POLL_RESPONSE})
 endif()
+# conditionally disable interruot support (a pigpio specific feature)
+if("${LibPIGPIO}" STREQUAL "LibPIGPIO-NOTFOUND" OR DEFINED RF24_NO_INTERRUPT)
+    message(STATUS "Disabling IRQ pin support")
+    target_compile_definitions(${LibTargetName} PUBLIC RF24_NO_INTERRUPT)
+endif()
 
 ###########################
-# target install rules for the RF24Log lib
+# target install rules for the RF24Network lib
 ###########################
 install(TARGETS ${LibTargetName}
     DESTINATION lib
