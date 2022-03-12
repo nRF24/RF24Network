@@ -46,6 +46,7 @@ setup(
             "RF24Network",
             sources=["pyRF24Network.cpp"],
             libraries=["rf24network", "rf24", BOOST_LIB],
+            extra_compile_args=["-DRF24_NO_INTERRUPT"]
         )
     ],
 )
