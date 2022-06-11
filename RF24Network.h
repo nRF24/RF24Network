@@ -406,7 +406,7 @@ public:
      * **Example 3:** Begin with address 011 (child of 01, grandchild of master)
      * @code network.begin(011); @endcode
      *
-     * @see begin(uint8_t _channel, uint16_t _node_address) @inlinerst, :cpp:func:`RF24::begin()`@endrst
+     * @see begin(uint8_t _channel, uint16_t _node_address)
      * @param _node_address The logical address of this node.
      */
     inline void begin(uint16_t _node_address)
