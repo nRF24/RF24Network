@@ -265,11 +265,10 @@ struct RF24NetworkHeader
      *
      * @note Now supports automatic fragmentation for very long messages, which can be sent as usual if fragmentation is enabled.
      *
-     * Fragmentation is enabled by default for all devices except ATTiny <br>
+     * Fragmentation is enabled by default for all devices except ATTiny.
      * Configure fragmentation and max payload size in RF24Network_config.h
      *
      * Use this constructor to create a header and then send a message
-     *
      * @code
      * uint16_t recipient_address = 011;
      *
@@ -299,7 +298,7 @@ struct RF24NetworkHeader
 /**
  * Frame structure for internal message handling, and for use by external applications
  *
- * The actual frame put over the air consists of a header (8-bytes) and a message payload (Up to 24-bytes)<br>
+ * The actual frame put over the air consists of a header (8-bytes) and a message payload (Up to 24-bytes).
  * When data is received, it is stored using the RF24NetworkFrame structure, which includes:
  * 1. The header containing information about routing the message and the message type
  * 2. The size of the included message
@@ -758,7 +757,7 @@ public:
      *
      * The `frag_ptr` is only used with Arduino (not RPi/Linux) and is mainly used for external data systems like RF24Ethernet. When
      * a payload of type @ref EXTERNAL_DATA_TYPE is received, and returned from update(), the `frag_ptr` will always point to the starting
-     * memory location of the received frame. <br>This is used by external data systems (RF24Ethernet) to immediately copy the received
+     * memory location of the received frame. This is used by external data systems (RF24Ethernet) to immediately copy the received
      * data to a buffer, without using the user-cache.
      *
      * @see RF24NetworkFrame
@@ -782,12 +781,12 @@ public:
      *
      * The following reserved/system message types are handled automatically, and not returned.
      *
-     * | System Message Types <br> (Not Returned) |
+     * | System Message Types (Not Returned) |
      * |-----------------------|
      * | @ref NETWORK_ADDR_RESPONSE |
      * | @ref NETWORK_ACK           |
      * | @ref NETWORK_PING          |
-     * | @ref NETWORK_POLL <br>(With multicast enabled) |
+     * | @ref NETWORK_POLL (With multicast enabled) |
      * | @ref NETWORK_REQ_ADDRESS   |
      */
     bool returnSysMsgs;
@@ -795,8 +794,8 @@ public:
     /**
      * Network Flags allow control of data flow
      *
-     * Incoming Blocking: If the network user-cache is full, lets radio cache fill up. Radio ACKs are not sent when radio internal cache is full.<br>
-     * This behaviour may seem to result in more failed sends, but the payloads would have otherwise been dropped due to the cache being full.<br>
+     * Incoming Blocking: If the network user-cache is full, lets radio cache fill up. Radio ACKs are not sent when radio internal cache is full.
+     * This behaviour may seem to result in more failed sends, but the payloads would have otherwise been dropped due to the cache being full.
      *
      * | FLAGS | Value | Description |
      * |-------|-------|-------------|

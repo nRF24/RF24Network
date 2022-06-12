@@ -12,7 +12,13 @@ Basic API
 ============
 
 .. doxygenfunction:: RF24Network::begin (uint16_t _node_address)
+
+.. seealso:: :external:cpp:func:`RF24::begin()`
+
 .. doxygenfunction:: RF24Network::begin (uint8_t channel, uint16_t _node_address)
+
+.. seealso:: :external:cpp:func:`RF24::begin()`
+
 .. doxygenfunction:: RF24Network::update
 .. doxygenfunction:: RF24Network::available
 .. doxygenfunction:: RF24Network::read
