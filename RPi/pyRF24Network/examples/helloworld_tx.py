@@ -49,13 +49,17 @@ radio.printPrettyDetails()
 packets_sent = 0
 last_sent = 0
 
-while 1:
-    network.update()
-    now = time.monotonic_ns() / 1000
-    # If it's time to send a message, send it!
-    if now - last_sent >= interval:
-        last_sent = now
-        payload = struct.pack('<LL', now, packets_sent)
-        packets_sent += 1
-        ok = network.write(RF24NetworkHeader(other_node), payload)
-        print("Sending %d..." % packets_sent, "ok." if ok else "failed.")
+try:
+    while True:
+        network.update()
+        now = int(time.monotonic_ns() / 1000000)
+        # If it's time to send a message, send it!
+        if now - last_sent >= interval:
+            last_sent = now
+            packets_sent += 1
+            payload = struct.pack("<LL", now, packets_sent)
+            ok = network.write(RF24NetworkHeader(other_node), payload)
+            print(f"Sending {packets_sent}...", "ok." if ok else "failed.")
+except KeyboardInterrupt:
+    print("powering down radio and exiting.")
+    radio.powerDown()
