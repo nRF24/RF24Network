@@ -54,6 +54,7 @@ jobs:
         fqbn:
           - "arduino:avr:yun"
           - "arduino:avr:uno"
+          - "arduino:avr:nano"
           - "arduino:avr:diecimila"
           - "arduino:avr:mega"
           - "arduino:avr:megaADK"
@@ -78,6 +79,7 @@ jobs:
           - "arduino:mbed:nano33ble"
           - "arduino:samd:mkr1000"
           - "arduino:samd:mkrwifi1010"
+          - "arduino:samd:mkrzero"
           - "arduino:samd:nano_33_iot"
           - "arduino:samd:mkrfox1200"
           - "arduino:samd:mkrwan1300"
