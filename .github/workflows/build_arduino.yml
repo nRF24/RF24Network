@@ -54,7 +54,6 @@ jobs:
         fqbn:
           - "arduino:avr:yun"
           - "arduino:avr:uno"
-          - "arduino:avr:nano"
           - "arduino:avr:diecimila"
           - "arduino:avr:mega"
           - "arduino:avr:megaADK"
@@ -79,7 +78,6 @@ jobs:
           - "arduino:mbed:nano33ble"
           - "arduino:samd:mkr1000"
           - "arduino:samd:mkrwifi1010"
-          - "arduino:samd:mkrzero"
           - "arduino:samd:nano_33_iot"
           - "arduino:samd:mkrfox1200"
           - "arduino:samd:mkrwan1300"
@@ -122,7 +120,9 @@ jobs:
             - name: RF24
             - source-path: ./
           fqbn: ${{ matrix.fqbn }}
-      
+          enable-deltas-report: ${{ matrix.enable-deltas-report }}
+          sketches-report-path: ${{ env.SKETCHES_REPORTS }}
+
       # This step is needed to pass the size data to the report job 
       - name: Upload sketches report to workflow artifact
         if: ${{ matrix.enable-deltas-report }}
