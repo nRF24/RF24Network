@@ -20,20 +20,20 @@
 #include "RF24Network_config.h"
 
 #if (defined(__linux) || defined(linux)) && !defined(__ARDUINO_X86__)
-#include <stdint.h>
-#include <stdio.h>
-#include <time.h>
-#include <string.h>
-#include <sys/time.h>
-#include <stddef.h>
-#include <assert.h>
-#include <map>
-#include <utility> // std::pair
-#include <queue>
+    #include <stdint.h>
+    #include <stdio.h>
+    #include <time.h>
+    #include <string.h>
+    #include <sys/time.h>
+    #include <stddef.h>
+    #include <assert.h>
+    #include <map>
+    #include <utility> // std::pair
+    #include <queue>
 
 //ATXMega
 #elif defined(XMEGA_D3)
-#include "../../rf24lib/rf24lib/RF24.h"
+    #include "../../rf24lib/rf24lib/RF24.h"
 #endif
 
 /* Header types range */
@@ -156,7 +156,7 @@
  *
  * @note NETWORK_ACK messages are only sent by the last node in the route to a target node.
  * ie: When node `00` sends an instigating message to node `011`, node `01` will send the
- * NETWORK_ACK message to `00` upon sucessful delivery of instigating message to node `011`.
+ * NETWORK_ACK message to `00` upon successful delivery of instigating message to node `011`.
  */
 #define NETWORK_ACK 193
 
@@ -186,13 +186,13 @@
 #define NETWORK_MORE_FRAGMENTS_NACK 200
 
 /* Internal defines for handling written payloads */
-#define TX_NORMAL 0
-#define TX_ROUTED 1
+#define TX_NORMAL                   0
+#define TX_ROUTED                   1
 #define USER_TX_TO_PHYSICAL_ADDRESS 2 // no network ACK
-#define USER_TX_TO_LOGICAL_ADDRESS 3  // network ACK
-#define USER_TX_MULTICAST 4
+#define USER_TX_TO_LOGICAL_ADDRESS  3 // network ACK
+#define USER_TX_MULTICAST           4
 
-#define MAX_FRAME_SIZE 32    // Size of individual radio frames
+#define MAX_FRAME_SIZE    32 // Size of individual radio frames
 #define FRAME_HEADER_SIZE 10 // Size of RF24Network frames - data
 
 /**
@@ -292,7 +292,7 @@ struct RF24NetworkHeader
      *
      * @return String representation of the object's significant members.
      */
-    const char *toString(void) const;
+    const char* toString(void) const;
 };
 
 /**
@@ -313,15 +313,15 @@ struct RF24NetworkFrame
     /** The size in bytes of the payload length */
     uint16_t message_size;
 
-    /**
+/**
      * On Arduino, the message buffer is just a pointer, and can be pointed to any memory location.
      * On Linux the message buffer is a standard byte array, equal in size to the defined MAX_PAYLOAD_SIZE
      */
-    #if defined(RF24_LINUX)
+#if defined(RF24_LINUX)
     uint8_t message_buffer[MAX_PAYLOAD_SIZE]; // Array to store the message
-    #else
-    uint8_t *message_buffer; // Pointer to the buffer storing the actual message
-    #endif
+#else
+    uint8_t* message_buffer; // Pointer to the buffer storing the actual message
+#endif
 
     /**
      * Default constructor
@@ -330,7 +330,7 @@ struct RF24NetworkFrame
      */
     RF24NetworkFrame() {}
 
-    /**
+/**
      * **Constructor for Linux platforms** - create a network frame with data
      * Frames are constructed and handled differently on Arduino/AVR and Linux devices (`#if defined RF24_LINUX`)
      *
@@ -340,15 +340,15 @@ struct RF24NetworkFrame
      *
      * Frames are used internally and by external systems. See RF24NetworkHeader.
      */
-    #if defined(RF24_LINUX) || defined(DOXYGEN_FORCED)
-    RF24NetworkFrame(RF24NetworkHeader &_header, const void *_message = NULL, uint16_t _len = 0) : header(_header), message_size(_len)
+#if defined(RF24_LINUX) || defined(DOXYGEN_FORCED)
+    RF24NetworkFrame(RF24NetworkHeader& _header, const void* _message = NULL, uint16_t _len = 0) : header(_header), message_size(_len)
     {
         if (_message && _len) {
             memcpy(message_buffer, _message, _len);
         }
     }
-    #endif
-    #if defined(DOXYGEN_FORCED) || !defined(RF24_LINUX)
+#endif
+#if defined(DOXYGEN_FORCED) || !defined(RF24_LINUX)
     /**
      * **Constructor for Arduino/AVR/etc. platforms** - create a network frame with data
      * Frames are constructed and handled differently on Arduino/AVR and Linux devices (`#if defined RF24_LINUX`)
@@ -359,10 +359,10 @@ struct RF24NetworkFrame
      *
      * Frames are used internally and by external systems. See RF24NetworkHeader.
      */
-    RF24NetworkFrame(RF24NetworkHeader &_header, uint16_t _message_size) : header(_header), message_size(_message_size)
+    RF24NetworkFrame(RF24NetworkHeader& _header, uint16_t _message_size) : header(_header), message_size(_message_size)
     {
     }
-    #endif
+#endif
 };
 
 /**
@@ -387,7 +387,7 @@ public:
      *
      * @param _radio The underlying radio driver instance
      */
-    RF24Network(RF24 &_radio);
+    RF24Network(RF24& _radio);
 
     /**
      * Bring up the network using the current radio frequency/channel.
@@ -441,7 +441,7 @@ public:
      * If there is no message available, the referenced `header` object is not touched
      * @return The length of the next available message in the queue.
      */
-    uint16_t peek(RF24NetworkHeader &header);
+    uint16_t peek(RF24NetworkHeader& header);
 
     /**
      * Read the next available payload
@@ -456,7 +456,7 @@ public:
      * If this parameter is left unspecified, the entire length of the message is fetched.
      * Hint: Use peek(RF24NetworkHeader) to get the length of next available message in the queue.
      */
-    void peek(RF24NetworkHeader &header, void *message, uint16_t maxlen=MAX_PAYLOAD_SIZE);
+    void peek(RF24NetworkHeader& header, void* message, uint16_t maxlen = MAX_PAYLOAD_SIZE);
 
     /**
      * Read a message
@@ -480,7 +480,7 @@ public:
      * Hint: Use peek(RF24NetworkHeader &) to get the length of next available message in the queue.
      * @return The total number of bytes copied into @p message
      */
-    uint16_t read(RF24NetworkHeader &header, void *message, uint16_t maxlen=MAX_PAYLOAD_SIZE);
+    uint16_t read(RF24NetworkHeader& header, void* message, uint16_t maxlen = MAX_PAYLOAD_SIZE);
 
     /**
      * Send a message
@@ -501,7 +501,7 @@ public:
      * @param len The size of the message
      * @return Whether the message was successfully received
      */
-    bool write(RF24NetworkHeader &header, const void *message, uint16_t len);
+    bool write(RF24NetworkHeader& header, const void* message, uint16_t len);
 
     /**@}*/
     /**
@@ -580,7 +580,8 @@ public:
      * For advanced operation of the network
      */
     /**@{*/
-    #if defined (ENABLE_NETWORK_STATS) || defined (DOXYGEN_FORCED)
+
+#if defined(ENABLE_NETWORK_STATS) || defined(DOXYGEN_FORCED)
 
     /**
      * Return the number of failures and successes for all transmitted payloads, routed or sent directly
@@ -591,10 +592,10 @@ public:
      * network.failures(&fails, &success);
      * @endcode
      */
-    void failures(uint32_t *_fails, uint32_t *_ok);
+    void failures(uint32_t* _fails, uint32_t* _ok);
 
-    #endif // defined (ENABLE_NETWORK_STATS)
-    #if defined(RF24NetworkMulticast)
+#endif // defined (ENABLE_NETWORK_STATS)
+#if defined(RF24NetworkMulticast)
 
     /**
      * Send a multicast message to multiple nodes at once
@@ -612,16 +613,16 @@ public:
      * node's current multicastLevel() is used.
      * @return Whether the message was successfully sent
      */
-    bool multicast(RF24NetworkHeader &header, const void *message, uint16_t len, uint8_t level=7);
+    bool multicast(RF24NetworkHeader& header, const void* message, uint16_t len, uint8_t level = 7);
 
-    #endif
+#endif
 
     /**
      * Writes a direct (unicast) payload. This allows routing or sending messages outside of the usual routing paths.
      * The same as write, but a physical address is specified as the last option.
      * The payload will be written to the physical address, and routed as necessary by the recipient.
      */
-    bool write(RF24NetworkHeader &header, const void *message, uint16_t len, uint16_t writeDirect);
+    bool write(RF24NetworkHeader& header, const void* message, uint16_t len, uint16_t writeDirect);
 
     /**
      * Sleep this node - For AVR devices only
@@ -672,7 +673,7 @@ public:
     /**
      * Validate a network address as a proper logical address
      * @note Addresses are specified in octal form, ie 011, 034.
-     * Review [RF24Nettwork addressing](md_docs_addressing.html) for more information.
+     * Review [RF24Network addressing](md_docs_addressing.html) for more information.
      * @param node The specified logical address of a network node.
      * @return True if the specified `node` address is a valid network address, otherwise false.
      * @remark This function will validate an improper address of `0100` as it is the reserved
@@ -747,11 +748,12 @@ public:
      * }
      * @endcode
      */
-    #if defined(RF24_LINUX) || defined(DOXYGEN_FORCED)
-    std::queue<RF24NetworkFrame> external_queue;
-    #endif
 
-    #if (!defined(DISABLE_FRAGMENTATION) && !defined(RF24_LINUX)) || defined(DOXYGEN_FORCED)
+#if defined(RF24_LINUX) || defined(DOXYGEN_FORCED)
+    std::queue<RF24NetworkFrame> external_queue;
+#endif
+
+#if (!defined(DISABLE_FRAGMENTATION) && !defined(RF24_LINUX)) || defined(DOXYGEN_FORCED)
     /**
      * **ARDUINO platforms only**
      *
@@ -770,8 +772,8 @@ public:
      * @endcode
      * Linux devices (defined as `RF24_LINUX`) currently cache all payload types, and do not utilize `frag_ptr`.
      */
-    RF24NetworkFrame *frag_ptr;
-    #endif
+    RF24NetworkFrame* frag_ptr;
+#endif
 
     /**
      * Variable to determine whether update() will return after the radio buffers have been emptied (DEFAULT), or
@@ -808,14 +810,13 @@ public:
     uint8_t networkFlags;
 
 protected:
-
-    #if defined(RF24NetworkMulticast)
+#if defined(RF24NetworkMulticast)
     /**
      * The current node's network level (used for multicast TX/RX-ing).
      * @see Use multicastLevel() to adjust this when needed.
      */
     uint8_t _multicast_level;
-    #endif
+#endif
     /**
      * Logical node address of this unit, typically in range [0, 2925] (that's [0, 05555] in
      * octal).
@@ -825,7 +826,6 @@ protected:
     uint16_t node_address;
 
 private:
-
     /**
      * @brief This function is the second to last stage a frame reaches before transmission.
      * @param to_node Sets the outgoing traffic direction. Values passed to this parameter usually the
@@ -862,7 +862,7 @@ private:
      * - 2 if EXTERNAL_DATA is detected (indicating that it is in the queue and should be
      *   handled by an external system like RF24Gateway or RF24Ethernet).
      */
-    uint8_t enqueue(RF24NetworkHeader *header);
+    uint8_t enqueue(RF24NetworkHeader* header);
 
     /*
      * Called from begin(), this sets up the radio to act accordingly per the
@@ -879,7 +879,7 @@ private:
      * to the `writeDirect` parameter). This is always called from either of the overloaded public
      * `write()` functions.
      */
-    bool _write(RF24NetworkHeader &header, const void *message, uint16_t len, uint16_t writeDirect);
+    bool _write(RF24NetworkHeader& header, const void* message, uint16_t len, uint16_t writeDirect);
 
     struct logicalToPhysicalStruct
     {
@@ -898,7 +898,7 @@ private:
      * This returns void because the translated results are stored in the
      * `logicalToPhysicalStruct` passed by reference.
      */
-    void logicalToPhysicalAddress(logicalToPhysicalStruct *conversionInfo);
+    void logicalToPhysicalAddress(logicalToPhysicalStruct* conversionInfo);
 
     /********* only called from `logicalToPhysicalAddress()` ***************/
 
@@ -911,31 +911,31 @@ private:
 
     /***********************************************************************/
 
-    RF24 &radio; /** Underlying radio driver, provides link/physical layers */
+    RF24& radio; /** Underlying radio driver, provides link/physical layers */
 
-    uint8_t frame_size;  /* The outgoing frame's total size including the header info. Ranges [8, MAX_PAYLOAD_SIZE] */
+    uint8_t frame_size;                                                                            /* The outgoing frame's total size including the header info. Ranges [8, MAX_PAYLOAD_SIZE] */
     const static unsigned int max_frame_payload_size = MAX_FRAME_SIZE - sizeof(RF24NetworkHeader); /* always 24 bytes to compensate for the frame's header */
 
-    #if defined(RF24_LINUX)
+#if defined(RF24_LINUX)
     std::queue<RF24NetworkFrame> frame_queue;
     std::map<uint16_t, RF24NetworkFrame> frameFragmentsCache;
     bool appendFragmentToFrame(RF24NetworkFrame frame);
-    #else // Not Linux:
+#else // Not Linux:
 
     #if defined(DISABLE_USER_PAYLOADS)
-    uint8_t frame_queue[1]; /** Space for a small set of frames that need to be delivered to the app layer */
+    uint8_t frame_queue[1];  /** Space for a small set of frames that need to be delivered to the app layer */
     #else
     uint8_t frame_queue[MAIN_BUFFER_SIZE]; /** Space for a small set of frames that need to be delivered to the app layer */
     #endif
 
-    uint8_t *next_frame; /** Pointer into the @p frame_queue where we should place the next received frame */
+    uint8_t* next_frame;                                 /** Pointer into the @p frame_queue where we should place the next received frame */
 
     #if !defined(DISABLE_FRAGMENTATION)
-    RF24NetworkFrame frag_queue; /* a cache for re-assembling incoming message fragments */
+    RF24NetworkFrame frag_queue;                         /* a cache for re-assembling incoming message fragments */
     uint8_t frag_queue_message_buffer[MAX_PAYLOAD_SIZE]; //frame size + 1
     #endif
 
-    #endif // Linux/Not Linux
+#endif // Linux/Not Linux
 
     uint16_t parent_node; /** Our parent's node address */
     uint8_t parent_pipe;  /** The pipe our parent uses to listen to us */
@@ -944,15 +944,15 @@ private:
     /* Given the Logical node address & a pipe number, this returns the Physical address assigned to the radio's pipes. */
     uint64_t pipe_address(uint16_t node, uint8_t pipe);
 
-    #if defined ENABLE_NETWORK_STATS
+#if defined ENABLE_NETWORK_STATS
     uint32_t nFails;
     uint32_t nOK;
-    #endif
+#endif
 
-    #if defined(RF24NetworkMulticast)
+#if defined(RF24NetworkMulticast)
     /* translates network level number (0-3) to a Logical address (used for TX multicasting) */
     uint16_t levelToAddress(uint8_t level);
-    #endif
+#endif
 
     /** @} */
 };

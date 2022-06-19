@@ -35,12 +35,13 @@ const unsigned long interval = 2000;
 unsigned long last_sent;    // When did we last send?
 unsigned long packets_sent; // How many have we sent already
 
-struct payload_t { // Structure of our payload
+struct payload_t
+{ // Structure of our payload
     unsigned long ms;
     unsigned long counter;
 };
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
     // Refer to RF24 docs or nRF24L01 Datasheet for settings
 

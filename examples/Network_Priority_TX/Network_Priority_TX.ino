@@ -31,19 +31,19 @@
 #include <RF24Network.h>
 #include "printf.h"
 
-RF24 radio(7, 8);                   // nRF24L01(+) radio attached using Getting Started board
+RF24 radio(7, 8);  // nRF24L01(+) radio attached using Getting Started board
 
-RF24Network network(radio);          // Network uses that radio
+RF24Network network(radio);  // Network uses that radio
 
-const uint16_t this_node = 01;       // Address of our node in Octal format
-const uint16_t other_node = 00;      // Address of the other node in Octal format
+const uint16_t this_node = 01;   // Address of our node in Octal format
+const uint16_t other_node = 00;  // Address of the other node in Octal format
 
 uint8_t dataBuffer[33];
 
 void setup() {
 
   Serial.begin(115200);
-  printf_begin(); // needed for RF24* libs' internal printf() calls
+  printf_begin();  // needed for RF24* libs' internal printf() calls
   while (!Serial) {
     // some boards need this because of native USB capability
   }
@@ -64,7 +64,7 @@ void setup() {
     dataBuffer[i] = i;
   }
 
-}//setup
+}  //setup
 
 
 uint32_t sendTimer = 0;
@@ -102,4 +102,4 @@ void loop() {
     network.read(header, &dataBuffer, 0);
   }
 
-}//loop
+}  //loop

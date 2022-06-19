@@ -4,11 +4,11 @@
  * RECEIVER NODE
  * Listens for messages from the transmitter and prints them out.
  */
-#include "pico/stdlib.h"  // printf(), sleep_ms(), to_ms_since_boot(), get_absolute_time()
-#include <tusb.h>         // tud_cdc_connected()
-#include <RF24.h>         // RF24 radio object
-#include <RF24Network.h>  // RF24Network network object
-#include "defaultPins.h"  // board presumptive default pin numbers for CE_PIN and CSN_PIN
+#include "pico/stdlib.h" // printf(), sleep_ms(), to_ms_since_boot(), get_absolute_time()
+#include <tusb.h>        // tud_cdc_connected()
+#include <RF24.h>        // RF24 radio object
+#include <RF24Network.h> // RF24Network network object
+#include "defaultPins.h" // board presumptive default pin numbers for CE_PIN and CSN_PIN
 
 // instantiate an object for the nRF24L01 transceiver
 RF24 radio(CE_PIN, CSN_PIN);
@@ -21,11 +21,11 @@ const uint16_t this_node = 00;
 // Address of the other node in Octal format (01, 021, etc)
 const uint16_t other_node = 01;
 
-struct payload_t { // Structure of our payload
+struct payload_t
+{ // Structure of our payload
     unsigned long ms;
     unsigned long counter;
 };
-
 
 bool setup()
 {
@@ -52,7 +52,6 @@ bool setup()
 
     return true;
 } // setup
-
 
 void loop()
 {
