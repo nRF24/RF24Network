@@ -67,22 +67,22 @@ uint8_t NODE_ADDRESS = 0;  // Use numbers 0 through to select an address from th
 /***********************************************************************/
 
 
-RF24 radio(7, 8);                             // CE & CS pins to use (Using 7,8 on Uno,Nano)
+RF24 radio(7, 8);  // CE & CS pins to use (Using 7,8 on Uno,Nano)
 RF24Network network(radio);
 
-uint16_t this_node;                           // Our node address
+uint16_t this_node;  // Our node address
 
-const unsigned long interval = 1000; // ms       // Delay manager to send pings regularly.
+const unsigned long interval = 1000;  // ms       // Delay manager to send pings regularly.
 unsigned long last_time_sent;
 
 
-const short max_active_nodes = 10;            // Array of nodes we are aware of
+const short max_active_nodes = 10;  // Array of nodes we are aware of
 uint16_t active_nodes[max_active_nodes];
 short num_active_nodes = 0;
 short next_ping_node_index = 0;
 
 
-bool send_T(uint16_t to);                      // Prototypes for functions to send & handle messages
+bool send_T(uint16_t to);  // Prototypes for functions to send & handle messages
 bool send_N(uint16_t to);
 void handle_T(RF24NetworkHeader& header);
 void handle_N(RF24NetworkHeader& header);
@@ -92,13 +92,13 @@ void add_node(uint16_t node);
 void setup() {
 
   Serial.begin(115200);
-  printf_begin(); // needed for RF24* libs' internal printf() calls
+  printf_begin();  // needed for RF24* libs' internal printf() calls
   while (!Serial) {
     // some boards need this because of native USB capability
   }
   Serial.println(F("RF24Network/examples/meshping/"));
 
-  this_node = node_address_set[NODE_ADDRESS];            // Which node are we?
+  this_node = node_address_set[NODE_ADDRESS];  // Which node are we?
 
   if (!radio.begin()) {
     Serial.println(F("Radio hardware not responding!"));
@@ -113,15 +113,15 @@ void setup() {
 
 void loop() {
 
-  network.update();                                      // Pump the network regularly
+  network.update();  // Pump the network regularly
 
-  while (network.available()) {                      // Is there anything ready for us?
+  while (network.available()) {  // Is there anything ready for us?
 
-    RF24NetworkHeader header;                            // If so, take a look at it
+    RF24NetworkHeader header;  // If so, take a look at it
     network.peek(header);
 
 
-    switch (header.type) {                             // Dispatch the message to the correct handler.
+    switch (header.type) {  // Dispatch the message to the correct handler.
       case 'T':
         handle_T(header);
         break;
@@ -137,37 +137,37 @@ void loop() {
   }
 
 
-  unsigned long now = millis();                         // Send a ping to the next node every 'interval' ms
+  unsigned long now = millis();  // Send a ping to the next node every 'interval' ms
   if (now - last_time_sent >= interval) {
     last_time_sent = now;
 
 
-    uint16_t to = 00;                                   // Who should we send to? By default, send to base
+    uint16_t to = 00;  // Who should we send to? By default, send to base
 
 
     if (num_active_nodes) {                           // Or if we have active nodes,
       to = active_nodes[next_ping_node_index++];      // Send to the next active node
-      if (next_ping_node_index > num_active_nodes) { // Have we rolled over?
-        next_ping_node_index = 0;                   // Next time start at the beginning
-        to = 00;                                    // This time, send to node 00.
+      if (next_ping_node_index > num_active_nodes) {  // Have we rolled over?
+        next_ping_node_index = 0;                     // Next time start at the beginning
+        to = 00;                                      // This time, send to node 00.
       }
     }
 
     bool ok;
 
-    if (this_node > 00 || to == 00) {                   // Normal nodes send a 'T' ping
+    if (this_node > 00 || to == 00) {  // Normal nodes send a 'T' ping
       ok = send_T(to);
-    } else {                                               // Base node sends the current active nodes out
+    } else {  // Base node sends the current active nodes out
       ok = send_N(to);
     }
 
-    if (ok) {                                             // Notify us of the result
+    if (ok) {  // Notify us of the result
       Serial.print(millis());
       Serial.println(F(": APP Send ok"));
     } else {
       Serial.print(millis());
       Serial.println(F(": APP Send failed"));
-      last_time_sent -= 100;                            // Try sending at a different time next time
+      last_time_sent -= 100;  // Try sending at a different time next time
     }
   }
 
@@ -216,7 +216,7 @@ bool send_N(uint16_t to) {
  */
 void handle_T(RF24NetworkHeader& header) {
 
-  unsigned long message;                                                                      // The 'T' message is just a ulong, containing the time
+  unsigned long message;  // The 'T' message is just a ulong, containing the time
   network.read(header, &message, sizeof(unsigned long));
   Serial.print(millis());
   Serial.print(F(": APP Received "));
@@ -224,7 +224,7 @@ void handle_T(RF24NetworkHeader& header) {
   Serial.print(F(" from "));
   Serial.println(header.from_node);
 
-  if (header.from_node != this_node || header.from_node > 00)                                // If this message is from ourselves or the base, don't bother adding it to the active nodes.
+  if (header.from_node != this_node || header.from_node > 00)  // If this message is from ourselves or the base, don't bother adding it to the active nodes.
     add_node(header.from_node);
 }
 
@@ -240,7 +240,7 @@ void handle_N(RF24NetworkHeader& header) {
   Serial.println(header.from_node);
 
   int i = 0;
-  while ( i < max_active_nodes && incoming_nodes[i] > 00 )
+  while (i < max_active_nodes && incoming_nodes[i] > 00)
     add_node(incoming_nodes[i++]);
 }
 
@@ -249,13 +249,13 @@ void handle_N(RF24NetworkHeader& header) {
  */
 void add_node(uint16_t node) {
 
-  short i = num_active_nodes;                           // Do we already know about this node?
+  short i = num_active_nodes;  // Do we already know about this node?
   while (i--) {
     if (active_nodes[i] == node)
       break;
   }
 
-  if (i == -1 && num_active_nodes < max_active_nodes) { // If not, add it to the table
+  if (i == -1 && num_active_nodes < max_active_nodes) {  // If not, add it to the table
     active_nodes[num_active_nodes++] = node;
     Serial.print(millis());
     Serial.print(F(": APP Added "));

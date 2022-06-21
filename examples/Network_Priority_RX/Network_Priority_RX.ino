@@ -31,19 +31,19 @@
 #include <RF24.h>
 #include <RF24Network.h>
 
-RF24 radio(7, 8);                   // nRF24L01(+) radio attached using Getting Started board
+RF24 radio(7, 8);  // nRF24L01(+) radio attached using Getting Started board
 
-RF24Network network(radio);          // Network uses that radio
+RF24Network network(radio);  // Network uses that radio
 
-const uint16_t this_node = 00;       // Address of our node in Octal format
-const uint16_t other_node = 01;      // Address of the other node in Octal format
+const uint16_t this_node = 00;   // Address of our node in Octal format
+const uint16_t other_node = 01;  // Address of the other node in Octal format
 
 uint32_t myVariable = 0;
 
 void setup() {
 
   Serial.begin(115200);
-  printf_begin(); // needed for RF24* libs' internal printf() calls
+  printf_begin();  // needed for RF24* libs' internal printf() calls
   while (!Serial) {
     // some boards need this because of native USB capability
   }
@@ -59,7 +59,7 @@ void setup() {
   network.begin(/*node address*/ this_node);
   radio.printDetails();
 
-}//setup
+}  //setup
 
 
 uint32_t sendTimer = 0;
@@ -68,7 +68,7 @@ uint32_t sendTimer = 0;
  * MAX_PAYLOAD_SIZE is defined in RF24Network_config.h
  * Payload sizes of ~1-2 KBytes or more are practical when radio conditions are good
  */
-#define EXTERNAL_DATA_MAX_SIZE  MAX_PAYLOAD_SIZE
+#define EXTERNAL_DATA_MAX_SIZE MAX_PAYLOAD_SIZE
 
 uint8_t dataBuffer[EXTERNAL_DATA_MAX_SIZE];
 
@@ -113,11 +113,11 @@ void loop() {
     // Handling of standard RF24Network User Data
     while (network.available()) {
 
-      RF24NetworkHeader header;                                    // Create an empty header
-      uint16_t dataSize = network.peek(header);                    // Peek to get the size of the data
+      RF24NetworkHeader header;                  // Create an empty header
+      uint16_t dataSize = network.peek(header);  // Peek to get the size of the data
       uint32_t someVariable;
-      if (header.type = 32) {                                      // If a certain header type is recieved
-        network.read(header, &someVariable, sizeof(someVariable)); // Handle the data a specific way
+      if (header.type = 32) {                                       // If a certain header type is recieved
+        network.read(header, &someVariable, sizeof(someVariable));  // Handle the data a specific way
         Serial.print(F("RX User Data:\nHeader Type "));
         Serial.print(header.type);
         Serial.print(F(" Value "));
@@ -128,4 +128,4 @@ void loop() {
       }
     }
   }
-}//loop
+}  //loop

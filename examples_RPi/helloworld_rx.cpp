@@ -16,7 +16,6 @@
 #include <stdio.h>
 #include <time.h>
 
-
 // CE Pin, CSN Pin, SPI Speed (Hz)
 RF24 radio(22, 0);
 
@@ -28,12 +27,13 @@ const uint16_t this_node = 00;
 // Address of the other node in Octal format (01, 021, etc)
 const uint16_t other_node = 01;
 
-struct payload_t { // Structure of our payload
+struct payload_t
+{ // Structure of our payload
     unsigned long ms;
     unsigned long counter;
 };
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
     // Refer to RF24 docs or nRF24L01 Datasheet for settings
 

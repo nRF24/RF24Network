@@ -21,17 +21,17 @@
 #include <RF24.h>
 #include <RF24Network.h>
 
-RF24 radio(7, 8);                 // nRF24L01(+) radio attached using Getting Started board
+RF24 radio(7, 8);  // nRF24L01(+) radio attached using Getting Started board
 
-RF24Network network(radio);       // Network uses that radio
-const uint16_t this_node = 00;    // Address of our node in Octal format ( 04,031, etc)
-const uint16_t other_node = 01;   // Address of the other node in Octal format
+RF24Network network(radio);      // Network uses that radio
+const uint16_t this_node = 00;   // Address of our node in Octal format ( 04,031, etc)
+const uint16_t other_node = 01;  // Address of the other node in Octal format
 
 /**** Create a large array for data to be received ****
 * MAX_PAYLOAD_SIZE is defined in RF24Network_config.h
 * Payload sizes of ~1-2 KBytes or more are practical when radio conditions are good
 */
-uint8_t dataBuffer[MAX_PAYLOAD_SIZE]; //MAX_PAYLOAD_SIZE is defined in RF24Network_config.h
+uint8_t dataBuffer[MAX_PAYLOAD_SIZE];  //MAX_PAYLOAD_SIZE is defined in RF24Network_config.h
 
 
 void setup(void) {
@@ -51,8 +51,8 @@ void setup(void) {
   radio.setChannel(90);
   network.begin(/*node address*/ this_node);
 
-  printf_begin();       // needed for RF24* libs' internal printf() calls
-  radio.printDetails(); // requires printf support
+  printf_begin();        // needed for RF24* libs' internal printf() calls
+  radio.printDetails();  // requires printf support
 }
 
 // Variable for calculating how long between RX
@@ -60,14 +60,14 @@ uint32_t timeBetweenPackets = 0;
 
 void loop(void) {
 
-  network.update();                                 // Check the network regularly
+  network.update();  // Check the network regularly
 
-  while (network.available()) {                     // Is there anything ready for us?
+  while (network.available()) {  // Is there anything ready for us?
 
-    RF24NetworkHeader header;                       // If so, grab it and print it out
-    uint16_t payloadSize = network.peek(header);    // Use peek() to get the size of the payload
-    network.read(header, &dataBuffer, payloadSize); // Get the data
-    Serial.print("Received packet, size ");         // Print info about received data
+    RF24NetworkHeader header;                        // If so, grab it and print it out
+    uint16_t payloadSize = network.peek(header);     // Use peek() to get the size of the payload
+    network.read(header, &dataBuffer, payloadSize);  // Get the data
+    Serial.print("Received packet, size ");          // Print info about received data
     Serial.print(payloadSize);
     Serial.print("(");
     Serial.print(millis() - timeBetweenPackets);
