@@ -1,7 +1,6 @@
 """Simplest possible example of using RF24Network in RX role.
 Listens for messages from the transmitter and prints them out.
 """
-import time
 import struct
 from RF24 import RF24
 from RF24Network import RF24Network
@@ -45,20 +44,17 @@ network.begin(this_node)
 radio.printPrettyDetails()
 
 radio.startListening()  # put radio in RX mode
-start = time.monotonic()
-while time.monotonic() - start <= 6:  # listen for 6 seconds
-    network.update()
-    while network.available():
-        header, payload = network.read(8)
-        print("payload length ", len(payload))
-        millis, number = struct.unpack('<LL', bytes(payload))
-        print(
-            "Received payload {} from {} to {} at (origin's timestamp) {}".format(
-                number,
-                oct(header.from_node),
-                oct(header.to_node),
-                millis,
+try:
+    while True:
+        network.update()
+        while network.available():
+            header, payload = network.read(8)
+            print("payload length ", len(payload))
+            millis, number = struct.unpack("<LL", bytes(payload))
+            print(
+                f"Received payload {number} from {oct(header.from_node)}",
+                f"to {oct(header.to_node)} at (origin's timestamp) {millis}",
             )
-        )
-        start = time.monotonic()
-    time.sleep(0.05)
+except KeyboardInterrupt:
+    print("powering down radio and exiting.")
+    radio.powerDown()
