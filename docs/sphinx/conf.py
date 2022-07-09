@@ -49,7 +49,7 @@ extensions = [
     "sphinx_immaterial",
     "sphinx.ext.intersphinx",
     "sphinx.ext.autosectionlabel",
-    "sphinx_immaterial.cppreference",
+    "sphinx_immaterial.apidoc.cpp.cppreference",
 ]
 
 # auto-reference links (using intersphinx extension)
