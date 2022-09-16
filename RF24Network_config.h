@@ -55,7 +55,11 @@
      * the actual transmitted payload to 24 bytes (which is also the default behavior on ATTiny devices).
      */
     #ifndef MAX_PAYLOAD_SIZE
-        #define MAX_PAYLOAD_SIZE 144
+        #if defined linux || defined __linux
+            #define MAX_PAYLOAD_SIZE 1514
+        #else
+            #define MAX_PAYLOAD_SIZE 144
+        #endif
     #endif // MAX_PAYLOAD_SIZE
 
     /**
@@ -99,14 +103,14 @@
 #endif
 /*************************************/
 
-#endif //RF24_NETWORK_CONFIG_H
+#endif // RF24_NETWORK_CONFIG_H
 
 #ifdef __cplusplus
 
 #if (defined(__linux) || defined(linux)) && !defined(__ARDUINO_X86__) && !defined(USE_RF24_LIB_SRC)
     #include <RF24/RF24_config.h>
 
-//ATXMega
+// ATXMega
 #elif defined(XMEGA)
     #include "../../rf24lib/rf24lib/RF24_config.h"
 #else
@@ -144,4 +148,4 @@
     #define IF_SERIAL_DEBUG_ROUTING(x)
 #endif
 
-#endif //RF24_CONFIG_H
+#endif // RF24_CONFIG_H
