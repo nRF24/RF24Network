@@ -31,7 +31,7 @@
     #include <utility> // std::pair
     #include <queue>
 
-//ATXMega
+// ATXMega
 #elif defined(XMEGA_D3)
     #include "../../rf24lib/rf24lib/RF24.h"
 #endif
@@ -214,6 +214,9 @@
 #define FLAG_NO_POLL 8
 
 class RF24;
+#if defined NRF52_RADIO_LIBRARY
+class nrf_to_nrf;
+#endif
 
 /**
  * Header which is sent with each message
@@ -314,9 +317,9 @@ struct RF24NetworkFrame
     uint16_t message_size;
 
 /**
-     * On Arduino, the message buffer is just a pointer, and can be pointed to any memory location.
-     * On Linux the message buffer is a standard byte array, equal in size to the defined MAX_PAYLOAD_SIZE
-     */
+ * On Arduino, the message buffer is just a pointer, and can be pointed to any memory location.
+ * On Linux the message buffer is a standard byte array, equal in size to the defined MAX_PAYLOAD_SIZE
+ */
 #if defined(RF24_LINUX)
     uint8_t message_buffer[MAX_PAYLOAD_SIZE]; // Array to store the message
 #else
@@ -331,15 +334,15 @@ struct RF24NetworkFrame
     RF24NetworkFrame() {}
 
 /**
-     * **Constructor for Linux platforms** - create a network frame with data
-     * Frames are constructed and handled differently on Arduino/AVR and Linux devices (`#if defined RF24_LINUX`)
-     *
-     * @param _header The RF24Network header to be stored in the frame
-     * @param _message The 'message' or data.
-     * @param _len The size of the 'message' or data.
-     *
-     * Frames are used internally and by external systems. See RF24NetworkHeader.
-     */
+ * **Constructor for Linux platforms** - create a network frame with data
+ * Frames are constructed and handled differently on Arduino/AVR and Linux devices (`#if defined RF24_LINUX`)
+ *
+ * @param _header The RF24Network header to be stored in the frame
+ * @param _message The 'message' or data.
+ * @param _len The size of the 'message' or data.
+ *
+ * Frames are used internally and by external systems. See RF24NetworkHeader.
+ */
 #if defined(RF24_LINUX) || defined(DOXYGEN_FORCED)
     RF24NetworkFrame(RF24NetworkHeader& _header, const void* _message = NULL, uint16_t _len = 0) : header(_header), message_size(_len)
     {
@@ -388,7 +391,9 @@ public:
      * @param _radio The underlying radio driver instance
      */
     RF24Network(RF24& _radio);
-
+#if defined NRF52_RADIO_LIBRARY
+    RF24Network(nrf_to_nrf& _radio);
+#endif
     /**
      * Bring up the network using the current radio frequency/channel.
      * Calling begin brings up the network, and configures the address, which designates the
@@ -656,7 +661,7 @@ public:
      * | 3 | CHANGE   |
      * @return True if sleepNode completed normally, after the specified number of cycles. False if sleep was interrupted
      */
-    bool sleepNode(unsigned int cycles, int interruptPin, uint8_t INTERRUPT_MODE = 0); //added interrupt mode support (default 0=LOW)
+    bool sleepNode(unsigned int cycles, int interruptPin, uint8_t INTERRUPT_MODE = 0); // added interrupt mode support (default 0=LOW)
 
     /**
      * This node's parent address
@@ -910,9 +915,11 @@ private:
     uint16_t direct_child_route_to(uint16_t node);
 
     /***********************************************************************/
-
+#if !defined NRF52_RADIO_LIBRARY
     RF24& radio; /** Underlying radio driver, provides link/physical layers */
-
+#else
+    nrf_to_nrf& radio;
+#endif
     uint8_t frame_size;                                                                            /* The outgoing frame's total size including the header info. Ranges [8, MAX_PAYLOAD_SIZE] */
     const static unsigned int max_frame_payload_size = MAX_FRAME_SIZE - sizeof(RF24NetworkHeader); /* always 24 bytes to compensate for the frame's header */
 
@@ -923,7 +930,7 @@ private:
 #else // Not Linux:
 
     #if defined(DISABLE_USER_PAYLOADS)
-    uint8_t frame_queue[1];  /** Space for a small set of frames that need to be delivered to the app layer */
+    uint8_t frame_queue[1]; /** Space for a small set of frames that need to be delivered to the app layer */
     #else
     uint8_t frame_queue[MAIN_BUFFER_SIZE]; /** Space for a small set of frames that need to be delivered to the app layer */
     #endif
@@ -932,7 +939,7 @@ private:
 
     #if !defined(DISABLE_FRAGMENTATION)
     RF24NetworkFrame frag_queue;                         /* a cache for re-assembling incoming message fragments */
-    uint8_t frag_queue_message_buffer[MAX_PAYLOAD_SIZE]; //frame size + 1
+    uint8_t frag_queue_message_buffer[MAX_PAYLOAD_SIZE]; // frame size + 1
     #endif
 
 #endif // Linux/Not Linux
