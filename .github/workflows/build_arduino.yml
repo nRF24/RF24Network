@@ -75,7 +75,7 @@ jobs:
           - "arduino:avr:chiwawa"
           - "arduino:avr:one"
           - "arduino:avr:unowifi"
-          - "arduino:mbed:nano33ble"
+          # - "arduino:mbed:nano33ble" pending nRF5x integration (see #200)
           - "arduino:samd:mkr1000"
           - "arduino:samd:mkrwifi1010"
           - "arduino:samd:nano_33_iot"
@@ -119,6 +119,8 @@ jobs:
           libraries: |
             - name: RF24
             - source-path: ./
+          # - source-url: https://github.com/TMRh20/nrf_to_nrf.git
+          #   version: v1.0
           fqbn: ${{ matrix.fqbn }}
           enable-deltas-report: ${{ matrix.enable-deltas-report }}
           sketches-report-path: ${{ env.SKETCHES_REPORTS }}

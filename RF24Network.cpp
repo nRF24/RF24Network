@@ -447,59 +447,59 @@ uint8_t RF24Network::enqueue(RF24NetworkHeader* header)
             IF_SERIAL_DEBUG_FRAGMENTATION_L2(for (int i = 0; i < frag_queue.message_size; i++) { printf_P(PSTR("%02x"), frag_queue.message_buffer[i]); });
             return true;
         }
-        else // NETWORK_MORE_FRAGMENTS
-            if (header->type == NETWORK_LAST_FRAGMENT || header->type == NETWORK_MORE_FRAGMENTS) {
+        // else if not first fragment
+        else if (header->type == NETWORK_LAST_FRAGMENT || header->type == NETWORK_MORE_FRAGMENTS) {
 
-                if (frag_queue.message_size + message_size > MAX_PAYLOAD_SIZE) {
+            if (frag_queue.message_size + message_size > MAX_PAYLOAD_SIZE) {
         #if defined(SERIAL_DEBUG_FRAGMENTATION) || defined(SERIAL_DEBUG_MINIMAL)
-                    printf_P(PSTR("Drop frag %d Size exceeds max\n\r"), header->reserved);
+                printf_P(PSTR("Drop frag %d Size exceeds max\n\r"), header->reserved);
         #endif
-                    frag_queue.header.reserved = 0;
-                    return false;
-                }
-                if (frag_queue.header.reserved == 0 || (header->type != NETWORK_LAST_FRAGMENT && header->reserved != frag_queue.header.reserved) || frag_queue.header.id != header->id) {
-        #if defined(SERIAL_DEBUG_FRAGMENTATION) || defined(SERIAL_DEBUG_MINIMAL)
-                    printf_P(PSTR("Drop frag %d Out of order\n\r"), header->reserved);
-        #endif
-                    return false;
-                }
-
-                memcpy(frag_queue.message_buffer + frag_queue.message_size, frame_buffer + sizeof(RF24NetworkHeader), message_size);
-                frag_queue.message_size += message_size;
-
-                if (header->type != NETWORK_LAST_FRAGMENT) {
-                    --frag_queue.header.reserved;
-                    return true;
-                }
                 frag_queue.header.reserved = 0;
-                frag_queue.header.type = header->reserved;
-
-                IF_SERIAL_DEBUG_FRAGMENTATION(printf_P(PSTR("fq 3: %d\n"), frag_queue.message_size););
-                IF_SERIAL_DEBUG_FRAGMENTATION_L2(for (int i = 0; i < frag_queue.message_size; i++) { printf_P(PSTR("%02X"), frag_queue.message_buffer[i]); });
-
-                // Frame assembly complete, copy to main buffer if OK
-                if (frag_queue.header.type == EXTERNAL_DATA_TYPE) {
-                    return 2;
-                }
-        #if defined(DISABLE_USER_PAYLOADS)
-                return 0;
-        #endif
-
-                if ((uint16_t)(MAX_PAYLOAD_SIZE) - (next_frame - frame_queue) >= frag_queue.message_size) {
-                    memcpy(next_frame, &frag_queue, 10);
-                    memcpy(next_frame + 10, frag_queue.message_buffer, frag_queue.message_size);
-                    next_frame += (10 + frag_queue.message_size);
-        #if !defined(ARDUINO_ARCH_AVR)
-                    if (uint8_t padding = (frag_queue.message_size + 10) % 4) {
-                        next_frame += 4 - padding;
-                    }
-        #endif
-                    IF_SERIAL_DEBUG_FRAGMENTATION(printf_P(PSTR("enq size %d\n"), frag_queue.message_size););
-                    return true;
-                }
-                IF_SERIAL_DEBUG_FRAGMENTATION(printf_P(PSTR("Drop frag payload, queue full\n")););
                 return false;
-            } // If more or last fragments
+            }
+            if (frag_queue.header.reserved == 0 || (header->type != NETWORK_LAST_FRAGMENT && header->reserved != frag_queue.header.reserved) || frag_queue.header.id != header->id) {
+        #if defined(SERIAL_DEBUG_FRAGMENTATION) || defined(SERIAL_DEBUG_MINIMAL)
+                printf_P(PSTR("Drop frag %d Out of order\n\r"), header->reserved);
+        #endif
+                return false;
+            }
+
+            memcpy(frag_queue.message_buffer + frag_queue.message_size, frame_buffer + sizeof(RF24NetworkHeader), message_size);
+            frag_queue.message_size += message_size;
+
+            if (header->type != NETWORK_LAST_FRAGMENT) {
+                --frag_queue.header.reserved;
+                return true;
+            }
+            frag_queue.header.reserved = 0;
+            frag_queue.header.type = header->reserved;
+
+            IF_SERIAL_DEBUG_FRAGMENTATION(printf_P(PSTR("fq 3: %d\n"), frag_queue.message_size););
+            IF_SERIAL_DEBUG_FRAGMENTATION_L2(for (int i = 0; i < frag_queue.message_size; i++) { printf_P(PSTR("%02X"), frag_queue.message_buffer[i]); });
+
+            // Frame assembly complete, copy to main buffer if OK
+            if (frag_queue.header.type == EXTERNAL_DATA_TYPE) {
+                return 2;
+            }
+        #if defined(DISABLE_USER_PAYLOADS)
+            return 0;
+        #endif
+
+            if ((uint16_t)(MAX_PAYLOAD_SIZE) - (next_frame - frame_queue) >= frag_queue.message_size) {
+                memcpy(next_frame, &frag_queue, 10);
+                memcpy(next_frame + 10, frag_queue.message_buffer, frag_queue.message_size);
+                next_frame += (10 + frag_queue.message_size);
+        #if !defined(ARDUINO_ARCH_AVR)
+                if (uint8_t padding = (frag_queue.message_size + 10) % 4) {
+                    next_frame += 4 - padding;
+                }
+        #endif
+                IF_SERIAL_DEBUG_FRAGMENTATION(printf_P(PSTR("enq size %d\n"), frag_queue.message_size););
+                return true;
+            }
+            IF_SERIAL_DEBUG_FRAGMENTATION(printf_P(PSTR("Drop frag payload, queue full\n")););
+            return false;
+        } // If more or last fragments
     }
     else // else is not a fragment
     #endif // End fragmentation enabled
