@@ -13,6 +13,11 @@
             "name": "RF24",
             "authors": "nRF24",
             "frameworks": "arduino"
+        },
+        {
+            "name": "nrf_to_nrf",
+            "authors": "TMRh20",
+            "frameworks": "arduino"
         }
     ],
     "export":
