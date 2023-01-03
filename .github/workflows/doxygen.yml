@@ -42,7 +42,7 @@ jobs:
           echo "PROJECT_NUMBER = ${{ steps.latest_ver.outputs.release }}" >> doxygenAction
           echo "@INCLUDE = doxygenAction" >> Doxyfile
       - name: install Doxygen static libclang deps
-        run: sudo apt-get install libclang1-9 libclang-cpp9
+        run: sudo apt-get install libclang1-12 libclang-cpp12
       - name: install doxygen from SF binary archives
         env:
           DOXYGEN_VERSION: '1.9.4'
