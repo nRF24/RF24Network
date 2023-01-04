@@ -1,5 +1,7 @@
 # Comparison to ZigBee
 
+@tableofcontents
+
 This network layer is influenced by the design of ZigBee, but does not implement it
 directly.
 

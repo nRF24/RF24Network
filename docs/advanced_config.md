@@ -1,4 +1,7 @@
 # Advanced Configuration
+
+@tableofcontents
+
 <!-- markdownlint-disable MD033 -->
 RF24Network offers many features, some of which can be configured by editing the RF24Network_config.h file
 

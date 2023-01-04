@@ -1,4 +1,7 @@
 # Addressing Format: Understanding Addressing and Topology
+
+@tableofcontents
+
 <!-- markdownlint-disable MD033 MD032 -->
 An overview of addressing in RF24Network
 

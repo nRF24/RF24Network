@@ -1,4 +1,7 @@
 # Performance and Data Loss: Tuning the Network
+
+@tableofcontents
+
 <!-- markdownlint-disable MD031-->
 Tips and examples for tuning the network and general operation.
 
@@ -44,7 +47,7 @@ In RF24Network, the master is just `00`
 
 ## Multicast
 
-Multicast is enabled by default, which limits the master node to 5 child pipes and other nodes to 4. Nodes are 
+Multicast is enabled by default, which limits the master node to 5 child pipes and other nodes to 4. Nodes are
 arranged in multicast 'levels' with the master node being level 0, nodes 01-05 are level 1, nodes n1-n5 are level 2,
 and so on. The multicast level of each node can be configured as desired by the user, or multicast can be
 disabled by editing RF24Network_config.h. For example, if all nodes are in range of the master node, all nodes can
