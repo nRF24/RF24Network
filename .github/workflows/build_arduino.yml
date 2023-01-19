@@ -12,44 +12,41 @@ on:
       - ".github/workflows/build_arduino.yml"
       - "examples/**"
 
-env:
-  # convenient variable used multiple times
-  SKETCHES_REPORTS: sketches-reports
-
 jobs:
   check_formatting:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v3
-      # Ubuntu 20.04.4 LTS reunners ship with clang-tools v12
-      # - name: Install clang-tools
-      #   uses: KyleMayes/install-llvm-action@v1
-      #   with:
-      #     version: 12
-      - name: Install linter python package
-        run: python3 -m pip install git+https://github.com/cpp-linter/cpp-linter-action@v1
-      - name: run linter as a python package
-        id: linter
-        run: |
-          cpp-linter \
-          --version=12 \
-          --style=file \
-          --tidy-checks='-*' \
-          --files-changed-only='False' \
-          --extensions=ino
-      - name: Linter checks failed?
-        if: steps.linter.outputs.checks-failed > 0
-        run: exit 1
+    uses: nRF24/.github/.github/workflows/cpp_lint.yaml@main
+    with:
+      ignore: '!examples|'
+      extensions: ino
 
   build:
     needs: check_formatting
-    runs-on: ubuntu-latest
-
+    uses: nRF24/.github/.github/workflows/build_arduino.yaml@main
+    with:
+      sketch-paths: |
+        - examples/helloworld_rx
+        - examples/helloworld_rx_advanced
+        - examples/helloworld_tx_advanced
+        - examples/helloworld_tx
+        - examples/Network_Priority_RX
+        - examples/Network_Priority_TX
+      # - examples/Network_Ping
+      # - examples/Network_Ping_Sleep
+      libraries: |
+        - source-url: https://github.com/nRF24/RF24.git
+        - source-path: ./
+      # - source-url: https://github.com/TMRh20/nrf_to_nrf.git
+      #   version: v1.0
+      fqbn: ${{ matrix.fqbn }}
+      enable-deltas-report: ${{ matrix.enable-deltas-report }}
+      platforms: |
+        - name: arduino:avr
+        - name: arduino:megaavr
+        - name: arduino:samd
+        - name: arduino:mbed
+      # - name: arduino:sam
     strategy:
       fail-fast: false
-
       matrix:
         fqbn:
           - "arduino:avr:yun"
@@ -101,50 +98,8 @@ jobs:
           - fqbn: arduino:samd:mkrzero
             enable-deltas-report: true
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Compile examples
-        uses: arduino/compile-sketches@main
-        with:
-          sketch-paths: |
-            - examples/helloworld_rx
-            - examples/helloworld_rx_advanced
-            - examples/helloworld_tx_advanced
-            - examples/helloworld_tx
-            - examples/Network_Priority_RX
-            - examples/Network_Priority_TX
-          # - examples/Network_Ping
-          # - examples/Network_Ping_Sleep
-          libraries: |
-            - name: RF24
-            - source-path: ./
-          # - source-url: https://github.com/TMRh20/nrf_to_nrf.git
-          #   version: v1.0
-          fqbn: ${{ matrix.fqbn }}
-          enable-deltas-report: ${{ matrix.enable-deltas-report }}
-          sketches-report-path: ${{ env.SKETCHES_REPORTS }}
-
-      # This step is needed to pass the size data to the report job 
-      - name: Upload sketches report to workflow artifact
-        if: ${{ matrix.enable-deltas-report }}
-        uses: actions/upload-artifact@v2
-        with:
-          name: ${{ env.SKETCHES_REPORTS }}
-          path: ${{ env.SKETCHES_REPORTS }}
-
   # When using a matrix to compile for multiple boards, it's necessary to use a separate job for the deltas report
   report:
     needs: [build]
     if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download sketches reports artifact
-        uses: actions/download-artifact@v2
-        with:
-          name: ${{ env.SKETCHES_REPORTS }}
-          path: ${{ env.SKETCHES_REPORTS }}
-
-      - uses: arduino/report-size-deltas@v1
-        with:
-          sketches-reports-source: ${{ env.SKETCHES_REPORTS }}
+    uses: nRF24/.github/.github/workflows/arduino_size_deltas.yaml@main

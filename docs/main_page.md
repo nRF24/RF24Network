@@ -1,5 +1,7 @@
 # Network Layer for RF24 Radios
 
+@tableofcontents
+
 This class implements an [OSI Network Layer](http://en.wikipedia.org/wiki/Network_layer) using nRF24L01(+) radios driven
 by the newly optimized [RF24 library fork](http://nRF24.github.com/RF24/).
 
