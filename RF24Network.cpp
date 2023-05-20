@@ -23,7 +23,7 @@
         #include <RF24/RF24.h>
     #endif
 #else
-    #if defined ARDUINO_ARCH_NRF52840 || defined ARDUINO_ARCH_NRF52833
+    #if defined ARDUINO_ARCH_NRF52 || defined ARDUINO_ARCH_NRF52840 || defined ARDUINO_ARCH_NRF52833
         #include <nrf_to_nrf.h>
     #else
         #include "RF24.h"
