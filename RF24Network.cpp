@@ -854,7 +854,8 @@ bool RF24Network::write(uint16_t to_node, uint8_t sendType)
     logicalToPhysicalStruct conversion = {to_node, sendType, 0};
     logicalToPhysicalAddress(&conversion);
 
-    IF_SERIAL_DEBUG(printf_P(PSTR("%u: MAC Sending to 0%o via 0%o on pipe %x\n\r"), millis(), to_node, conversion.send_node, conversion.send_pipe));
+    IF_SERIAL_DEBUG(printf_P(PSTR("%u: "), millis()));
+    IF_SERIAL_DEBUG(printf_P(PSTR("MAC Sending to 0%o via 0%o on pipe %x\n\r"), to_node, conversion.send_node, conversion.send_pipe));
     /**Write it*/
     if (sendType == TX_ROUTED && conversion.send_node == to_node && isAckType) {
         delay(2);
@@ -862,7 +863,8 @@ bool RF24Network::write(uint16_t to_node, uint8_t sendType)
     ok = write_to_pipe(conversion.send_node, conversion.send_pipe, conversion.multicast);
 
     if (!ok) {
-        IF_SERIAL_DEBUG_ROUTING(printf_P(PSTR("%u: MAC Send fail to 0%o via 0%o on pipe %x\n\r"), millis(), to_node, conversion.send_node, conversion.send_pipe););
+        IF_SERIAL_DEBUG_ROUTING(printf_P(PSTR("%u: "), millis()););
+        IF_SERIAL_DEBUG_ROUTING(printf_P(PSTR("MAC Send fail to 0%o via 0%o on pipe %x\n\r"), to_node, conversion.send_node, conversion.send_pipe););
     }
 
     if (sendType == TX_ROUTED && ok && conversion.send_node == to_node && isAckType) {
