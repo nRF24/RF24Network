@@ -169,10 +169,8 @@ uint8_t RF24Network::update(void)
                                  header->toString()));
 #if defined(RF24_LINUX)
         if (frame_size) {
-            IF_SERIAL_DEBUG_FRAGMENTATION_L2(printf_P(PSTR("%u: "), millis()));
-            IF_SERIAL_DEBUG_FRAGMENTATION_L2(printf_P(PSTR("FRG Rcv frame size %i\n"), frame_size););
-            IF_SERIAL_DEBUG_FRAGMENTATION_L2(printf_P(PSTR("%u: "), millis()));
-            IF_SERIAL_DEBUG_FRAGMENTATION_L2(printf_P(PSTR("FRG Rcv frame "); const char* charPtr = reinterpret_cast<const char*>(frame_buffer); for (uint16_t i = 0; i < frame_size; i++) { printf_P(PSTR("%02X "), charPtr[i]); }; printf_P(PSTR("\n\r")));
+            IF_SERIAL_DEBUG_FRAGMENTATION_L2(printf_P(PSTR("%u: FRG Rcv frame size %i\n"), millis(), frame_size););
+            IF_SERIAL_DEBUG_FRAGMENTATION_L2(printf_P(PSTR("%u: FRG Rcv frame "), millis()); const char* charPtr = reinterpret_cast<const char*>(frame_buffer); for (uint16_t i = 0; i < frame_size; i++) { printf_P(PSTR("%02X "), charPtr[i]); }; printf_P(PSTR("\n\r")));
         }
 #else
         IF_SERIAL_DEBUG(printf_P(PSTR("%u: "), millis()));
@@ -290,17 +288,14 @@ uint8_t RF24Network::enqueue(RF24NetworkHeader* header)
     else if (isFragment) {
         // The received frame contains the a fragmented payload
         // Set the more fragments flag to indicate a fragmented frame
-        IF_SERIAL_DEBUG_FRAGMENTATION_L2(printf_P(PSTR("%u: "), millis()));
-        IF_SERIAL_DEBUG_FRAGMENTATION_L2(printf_P(PSTR("FRG Payload type %d of size %i Bytes with fragmentID '%i' received.\n\r"), frame.header.type, frame.message_size, frame.header.reserved););
+        IF_SERIAL_DEBUG_FRAGMENTATION_L2(printf_P(PSTR("%u: FRG Payload type %d of size %i Bytes with fragmentID '%i' received.\n\r"), millis(), frame.header.type, frame.message_size, frame.header.reserved););
         // Append payload
         result = appendFragmentToFrame(frame);
 
         // The header.reserved contains the actual header.type on the last fragment
         if (result && frame.header.type == NETWORK_LAST_FRAGMENT) {
-            IF_SERIAL_DEBUG_FRAGMENTATION(printf_P(PSTR("%u: "), millis()));
-            IF_SERIAL_DEBUG_FRAGMENTATION(printf_P(PSTR("FRG Last fragment received\n")));
-            IF_SERIAL_DEBUG(printf_P(PSTR("%u: "), millis()));
-            IF_SERIAL_DEBUG(printf_P(PSTR("NET Enqueue assembled frame @ %u\n"), frame_queue.size()));
+            IF_SERIAL_DEBUG_FRAGMENTATION(printf_P(PSTR("%u: FRG Last fragment received\n"), millis()));
+            IF_SERIAL_DEBUG(printf_P(PSTR("%u: NET Enqueue assembled frame @ %u\n"), millis(), frame_queue.size()));
 
             RF24NetworkFrame* f = &(frameFragmentsCache[frame.header.from_node]);
 
@@ -321,8 +316,8 @@ uint8_t RF24Network::enqueue(RF24NetworkHeader* header)
     else {
         // if (frame.header.type <= MAX_USER_DEFINED_HEADER_TYPE) {
         // This is not a fragmented payload but a whole frame.
-        IF_SERIAL_DEBUG(printf_P(PSTR("%u: "), millis()));
-        IF_SERIAL_DEBUG(printf_P(PSTR("NET Enqueue @ %u\n"), frame_queue.size()));
+
+        IF_SERIAL_DEBUG(printf_P(PSTR("%u: NET Enqueue @ %u\n"), millis(), frame_queue.size()));
         // Copy the current frame into the frame queue
         result = frame.header.type == EXTERNAL_DATA_TYPE ? 2 : 1;
         // Load external payloads into a separate queue on linux
@@ -376,8 +371,7 @@ bool RF24Network::appendFragmentToFrame(RF24NetworkFrame frame)
         RF24NetworkFrame* f = &(frameFragmentsCache[frame.header.from_node]);
 
         if (f->message_size + frame.message_size > MAX_PAYLOAD_SIZE) {
-            IF_SERIAL_DEBUG_FRAGMENTATION(printf_P(PSTR("%u: "), millis()));
-            IF_SERIAL_DEBUG_FRAGMENTATION(printf_P(PSTR("FRG Frame of size %d plus enqueued frame of size %d exceeds max payload size \n"), frame.message_size, f->message_size););
+            IF_SERIAL_DEBUG_FRAGMENTATION(printf_P(PSTR("%u: FRG Frame of size %d plus enqueued frame of size %d exceeds max payload size \n"), millis(), frame.message_size, f->message_size););
             return false;
         }
 
@@ -389,8 +383,7 @@ bool RF24Network::appendFragmentToFrame(RF24NetworkFrame frame)
             return true;
         }
         else {
-            IF_SERIAL_DEBUG_FRAGMENTATION(printf_P(PSTR("%u: "), millis()));
-            IF_SERIAL_DEBUG_FRAGMENTATION(printf_P(PSTR("FRG Dropping fragment for frame with header id:%d, out of order fragment(s).\n"), frame.header.id););
+            IF_SERIAL_DEBUG_FRAGMENTATION(printf_P(PSTR("%u: FRG Dropping fragment for frame with header id:%d, out of order fragment(s).\n"), millis(), frame.header.id););
             return false;
         }
     }
@@ -404,14 +397,12 @@ bool RF24Network::appendFragmentToFrame(RF24NetworkFrame frame)
         RF24NetworkFrame* f = &(frameFragmentsCache[frame.header.from_node]);
 
         if (f->message_size + frame.message_size > MAX_PAYLOAD_SIZE) {
-            IF_SERIAL_DEBUG_FRAGMENTATION(printf_P(PSTR("%u: "), millis()));
-            IF_SERIAL_DEBUG_FRAGMENTATION(printf_P(PSTR("FRG Frame of size %d plus enqueued frame of size %d exceeds max payload size \n"), frame.message_size, f->message_size););
+            IF_SERIAL_DEBUG_FRAGMENTATION(printf_P(PSTR("%u: FRG Frame of size %d plus enqueued frame of size %d exceeds max payload size \n"), millis(), frame.message_size, f->message_size););
             return false;
         }
         // Error checking for missed fragments and payload size
         if (f->header.reserved - 1 != 1 || f->header.id != frame.header.id) {
-            IF_SERIAL_DEBUG_FRAGMENTATION(printf_P(PSTR("%u: "), millis()));
-            IF_SERIAL_DEBUG_FRAGMENTATION(printf_P(PSTR("FRG Duplicate or out of sequence frame %d, expected %d. Cleared.\n\r"), frame.header.reserved, f->header.reserved););
+            IF_SERIAL_DEBUG_FRAGMENTATION(printf_P(PSTR("%u: FRG Duplicate or out of sequence frame %d, expected %d. Cleared.\n\r"), millis(), frame.header.reserved, f->header.reserved););
             // frameFragmentsCache.erase( std::make_pair(frame.header.id,frame.header.from_node) );
             return false;
         }
@@ -644,10 +635,9 @@ uint16_t RF24Network::read(RF24NetworkHeader& header, void* message, uint16_t ma
     IF_SERIAL_DEBUG(printf_P(PSTR("%u: FRG message size %i\n"), millis(), frame.message_size););
     IF_SERIAL_DEBUG(printf_P(PSTR("%u: FRG message "), millis()); const char* charPtr = reinterpret_cast<const char*>(message); for (uint16_t i = 0; i < bufsize; i++) { printf_P(PSTR("%02X "), charPtr[i]); }; printf(PSTR("\n\r")));
 
-    IF_SERIAL_DEBUG(printf_P(PSTR("%u: "), millis()));
-    IF_SERIAL_DEBUG(printf_P(PSTR("NET read " PRIPSTR
+    IF_SERIAL_DEBUG(printf_P(PSTR("%u: NET read " PRIPSTR
                                   "\n\r"),
-                             header.toString()));
+                             millis(), header.toString()));
 
     frame_queue.pop();
 
@@ -792,7 +782,6 @@ bool RF24Network::write(RF24NetworkHeader& header, const void* message, uint16_t
     networkFlags &= ~FLAG_FAST_FRAG;
 
     // Return true if all the chunks where sent successfully
-
     IF_SERIAL_DEBUG_FRAGMENTATION(printf_P(PSTR("%u: "), millis()));
     IF_SERIAL_DEBUG_FRAGMENTATION(printf_P(PSTR("FRG total message fragments sent %i.\r\n"), msgCount););
     if (!ok || fragment_id > 0) {
