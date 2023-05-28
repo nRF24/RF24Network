@@ -13,7 +13,7 @@
 // instantiate an object for the nRF24L01 transceiver
 RF24 radio(CE_PIN, CSN_PIN);
 
-RF24Network network(radio);
+RF24Network<> network(radio);
 
 // Address of our node in Octal format
 const uint16_t this_node = 00;

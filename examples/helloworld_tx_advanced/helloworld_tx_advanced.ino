@@ -23,7 +23,7 @@
 
 RF24 radio(7, 8);  // nRF24L01(+) radio attached using Getting Started board
 
-RF24Network network(radio);  // Network uses that radio
+RF24Network<> network(radio);  // Network uses that radio
 
 const uint16_t this_node = 01;   // Address of our node in Octal format
 const uint16_t other_node = 00;  // Address of the other node in Octal format

@@ -68,7 +68,7 @@ uint8_t NODE_ADDRESS = 0;  // Use numbers 0 through to select an address from th
 
 
 RF24 radio(7, 8);  // CE & CS pins to use (Using 7,8 on Uno,Nano)
-RF24Network network(radio);
+RF24Network<> network(radio);
 
 uint16_t this_node;  // Our node address
 
