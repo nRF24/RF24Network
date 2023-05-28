@@ -214,6 +214,9 @@
 #define FLAG_NO_POLL 8
 
 class RF24;
+#ifdef ARDUINO_ARCH_NRF52
+class nrf_to_nrf;
+#endif
 
 /**
  * Header which is sent with each message
@@ -371,6 +374,7 @@ struct RF24NetworkFrame
  * This class implements an OSI Network Layer using nRF24L01(+) radios driven
  * by RF24 library.
  */
+template<class ESB_Radio = RF24>
 class RF24Network
 {
 
@@ -385,9 +389,13 @@ public:
     /**
      * Construct the network
      *
+     * @tparam ESB_Radio The `radio` object's type. Defaults to `RF24` for legacy behavior.
+     * This new abstraction is really meant for using the nRF52840 SoC as a drop-in replacement
+     * for the nRF24L01 radio. For more detail, see the
+     * [nrf_to_nrf Arduino library](https://github.com/TMRh20/nrf_to_nrf).
      * @param _radio The underlying radio driver instance
      */
-    RF24Network(RF24& _radio);
+    RF24Network(ESB_Radio& _radio);
 
     /**
      * Bring up the network using the current radio frequency/channel.
@@ -911,7 +919,7 @@ private:
 
     /***********************************************************************/
 
-    RF24& radio; /** Underlying radio driver, provides link/physical layers */
+    ESB_Radio& radio; /** Underlying radio driver, provides link/physical layers */
 
     uint8_t frame_size;                                                                            /* The outgoing frame's total size including the header info. Ranges [8, MAX_PAYLOAD_SIZE] */
     const static unsigned int max_frame_payload_size = MAX_FRAME_SIZE - sizeof(RF24NetworkHeader); /* always 24 bytes to compensate for the frame's header */
