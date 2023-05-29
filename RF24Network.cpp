@@ -24,7 +24,7 @@
     #endif
 #else
     #include "RF24.h"
-    #ifdef ARDUINO_ARCH_NRF52
+    #if defined(ARDUINO_ARCH_NRF52) || defined(ARDUINO_ARCH_NRF52840)
         #include <nrf_to_nrf.h>
     #endif
 #endif
@@ -1288,6 +1288,6 @@ void RF24Network<ESB_Radio>::setup_watchdog(uint8_t prescalar)
 
 // ensure the compiler is aware of the possible datatype for the template class
 template class RF24Network<RF24>;
-#ifdef ARDUINO_ARCH_NRF52
+#if defined(ARDUINO_ARCH_NRF52) || defined(ARDUINO_ARCH_NRF52840)
 template class RF24Network<nrf_to_nrf>;
 #endif

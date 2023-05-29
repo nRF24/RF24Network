@@ -214,7 +214,7 @@
 #define FLAG_NO_POLL 8
 
 class RF24;
-#ifdef ARDUINO_ARCH_NRF52
+#if defined(ARDUINO_ARCH_NRF52) || defined(ARDUINO_ARCH_NRF52840)
 class nrf_to_nrf;
 #endif
 
