@@ -41,7 +41,7 @@ int get_bytes_or_bytearray_ln(bp::object buf)
     return 0;
 }
 
-bp::tuple read_wrap(RF24Network<RF24>& ref, size_t maxlen)
+bp::tuple read_wrap(RF24Network& ref, size_t maxlen)
 {
     RF24NetworkHeader header;
 
@@ -53,7 +53,7 @@ bp::tuple read_wrap(RF24Network<RF24>& ref, size_t maxlen)
     return bp::make_tuple(header, py_ba);
 }
 
-bp::tuple peek_read_wrap(RF24Network<RF24>& ref, size_t maxlen)
+bp::tuple peek_read_wrap(RF24Network& ref, size_t maxlen)
 {
     RF24NetworkHeader header;
     char* buf = new char[maxlen + 1];
@@ -66,13 +66,13 @@ bp::tuple peek_read_wrap(RF24Network<RF24>& ref, size_t maxlen)
     return bp::make_tuple(header, py_ba);
 }
 
-bool write_wrap(RF24Network<RF24>& ref, RF24NetworkHeader& header, bp::object buf)
+bool write_wrap(RF24Network& ref, RF24NetworkHeader& header, bp::object buf)
 {
     return ref.write(header, get_bytes_or_bytearray_str(buf), get_bytes_or_bytearray_ln(buf));
 }
 
 #if defined RF24NetworkMulticast
-bool multicast_wrap(RF24Network<RF24>& ref, RF24NetworkHeader& header, bp::object buf, uint8_t level)
+bool multicast_wrap(RF24Network& ref, RF24NetworkHeader& header, bp::object buf, uint8_t level)
 {
     return ref.multicast(header, get_bytes_or_bytearray_str(buf), get_bytes_or_bytearray_ln(buf), level);
 }
@@ -84,38 +84,38 @@ std::string toString_wrap(RF24NetworkHeader& ref)
 }
 
 // **************** Overload wrappers ********************
-void (RF24Network<RF24>::*begin1)(uint8_t, uint16_t) = &RF24Network<RF24>::begin;
-void (RF24Network<RF24>::*begin2)(uint16_t) = &RF24Network<RF24>::begin;
-uint16_t (RF24Network<RF24>::*peek_header)(RF24NetworkHeader&) = &RF24Network<RF24>::peek;
+void (RF24Network::*begin1)(uint8_t, uint16_t) = &RF24Network::begin;
+void (RF24Network::*begin2)(uint16_t) = &RF24Network::begin;
+uint16_t (RF24Network::*peek_header)(RF24NetworkHeader&) = &RF24Network::peek;
 
 // **************** RF24Network exposed  *****************
 
 BOOST_PYTHON_MODULE(RF24Network)
 {
     //::RF24Network
-    bp::class_<RF24Network<RF24>>("RF24Network", bp::init<RF24&>((bp::arg("_radio"))))
-        .def("available", &RF24Network<RF24>::available)
+    bp::class_<RF24Network>("RF24Network", bp::init<RF24&>((bp::arg("_radio"))))
+        .def("available", &RF24Network::available)
         .def("begin", begin1, (bp::arg("_channel"), bp::arg("_node_address")))
         .def("begin", begin2, (bp::arg("_node_address")))
-        .def("parent", &RF24Network<RF24>::parent)
+        .def("parent", &RF24Network::parent)
         .def("peek", peek_header, (bp::arg("header")))
         .def("peek", &peek_read_wrap, (bp::arg("maxlen") = MAX_PAYLOAD_SIZE))
         .def("read", &read_wrap, (bp::arg("maxlen") = MAX_PAYLOAD_SIZE))
-        .def("update", &RF24Network<RF24>::update)
+        .def("update", &RF24Network::update)
         .def("write", &write_wrap, (bp::arg("header"), bp::arg("buf")))
 
 #if defined RF24NetworkMulticast
 
-        .def("multicastLevel", &RF24Network<RF24>::multicastLevel, (bp::arg("level")))
+        .def("multicastLevel", &RF24Network::multicastLevel, (bp::arg("level")))
         .def("multicast", &multicast_wrap, (bp::arg("header"), bp::arg("buf"), bp::arg("level") = 7))
-        .def_readwrite("multicastRelay", &RF24Network<RF24>::multicastRelay)
+        .def_readwrite("multicastRelay", &RF24Network::multicastRelay)
 #endif // defined RF24NetworkMulticast
 
-        .def("is_valid_address", &RF24Network<RF24>::is_valid_address, (bp::arg("address")))
-        .def_readwrite("txTimeout", &RF24Network<RF24>::txTimeout)
-        .def_readwrite("routeTimeout", &RF24Network<RF24>::routeTimeout)
-        .def_readwrite("networkFlags", &RF24Network<RF24>::networkFlags)
-        .add_property("parent", &RF24Network<RF24>::parent);
+        .def("is_valid_address", &RF24Network::is_valid_address, (bp::arg("address")))
+        .def_readwrite("txTimeout", &RF24Network::txTimeout)
+        .def_readwrite("routeTimeout", &RF24Network::routeTimeout)
+        .def_readwrite("networkFlags", &RF24Network::networkFlags)
+        .add_property("parent", &RF24Network::parent);
 
     // **************** RF24NetworkHeader exposed  *****************
 

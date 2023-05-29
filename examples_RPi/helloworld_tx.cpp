@@ -21,7 +21,7 @@ using namespace std;
 
 RF24 radio(22, 0); // (CE Pin, CSN Pin, [SPI Speed (in Hz)])
 
-RF24Network<> network(radio);
+RF24Network network(radio);
 
 // Address of our node in Octal format (01,021, etc)
 const uint16_t this_node = 01;

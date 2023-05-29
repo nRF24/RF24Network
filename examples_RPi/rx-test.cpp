@@ -17,7 +17,7 @@
 
 RF24 radio(22, 0);
 
-RF24Network<> network(radio);
+RF24Network network(radio);
 
 // Address of our node
 const uint16_t this_node = 00;

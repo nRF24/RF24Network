@@ -19,7 +19,7 @@
 // CE Pin, CSN Pin, SPI Speed (Hz)
 RF24 radio(22, 0);
 
-RF24Network<> network(radio);
+RF24Network network(radio);
 
 // Address of our node in Octal format
 const uint16_t this_node = 00;
