@@ -94,13 +94,13 @@ digit in the address represents a position in the tree further from the base.
 
 ## How routing is handled
 
-When sending a message using ESB_Network::write(), you fill in the header with the logical
+When sending a message using ESBNetwork::write(), you fill in the header with the logical
 node address. The network layer figures out the right path to find that node, and sends
 it through the system until it gets to the right place. This works even if the two nodes
 are far separated, as it will send the message down to the base node, and then back out
 to the final destination.
 
-All of this work is handled by the ESB_Network::update() method, so be sure to call it
+All of this work is handled by the ESBNetwork::update() method, so be sure to call it
 regularly or your network will miss packets.
 
 ## Starting up a node
@@ -119,5 +119,5 @@ You may choose to sleep any nodes on the network if using interrupts. This is us
 case where the nodes are operating on batteries and need to sleep. This greatly decreases
 the power requirements for a sensor network. The leaf nodes can sleep most of the time,
 and wake every few minutes to send in a reading. Routing nodes can be triggered to wake up
-whenever a payload is received See ESB_Network::sleepNode() in the class documentation, and RF24Network_config.h
+whenever a payload is received See ESBNetwork::sleepNode() in the class documentation, and RF24Network_config.h
 to enable sleep mode.

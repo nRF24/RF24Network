@@ -48,16 +48,16 @@ uint16_t RF24NetworkHeader::next_id = 1;
 
 #if defined(RF24_LINUX)
 /******************************************************************/
-template<class ESB_Radio>
-ESB_Network<ESB_Radio>::ESB_Network(ESB_Radio& _radio) : radio(_radio), frame_size(MAX_FRAME_SIZE)
+template<class radio_t>
+ESBNetwork<radio_t>::ESBNetwork(radio_t& _radio) : radio(_radio), frame_size(MAX_FRAME_SIZE)
 {
     networkFlags = 0;
     returnSysMsgs = 0;
     multicastRelay = 0;
 }
 #else
-template<class ESB_Radio>
-ESB_Network<ESB_Radio>::ESB_Network(ESB_Radio& _radio) : radio(_radio), next_frame(frame_queue)
+template<class radio_t>
+ESBNetwork<radio_t>::ESBNetwork(radio_t& _radio) : radio(_radio), next_frame(frame_queue)
 {
     #if !defined(DISABLE_FRAGMENTATION)
     frag_queue.message_buffer = &frag_queue_message_buffer[0];
@@ -70,8 +70,8 @@ ESB_Network<ESB_Radio>::ESB_Network(ESB_Radio& _radio) : radio(_radio), next_fra
 #endif
 /******************************************************************/
 
-template<class ESB_Radio>
-void ESB_Network<ESB_Radio>::begin(uint8_t _channel, uint16_t _node_address)
+template<class radio_t>
+void ESBNetwork<radio_t>::begin(uint8_t _channel, uint16_t _node_address)
 {
     if (!is_valid_address(_node_address))
         return;
@@ -113,8 +113,8 @@ void ESB_Network<ESB_Radio>::begin(uint8_t _channel, uint16_t _node_address)
 #if defined ENABLE_NETWORK_STATS
 /******************************************************************/
 
-template<class ESB_Radio>
-void ESB_Network<ESB_Radio>::failures(uint32_t* _fails, uint32_t* _ok)
+template<class radio_t>
+void ESBNetwork<radio_t>::failures(uint32_t* _fails, uint32_t* _ok)
 {
     *_fails = nFails;
     *_ok = nOK;
@@ -123,8 +123,8 @@ void ESB_Network<ESB_Radio>::failures(uint32_t* _fails, uint32_t* _ok)
 
 /******************************************************************/
 
-template<class ESB_Radio>
-uint8_t ESB_Network<ESB_Radio>::update(void)
+template<class radio_t>
+uint8_t ESBNetwork<radio_t>::update(void)
 {
 
     uint8_t returnVal = 0;
@@ -253,8 +253,8 @@ uint8_t ESB_Network<ESB_Radio>::update(void)
 #if defined(RF24_LINUX)
 /******************************************************************/
 
-template<class ESB_Radio>
-uint8_t ESB_Network<ESB_Radio>::enqueue(RF24NetworkHeader* header)
+template<class radio_t>
+uint8_t ESBNetwork<radio_t>::enqueue(RF24NetworkHeader* header)
 {
     uint8_t result = false;
 
@@ -335,8 +335,8 @@ uint8_t ESB_Network<ESB_Radio>::enqueue(RF24NetworkHeader* header)
 
 /******************************************************************/
 
-template<class ESB_Radio>
-bool ESB_Network<ESB_Radio>::appendFragmentToFrame(RF24NetworkFrame frame)
+template<class radio_t>
+bool ESBNetwork<radio_t>::appendFragmentToFrame(RF24NetworkFrame frame)
 {
 
     // This is the first of 2 or more fragments.
@@ -414,8 +414,8 @@ bool ESB_Network<ESB_Radio>::appendFragmentToFrame(RF24NetworkFrame frame)
 
 /******************************************************************/
 
-template<class ESB_Radio>
-uint8_t ESB_Network<ESB_Radio>::enqueue(RF24NetworkHeader* header)
+template<class radio_t>
+uint8_t ESBNetwork<radio_t>::enqueue(RF24NetworkHeader* header)
 {
     bool result = false;
     uint16_t message_size = frame_size - sizeof(RF24NetworkHeader);
@@ -540,8 +540,8 @@ uint8_t ESB_Network<ESB_Radio>::enqueue(RF24NetworkHeader* header)
 #endif //End not defined RF24_Linux
 /******************************************************************/
 
-template<class ESB_Radio>
-bool ESB_Network<ESB_Radio>::available(void)
+template<class radio_t>
+bool ESBNetwork<radio_t>::available(void)
 {
 #if defined(RF24_LINUX)
     return (!frame_queue.empty());
@@ -553,8 +553,8 @@ bool ESB_Network<ESB_Radio>::available(void)
 
 /******************************************************************/
 
-template<class ESB_Radio>
-uint16_t ESB_Network<ESB_Radio>::parent() const
+template<class radio_t>
+uint16_t ESBNetwork<radio_t>::parent() const
 {
     if (node_address == 0)
         return -1;
@@ -564,8 +564,8 @@ uint16_t ESB_Network<ESB_Radio>::parent() const
 
 /******************************************************************/
 
-template<class ESB_Radio>
-uint16_t ESB_Network<ESB_Radio>::peek(RF24NetworkHeader& header)
+template<class radio_t>
+uint16_t ESBNetwork<radio_t>::peek(RF24NetworkHeader& header)
 {
     if (available()) {
 #if defined(RF24_LINUX)
@@ -585,8 +585,8 @@ uint16_t ESB_Network<ESB_Radio>::peek(RF24NetworkHeader& header)
 
 /******************************************************************/
 
-template<class ESB_Radio>
-void ESB_Network<ESB_Radio>::peek(RF24NetworkHeader& header, void* message, uint16_t maxlen)
+template<class radio_t>
+void ESBNetwork<radio_t>::peek(RF24NetworkHeader& header, void* message, uint16_t maxlen)
 {
     if (available()) {
 #if defined(RF24_LINUX)
@@ -610,8 +610,8 @@ void ESB_Network<ESB_Radio>::peek(RF24NetworkHeader& header, void* message, uint
 
 /******************************************************************/
 
-template<class ESB_Radio>
-uint16_t ESB_Network<ESB_Radio>::read(RF24NetworkHeader& header, void* message, uint16_t maxlen)
+template<class radio_t>
+uint16_t ESBNetwork<radio_t>::read(RF24NetworkHeader& header, void* message, uint16_t maxlen)
 {
     uint16_t bufsize = 0;
 
@@ -666,8 +666,8 @@ uint16_t ESB_Network<ESB_Radio>::read(RF24NetworkHeader& header, void* message, 
 #if defined RF24NetworkMulticast
 /******************************************************************/
 
-template<class ESB_Radio>
-bool ESB_Network<ESB_Radio>::multicast(RF24NetworkHeader& header, const void* message, uint16_t len, uint8_t level)
+template<class radio_t>
+bool ESBNetwork<radio_t>::multicast(RF24NetworkHeader& header, const void* message, uint16_t len, uint8_t level)
 {
     // Fill out the header
     header.to_node = NETWORK_MULTICAST_ADDRESS;
@@ -678,16 +678,16 @@ bool ESB_Network<ESB_Radio>::multicast(RF24NetworkHeader& header, const void* me
 
 /******************************************************************/
 
-template<class ESB_Radio>
-bool ESB_Network<ESB_Radio>::write(RF24NetworkHeader& header, const void* message, uint16_t len)
+template<class radio_t>
+bool ESBNetwork<radio_t>::write(RF24NetworkHeader& header, const void* message, uint16_t len)
 {
     return write(header, message, len, NETWORK_AUTO_ROUTING);
 }
 
 /******************************************************************/
 
-template<class ESB_Radio>
-bool ESB_Network<ESB_Radio>::write(RF24NetworkHeader& header, const void* message, uint16_t len, uint16_t writeDirect)
+template<class radio_t>
+bool ESBNetwork<radio_t>::write(RF24NetworkHeader& header, const void* message, uint16_t len, uint16_t writeDirect)
 {
 
 #if defined(DISABLE_FRAGMENTATION)
@@ -787,8 +787,8 @@ bool ESB_Network<ESB_Radio>::write(RF24NetworkHeader& header, const void* messag
 
 /******************************************************************/
 
-template<class ESB_Radio>
-bool ESB_Network<ESB_Radio>::_write(RF24NetworkHeader& header, const void* message, uint16_t len, uint16_t writeDirect)
+template<class radio_t>
+bool ESBNetwork<radio_t>::_write(RF24NetworkHeader& header, const void* message, uint16_t len, uint16_t writeDirect)
 {
     // Fill out the header
     header.from_node = node_address;
@@ -839,8 +839,8 @@ bool ESB_Network<ESB_Radio>::_write(RF24NetworkHeader& header, const void* messa
 
 /******************************************************************/
 
-template<class ESB_Radio>
-bool ESB_Network<ESB_Radio>::write(uint16_t to_node, uint8_t sendType)
+template<class radio_t>
+bool ESBNetwork<radio_t>::write(uint16_t to_node, uint8_t sendType)
 {
     bool ok = false;
     bool isAckType = false;
@@ -931,8 +931,8 @@ bool ESB_Network<ESB_Radio>::write(uint16_t to_node, uint8_t sendType)
 
 /******************************************************************/
 
-template<class ESB_Radio>
-void ESB_Network<ESB_Radio>::logicalToPhysicalAddress(logicalToPhysicalStruct* conversionInfo)
+template<class radio_t>
+void ESBNetwork<radio_t>::logicalToPhysicalAddress(logicalToPhysicalStruct* conversionInfo)
 {
 
     //Create pointers so this makes sense.. kind of
@@ -976,8 +976,8 @@ void ESB_Network<ESB_Radio>::logicalToPhysicalAddress(logicalToPhysicalStruct* c
 
 /********************************************************/
 
-template<class ESB_Radio>
-bool ESB_Network<ESB_Radio>::write_to_pipe(uint16_t node, uint8_t pipe, bool multicast)
+template<class radio_t>
+bool ESBNetwork<radio_t>::write_to_pipe(uint16_t node, uint8_t pipe, bool multicast)
 {
     bool ok = false;
 
@@ -1021,8 +1021,8 @@ const char* RF24NetworkHeader::toString(void) const
 
 /******************************************************************/
 
-template<class ESB_Radio>
-bool ESB_Network<ESB_Radio>::is_direct_child(uint16_t node)
+template<class radio_t>
+bool ESBNetwork<radio_t>::is_direct_child(uint16_t node)
 {
     // A direct child of ours has the same low numbers as us, and only
     // one higher number.
@@ -1037,16 +1037,16 @@ bool ESB_Network<ESB_Radio>::is_direct_child(uint16_t node)
 
 /******************************************************************/
 
-template<class ESB_Radio>
-bool ESB_Network<ESB_Radio>::is_descendant(uint16_t node)
+template<class radio_t>
+bool ESBNetwork<radio_t>::is_descendant(uint16_t node)
 {
     return (node & node_mask) == node_address;
 }
 
 /******************************************************************/
 
-template<class ESB_Radio>
-void ESB_Network<ESB_Radio>::setup_address(void)
+template<class radio_t>
+void ESBNetwork<radio_t>::setup_address(void)
 {
     // First, establish the node_mask
     uint16_t node_mask_check = 0xFFFF;
@@ -1090,8 +1090,8 @@ void ESB_Network<ESB_Radio>::setup_address(void)
 
 /******************************************************************/
 
-template<class ESB_Radio>
-uint16_t ESB_Network<ESB_Radio>::addressOfPipe(uint16_t node, uint8_t pipeNo)
+template<class radio_t>
+uint16_t ESBNetwork<radio_t>::addressOfPipe(uint16_t node, uint8_t pipeNo)
 {
     //Say this node is 013 (1011), mask is 077 or (00111111)
     //Say we want to use pipe 3 (11)
@@ -1108,8 +1108,8 @@ uint16_t ESB_Network<ESB_Radio>::addressOfPipe(uint16_t node, uint8_t pipeNo)
 
 /******************************************************************/
 
-template<class ESB_Radio>
-uint16_t ESB_Network<ESB_Radio>::direct_child_route_to(uint16_t node)
+template<class radio_t>
+uint16_t ESBNetwork<radio_t>::direct_child_route_to(uint16_t node)
 {
     // Presumes that this is in fact a child!!
     uint16_t child_mask = (node_mask << 3) | 0x07;
@@ -1118,8 +1118,8 @@ uint16_t ESB_Network<ESB_Radio>::direct_child_route_to(uint16_t node)
 
 /******************************************************************/
 
-template<class ESB_Radio>
-bool ESB_Network<ESB_Radio>::is_valid_address(uint16_t node)
+template<class radio_t>
+bool ESBNetwork<radio_t>::is_valid_address(uint16_t node)
 {
     bool result = true;
     if (node == NETWORK_MULTICAST_ADDRESS || node == 010) {
@@ -1150,8 +1150,8 @@ bool ESB_Network<ESB_Radio>::is_valid_address(uint16_t node)
 #if defined(RF24NetworkMulticast)
 /******************************************************************/
 
-template<class ESB_Radio>
-void ESB_Network<ESB_Radio>::multicastLevel(uint8_t level)
+template<class radio_t>
+void ESBNetwork<radio_t>::multicastLevel(uint8_t level)
 {
     _multicast_level = level;
     radio.stopListening();
@@ -1161,8 +1161,8 @@ void ESB_Network<ESB_Radio>::multicastLevel(uint8_t level)
 
 /******************************************************************/
 
-template<class ESB_Radio>
-uint16_t ESB_Network<ESB_Radio>::levelToAddress(uint8_t level)
+template<class radio_t>
+uint16_t ESBNetwork<radio_t>::levelToAddress(uint8_t level)
 {
 
     uint16_t levelAddr = 1;
@@ -1177,8 +1177,8 @@ uint16_t ESB_Network<ESB_Radio>::levelToAddress(uint8_t level)
 #endif // !defined(RF24NetworkMulticast)
 /******************************************************************/
 
-template<class ESB_Radio>
-uint64_t ESB_Network<ESB_Radio>::pipe_address(uint16_t node, uint8_t pipe)
+template<class radio_t>
+uint64_t ESBNetwork<radio_t>::pipe_address(uint16_t node, uint8_t pipe)
 {
 
     static uint8_t address_translation[] = {0xc3, 0x3c, 0x33, 0xce, 0x3e, 0xe3, 0xec};
@@ -1229,8 +1229,8 @@ ISR(WDT_vect)
     --sleep_cycles_remaining;
 }
 
-template<class ESB_Radio>
-bool ESB_Network<ESB_Radio>::sleepNode(unsigned int cycles, int interruptPin, uint8_t INTERRUPT_MODE)
+template<class radio_t>
+bool ESBNetwork<radio_t>::sleepNode(unsigned int cycles, int interruptPin, uint8_t INTERRUPT_MODE)
 {
     sleep_cycles_remaining = cycles;
     set_sleep_mode(SLEEP_MODE_PWR_DOWN); // sleep mode is set here
@@ -1265,8 +1265,8 @@ bool ESB_Network<ESB_Radio>::sleepNode(unsigned int cycles, int interruptPin, ui
     return !wasInterrupted;
 }
 
-template<class ESB_Radio>
-void ESB_Network<ESB_Radio>::setup_watchdog(uint8_t prescalar)
+template<class radio_t>
+void ESBNetwork<radio_t>::setup_watchdog(uint8_t prescalar)
 {
 
     uint8_t wdtcsr = prescalar & 7;
@@ -1287,7 +1287,7 @@ void ESB_Network<ESB_Radio>::setup_watchdog(uint8_t prescalar)
 #endif     // Enable sleep mode
 
 // ensure the compiler is aware of the possible datatype for the template class
-template class ESB_Network<RF24>;
-#if defined(ARDUINO_ARCH_NRF52) || defined(ARDUINO_ARCH_NRF52840)
-template class ESB_Network<nrf_to_nrf>;
+template class ESBNetwork<RF24>;
+#if defined(ARDUINO_ARCH_NRF52) || defined(ARDUINO_ARCH_NRF52840) || defined(ARDUINO_ARCH_NRF52833)
+template class ESBNetwork<nrf_to_nrf>;
 #endif

@@ -214,7 +214,7 @@
 #define FLAG_NO_POLL 8
 
 class RF24;
-#if defined(ARDUINO_ARCH_NRF52) || defined(ARDUINO_ARCH_NRF52840)
+#if defined(ARDUINO_ARCH_NRF52) || defined(ARDUINO_ARCH_NRF52840) || defined(ARDUINO_ARCH_NRF52833)
 class nrf_to_nrf;
 #endif
 
@@ -356,7 +356,7 @@ struct RF24NetworkFrame
      * **Constructor for Arduino/AVR/etc. platforms** - create a network frame with data
      * Frames are constructed and handled differently on Arduino/AVR and Linux devices (`#if defined RF24_LINUX`)
      *
-     * @see ESB_Network.frag_ptr
+     * @see ESBNetwork.frag_ptr
      * @param _header The RF24Network header to be stored in the frame
      * @param _message_size The size of the 'message' or data
      *
@@ -374,13 +374,13 @@ struct RF24NetworkFrame
  * This class implements an OSI Network Layer using nRF24L01(+) radios driven
  * by RF24 library.
  * 
- * @tparam ESB_Radio The `radio` object's type. Defaults to `RF24` for legacy behavior.
+ * @tparam radio_t The `radio` object's type. Defaults to `RF24` for legacy behavior.
  * This new abstraction is really meant for using the nRF52840 SoC as a drop-in replacement
  * for the nRF24L01 radio. For more detail, see the
  * [nrf_to_nrf Arduino library](https://github.com/TMRh20/nrf_to_nrf).
  */
-template<class ESB_Radio = RF24>
-class ESB_Network
+template<class radio_t = RF24>
+class ESBNetwork
 {
 
     /**
@@ -396,7 +396,7 @@ public:
      *
      * @param _radio The underlying radio driver instance
      */
-    ESB_Network(ESB_Radio& _radio);
+    ESBNetwork(radio_t& _radio);
 
     /**
      * Bring up the network using the current radio frequency/channel.
@@ -701,7 +701,7 @@ public:
     /**
      * Bring up the network on a specific radio frequency/channel.
      * @deprecated Use `RF24::setChannel()` to configure the radio channel.
-     * Use ESB_Network::begin(uint16_t _node_address) to set the node address.
+     * Use ESBNetwork::begin(uint16_t _node_address) to set the node address.
      *
      * **Example 1:** Begin on channel 90 with address 0 (master node)
      * @code
@@ -920,7 +920,7 @@ private:
 
     /***********************************************************************/
 
-    ESB_Radio& radio; /** Underlying radio driver, provides link/physical layers */
+    radio_t& radio; /** Underlying radio driver, provides link/physical layers */
 
     uint8_t frame_size;                                                                            /* The outgoing frame's total size including the header info. Ranges [8, MAX_PAYLOAD_SIZE] */
     const static unsigned int max_frame_payload_size = MAX_FRAME_SIZE - sizeof(RF24NetworkHeader); /* always 24 bytes to compensate for the frame's header */
@@ -948,7 +948,7 @@ private:
 
     uint16_t parent_node; /** Our parent's node address */
     uint8_t parent_pipe;  /** The pipe our parent uses to listen to us */
-    uint16_t node_mask;   /** The bits which contain signfificant node address information */
+    uint16_t node_mask;   /** The bits which contain significant node address information */
 
     /* Given the Logical node address & a pipe number, this returns the Physical address assigned to the radio's pipes. */
     uint64_t pipe_address(uint16_t node, uint8_t pipe);
@@ -967,19 +967,19 @@ private:
 };
 
 /**
- * A type definition of the template class `ESB_Network` to maintain backward compatibility.
+ * A type definition of the template class `ESBNetwork` to maintain backward compatibility.
  * 
  * ```.cpp
  * RF24 radio(7, 8);
  * 
  * RF24Network network(radio);
  * // is equivalent to
- * ESB_Network<RF24> network(radio);
+ * ESBNetwork<RF24> network(radio);
  * ```
  */
-typedef ESB_Network<RF24> RF24Network;
-#if defined(ARDUINO_ARCH_NRF52) || defined(ARDUINO_ARCH_NRF52840)
-typedef ESB_Network<nrf_to_nrf> RF52Network;
+typedef ESBNetwork<RF24> RF24Network;
+#if defined(ARDUINO_ARCH_NRF52) || defined(ARDUINO_ARCH_NRF52840) || defined(ARDUINO_ARCH_NRF52833)
+typedef ESBNetwork<nrf_to_nrf> RF52Network;
 #endif
 
 /**
