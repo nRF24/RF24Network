@@ -393,6 +393,12 @@ class ESBNetwork
 public:
     /**
      * Construct the network
+     * 
+     * V2.0 supports a backward compatible constructor:
+     * @code 
+     * RF24Network network(radio);
+     * RF52Network network(radio);
+     * @endcode     
      *
      * @param _radio The underlying radio driver instance
      */
