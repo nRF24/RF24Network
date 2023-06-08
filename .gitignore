@@ -19,6 +19,7 @@ build/
 *CMakeUserPresets*.json
 *.tar.gz
 *env/
+*.egg-info/
 
 # Cmake build-in-source generated stuff
 CMakeCache.txt

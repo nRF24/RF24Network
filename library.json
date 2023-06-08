@@ -1,6 +1,6 @@
 {
     "name": "RF24Network",
-    "version": "1.0.18",
+    "version": "2.0.0",
     "keywords": "rf, radio, wireless, spi",
     "description": "OSI Layer 3 Networking for nrf24L01(+) devices.",
     "license": "GPL-2.0-only",
@@ -17,7 +17,8 @@
         {
             "name": "nrf_to_nrf",
             "authors": "TMRh20",
-            "frameworks": "arduino"
+            "frameworks": "arduino",
+            "platforms":["nordicnrf52"]
         }
     ],
     "export":
@@ -40,6 +41,7 @@
         "atmelmegaavr",
         "espressif32",
         "espressif8266",
-        "ststm32"
+        "ststm32",
+        "nordicnrf52"
     ]
 }

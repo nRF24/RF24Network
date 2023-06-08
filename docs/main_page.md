@@ -26,7 +26,34 @@ common communication scenarios.
 Please see [TMRh20's blog post](https://tmrh20.blogspot.com/2019/05/comparative-performance-analysis.html)
 for a comparison against the ZigBee protocols
 
-## News
+## News - 2023 API Changes
+Introducing **RF24Network & RF24Mesh v2.0** with some *significant API changes*, adding the use of [C++ Templates](https://cplusplus.com/doc/oldtutorial/templates/)
+in order to support a range of ESB enabled radios, most recently NRF52x radios.
+
+**Important Notes:**
+- Any network layer that uses v2 needs to have RF24Network/RF24Mesh dependencies of v2 or newer. RF24 v1.x is an exception here.
+- General usage should remain backward compatible, see the included examples of the related libraries for more info
+- Any third party libs that extend the network/mesh layer may also need to be updated to incorporate the new templated class prototypes:
+```cpp
+template<class radio_t>
+class ESBNetwork;
+  
+template<class network_t, class radio_t>
+class ESBMesh;
+```
+- Third party libs should also be able to use the backward-compatible typedef in their template:
+  - ESBGateway.h:
+  ```cpp
+  template<typename network_t, typename mesh_t>
+  class ESBGateway
+  ```
+  and inform the compiler what types they intend to support:
+  - ESBGateway.cpp:
+  ```cpp
+  template class ESBGateway<RF24Network, RF24Mesh>;
+  ```  
+- The auto installers do not perform a version check like package managers, so having the correct versions of the software is important.
+- We *will* be maintaining the v1.x versions with bugfixes etc for those who cannot or do not wish to migrate to the newer template approach.
 
 Please see the recent changes listed in [the github releases page](https://github.com/nRF24/RF24Network/releases)
 
@@ -56,12 +83,11 @@ Please see the recent changes listed in [the github releases page](https://githu
 - [Advanced Configuration Options](md_docs_advanced_config.html)
 - [Addressing format](md_docs_addressing.html)
 - [Topology and Overview](md_docs_tuning.html)
-- [Download Current Development Package](https://github.com/TMRh20/RF24Network/archive/Development.zip)
 - [Examples Page](examples.html). Start with `helloworld_*` examples.
 
 ### Additional Information & Add-ons
 
-- [RF24Mesh: Dynamic Mesh Layer for RF24Network Dev](https://github.com/nRF24/RF24Mesh)
+- [RF24Mesh: Dynamic Mesh Layer for RF24Network](https://github.com/nRF24/RF24Mesh)
 - [RF24Ethernet: TCP/IP over RF24Network](https://github.com/nRF24/RF24Ethernet)
 - [TMRh20's Blog: RF24 Optimization Overview](http://tmrh20.blogspot.com/2014/03/high-speed-data-transfers-and-wireless.html)
 - [TMRh20's Blog: RF24 Wireless Audio](http://tmrh20.blogspot.com/2014/03/arduino-radiointercomwireless-audio.html)
@@ -94,13 +120,13 @@ digit in the address represents a position in the tree further from the base.
 
 ## How routing is handled
 
-When sending a message using RF24Network::write(), you fill in the header with the logical
+When sending a message using ESBNetwork::write(), you fill in the header with the logical
 node address. The network layer figures out the right path to find that node, and sends
 it through the system until it gets to the right place. This works even if the two nodes
 are far separated, as it will send the message down to the base node, and then back out
 to the final destination.
 
-All of this work is handled by the RF24Network::update() method, so be sure to call it
+All of this work is handled by the ESBNetwork::update() method, so be sure to call it
 regularly or your network will miss packets.
 
 ## Starting up a node
@@ -119,5 +145,5 @@ You may choose to sleep any nodes on the network if using interrupts. This is us
 case where the nodes are operating on batteries and need to sleep. This greatly decreases
 the power requirements for a sensor network. The leaf nodes can sleep most of the time,
 and wake every few minutes to send in a reading. Routing nodes can be triggered to wake up
-whenever a payload is received See RF24Network::sleepNode() in the class documentation, and RF24Network_config.h
+whenever a payload is received See ESBNetwork::sleepNode() in the class documentation, and RF24Network_config.h
 to enable sleep mode.

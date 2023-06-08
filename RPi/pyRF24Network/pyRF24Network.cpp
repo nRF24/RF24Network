@@ -4,7 +4,7 @@
 
 namespace bp = boost::python;
 
-// **************** expicit wrappers *****************
+// **************** explicit wrappers *****************
 // where needed, especially where buffer is involved
 
 void throw_ba_exception(void)
@@ -83,76 +83,39 @@ std::string toString_wrap(RF24NetworkHeader& ref)
     return std::string(ref.toString());
 }
 
+// **************** Overload wrappers ********************
+void (RF24Network::*begin1)(uint8_t, uint16_t) = &RF24Network::begin;
+void (RF24Network::*begin2)(uint16_t) = &RF24Network::begin;
+uint16_t (RF24Network::*peek_header)(RF24NetworkHeader&) = &RF24Network::peek;
+
 // **************** RF24Network exposed  *****************
 
 BOOST_PYTHON_MODULE(RF24Network)
 {
-    { //::RF24Network
-        typedef bp::class_<RF24Network> RF24Network_exposer_t;
-        RF24Network_exposer_t RF24Network_exposer = RF24Network_exposer_t("RF24Network", bp::init<RF24&>((bp::arg("_radio"))));
-        bp::scope RF24Network_scope(RF24Network_exposer);
-        bp::implicitly_convertible<RF24&, RF24Network>();
-        { //::RF24Network::available
-            typedef bool (::RF24Network::*available_function_type)();
-            RF24Network_exposer.def("available", available_function_type(&::RF24Network::available));
-        }
-        { //::RF24Network::begin (marked as deprecated)
-            typedef void (::RF24Network::*begin_function_type)(::uint8_t, ::uint16_t);
-            RF24Network_exposer.def("begin", begin_function_type(&::RF24Network::begin), (bp::arg("_channel"), bp::arg("_node_address")));
-        }
-        { //::RF24Network::begin
-            typedef void (::RF24Network::*begin_function_type)(::uint16_t);
-            RF24Network_exposer.def("begin", begin_function_type(&::RF24Network::begin), (bp::arg("_node_address")));
-        }
-        { //::RF24Network::parent
-            typedef ::uint16_t (::RF24Network::*parent_function_type)() const;
-            RF24Network_exposer.def("parent", parent_function_type(&::RF24Network::parent));
-        }
-        { //::RF24Network::peek
-            typedef uint16_t (::RF24Network::*peek_header)(::RF24NetworkHeader&);
-            RF24Network_exposer.def("peek", peek_header(&::RF24Network::peek), (bp::arg("header")));
-        }
-        { //::RF24Network::peek
-            typedef bp::tuple (*peek_frame)(::RF24Network&, size_t);
-            RF24Network_exposer.def("peek", peek_frame(&peek_read_wrap), (bp::arg("maxlen") = MAX_PAYLOAD_SIZE));
-        }
-        { //::RF24Network::read
-            typedef bp::tuple (*read_function_type)(::RF24Network&, size_t);
-            RF24Network_exposer.def(
-                "read",
-                // read_function_type( &::RF24Network::read ),
-                read_function_type(&read_wrap), (bp::arg("maxlen") = MAX_PAYLOAD_SIZE));
-        }
-        { //::RF24Network::update
-            typedef void (::RF24Network::*update_function_type)();
-            RF24Network_exposer.def("update", update_function_type(&::RF24Network::update));
-        }
-        { //::RF24Network::write
-            typedef bool (*write_function_type)(::RF24Network&, ::RF24NetworkHeader&, bp::object);
-            RF24Network_exposer.def("write", write_function_type(&write_wrap), (bp::arg("header"), bp::arg("buf")));
-        }
+    //::RF24Network
+    bp::class_<RF24Network>("RF24Network", bp::init<RF24&>((bp::arg("_radio"))))
+        .def("available", &RF24Network::available)
+        .def("begin", begin1, (bp::arg("_channel"), bp::arg("_node_address")))
+        .def("begin", begin2, (bp::arg("_node_address")))
+        .def("parent", &RF24Network::parent)
+        .def("peek", peek_header, (bp::arg("header")))
+        .def("peek", &peek_read_wrap, (bp::arg("maxlen") = MAX_PAYLOAD_SIZE))
+        .def("read", &read_wrap, (bp::arg("maxlen") = MAX_PAYLOAD_SIZE))
+        .def("update", &RF24Network::update)
+        .def("write", &write_wrap, (bp::arg("header"), bp::arg("buf")))
 
 #if defined RF24NetworkMulticast
-        { //::RF24Network::multicastLevel
-            typedef void (::RF24Network::*multicastLevel_function_type)(::uint16_t);
-            RF24Network_exposer.def("multicastLevel", multicastLevel_function_type(&::RF24Network::multicastLevel), (bp::arg("level")));
-        }
-        { //::RF24Network::multicast
-            typedef bool (*multicast_function_type)(::RF24Network&, ::RF24NetworkHeader&, bp::object, ::uint16_t);
-            RF24Network_exposer.def("multicast", multicast_function_type(&multicast_wrap), (bp::arg("header"), bp::arg("buf"), bp::arg("level") = 7));
-        }
-        RF24Network_exposer.def_readwrite("multicastRelay", &RF24Network::multicastRelay);
+
+        .def("multicastLevel", &RF24Network::multicastLevel, (bp::arg("level")))
+        .def("multicast", &multicast_wrap, (bp::arg("header"), bp::arg("buf"), bp::arg("level") = 7))
+        .def_readwrite("multicastRelay", &RF24Network::multicastRelay)
 #endif // defined RF24NetworkMulticast
 
-        { //::RF24Network::is_valid_address
-            typedef bool (::RF24Network::*isAddressValid_function_type)(::uint16_t);
-            RF24Network_exposer.def("is_valid_address", isAddressValid_function_type(&::RF24Network::is_valid_address), (bp::arg("address")));
-        }
-        RF24Network_exposer.def_readwrite("txTimeout", &RF24Network::txTimeout);
-        RF24Network_exposer.def_readwrite("routeTimeout", &RF24Network::routeTimeout);
-        RF24Network_exposer.def_readwrite("networkFlags", &RF24Network::networkFlags);
-        RF24Network_exposer.add_property("parent", &RF24Network::parent);
-    }
+        .def("is_valid_address", &RF24Network::is_valid_address, (bp::arg("address")))
+        .def_readwrite("txTimeout", &RF24Network::txTimeout)
+        .def_readwrite("routeTimeout", &RF24Network::routeTimeout)
+        .def_readwrite("networkFlags", &RF24Network::networkFlags)
+        .add_property("parent", &RF24Network::parent);
 
     // **************** RF24NetworkHeader exposed  *****************
 

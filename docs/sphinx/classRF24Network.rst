@@ -1,9 +1,16 @@
-RF24Network class
+ESBNetwork class
 ~~~~~~~~~~~~~~~~~
 
-.. cpp:class:: RF24Network
+.. doxygentypedef:: RF24Network
 
-    .. doxygenfunction:: RF24Network::RF24Network
+.. cpp:class:: template <class radio_t = RF24> ESBNetwork
+
+    :tparam radio_t: The ``radio`` object's type. Defaults to :class:`RF24` for legacy behavior.
+        This new abstraction is really meant for using the nRF52840 SoC as a drop-in replacement
+        for the nRF24L01 radio. For more detail, see the
+        `nrf_to_nrf Arduino library <https://github.com/TMRh20/nrf_to_nrf>`_.
+
+    .. doxygenfunction:: ESBNetwork::ESBNetwork
 
     .. seealso::
         Use the :class:`RF24` class to create the radio object.
@@ -11,55 +18,55 @@ RF24Network class
 Basic API
 ============
 
-.. doxygenfunction:: RF24Network::begin (uint16_t _node_address)
+.. doxygenfunction:: ESBNetwork::begin (uint16_t _node_address)
 
 .. seealso:: :external:cpp:func:`RF24::begin()`
 
-.. doxygenfunction:: RF24Network::begin (uint8_t channel, uint16_t _node_address)
+.. doxygenfunction:: ESBNetwork::begin (uint8_t channel, uint16_t _node_address)
 
 .. seealso:: :external:cpp:func:`RF24::begin()`
 
-.. doxygenfunction:: RF24Network::update
-.. doxygenfunction:: RF24Network::available
-.. doxygenfunction:: RF24Network::read
-.. doxygenfunction:: RF24Network::write (RF24NetworkHeader &header, const void *message, uint16_t len)
-.. doxygenfunction:: RF24Network::peek (RF24NetworkHeader &header)
-.. doxygenfunction:: RF24Network::peek (RF24NetworkHeader &header, void *message, uint16_t maxlen=MAX_PAYLOAD_SIZE)
+.. doxygenfunction:: ESBNetwork::update
+.. doxygenfunction:: ESBNetwork::available
+.. doxygenfunction:: ESBNetwork::read
+.. doxygenfunction:: ESBNetwork::write (RF24NetworkHeader &header, const void *message, uint16_t len)
+.. doxygenfunction:: ESBNetwork::peek (RF24NetworkHeader &header)
+.. doxygenfunction:: ESBNetwork::peek (RF24NetworkHeader &header, void *message, uint16_t maxlen=MAX_PAYLOAD_SIZE)
 
 Advanced API
 ============
 
-.. doxygenfunction:: RF24Network::failures
-.. doxygenfunction:: RF24Network::multicast
-.. doxygenfunction:: RF24Network::write (RF24NetworkHeader &header, const void *message, uint16_t len, uint16_t writeDirect)
-.. doxygenfunction:: RF24Network::sleepNode
-.. doxygenfunction:: RF24Network::parent
-.. doxygenfunction:: RF24Network::addressOfPipe
-.. doxygenfunction:: RF24Network::is_valid_address
+.. doxygenfunction:: ESBNetwork::failures
+.. doxygenfunction:: ESBNetwork::multicast
+.. doxygenfunction:: ESBNetwork::write (RF24NetworkHeader &header, const void *message, uint16_t len, uint16_t writeDirect)
+.. doxygenfunction:: ESBNetwork::sleepNode
+.. doxygenfunction:: ESBNetwork::parent
+.. doxygenfunction:: ESBNetwork::addressOfPipe
+.. doxygenfunction:: ESBNetwork::is_valid_address
 
 Configuration API
 ==================
 
-.. doxygenvariable:: RF24Network::multicastRelay
-.. doxygenvariable:: RF24Network::txTimeout
-.. doxygenvariable:: RF24Network::routeTimeout
-.. doxygenfunction:: RF24Network::multicastLevel
-.. doxygenfunction:: RF24Network::setup_watchdog
+.. doxygenvariable:: ESBNetwork::multicastRelay
+.. doxygenvariable:: ESBNetwork::txTimeout
+.. doxygenvariable:: ESBNetwork::routeTimeout
+.. doxygenfunction:: ESBNetwork::multicastLevel
+.. doxygenfunction:: ESBNetwork::setup_watchdog
 
 External Applications/Systems
 =============================
 
 Interface for External Applications and Systems (RF24Mesh, RF24Ethernet)
 
-.. doxygenvariable:: RF24Network::frame_buffer
-.. doxygenvariable:: RF24Network::external_queue
-.. doxygenvariable:: RF24Network::frag_ptr
-.. doxygenvariable:: RF24Network::returnSysMsgs
-.. doxygenvariable:: RF24Network::networkFlags
+.. doxygenvariable:: ESBNetwork::frame_buffer
+.. doxygenvariable:: ESBNetwork::external_queue
+.. doxygenvariable:: ESBNetwork::frag_ptr
+.. doxygenvariable:: ESBNetwork::returnSysMsgs
+.. doxygenvariable:: ESBNetwork::networkFlags
 
 Protected Members
 -----------------
-These members are accessible by RF24Network derivatives.
+These members are accessible by ESBNetwork derivatives.
 
-.. doxygenvariable:: RF24Network::_multicast_level
-.. doxygenvariable:: RF24Network::node_address
+.. doxygenvariable:: ESBNetwork::_multicast_level
+.. doxygenvariable:: ESBNetwork::node_address
