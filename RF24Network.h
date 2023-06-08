@@ -373,7 +373,7 @@ struct RF24NetworkFrame
  *
  * This class implements an OSI Network Layer using nRF24L01(+) radios driven
  * by RF24 library.
- * 
+ *
  * @tparam radio_t The `radio` object's type. Defaults to `RF24` for legacy behavior.
  * This new abstraction is really meant for using the nRF52840 SoC as a drop-in replacement
  * for the nRF24L01 radio. For more detail, see the
@@ -393,13 +393,19 @@ class ESBNetwork
 public:
     /**
      * Construct the network
-     * 
-     * V2.0 supports a backward compatible constructor:
-     * @code 
-     * RF24Network network(radio);
-     * RF52Network network(radio);
-     * @endcode     
      *
+     * v2.0 supports a backward compatible constructor:
+     * @code
+     * RF24 radio(7, 8);
+     * RF24Network network(radio); // for nRF24L01
+     *
+     * nrf_to_nrf radio1;
+     * RF52Network network(radio1); // for nRF52xxx family
+     * @endcode
+     * 
+     * @see v2.0 supports [nrf_to_nrf Arduino library](https://github.com/TMRh20/nrf_to_nrf)
+     * for nrf52 chips' internal radio.
+     * 
      * @param _radio The underlying radio driver instance
      */
     ESBNetwork(radio_t& _radio);
@@ -974,10 +980,10 @@ private:
 
 /**
  * A type definition of the template class `ESBNetwork` to maintain backward compatibility.
- * 
+ *
  * ```.cpp
  * RF24 radio(7, 8);
- * 
+ *
  * RF24Network network(radio);
  * // is equivalent to
  * ESBNetwork<RF24> network(radio);

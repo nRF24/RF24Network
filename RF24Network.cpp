@@ -798,7 +798,7 @@ bool ESBNetwork<radio_t>::_write(RF24NetworkHeader& header, const void* message,
 
     //IF_SERIAL_DEBUG(printf_P(PSTR("NET Sending " PRIPSTR
     //                              "\n\r"),
-    //                        header.toString()));
+    //                         header.toString()));
     if (len) {
 #if defined(RF24_LINUX)
         memcpy(frame_buffer + sizeof(RF24NetworkHeader), message, rf24_min(frame_size - sizeof(RF24NetworkHeader), len));
