@@ -13,7 +13,7 @@ var searchData=
   ['network_5fping_10',['NETWORK_PING',['../group__DEFINED__TYPES.html#gae678555396e5ea61506a0484cb2e0260',1,'RF24Network.h']]],
   ['network_5fpoll_11',['NETWORK_POLL',['../group__DEFINED__TYPES.html#ga8cbda56553334074392866d4b8359388',1,'RF24Network.h']]],
   ['network_5freq_5faddress_12',['NETWORK_REQ_ADDRESS',['../group__DEFINED__TYPES.html#gadb43d169421055bc8a3e7da428da1c30',1,'RF24Network.h']]],
-  ['networkflags_13',['networkFlags',['../classRF24Network.html#a476806538919b167465181ab872e0cad',1,'RF24Network']]],
+  ['networkflags_13',['networkFlags',['../classESBNetwork.html#a9d4ab7fc671cdb2573535bfd0c9e2050',1,'ESBNetwork']]],
   ['next_5fid_14',['next_id',['../structRF24NetworkHeader.html#af02a00fa410f6c34bb395f7d0afe2bfd',1,'RF24NetworkHeader']]],
-  ['node_5faddress_15',['node_address',['../classRF24Network.html#a17017b584633bb969d004c4c43ca5c82',1,'RF24Network']]]
+  ['node_5faddress_15',['node_address',['../classESBNetwork.html#a3e5aa077d46a74acd31ca5242bb0c0a4',1,'ESBNetwork']]]
 ];

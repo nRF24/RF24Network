@@ -23,7 +23,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">Newly Optimized RF24Network Layer<span id="projectnumber">&#160;v1.0.19</span>
+   <div id="projectname">Newly Optimized RF24Network Layer<span id="projectnumber">&#160;v2.0.0</span>
    </div>
    <div id="projectbrief">2020 - Optimized RF24 Network Layer for NRF24L01 radios</div>
   </td>
@@ -74,7 +74,8 @@ $(function() {
 <div class="header">
   <div class="summary">
 <a href="#nested-classes">Classes</a> &#124;
-<a href="#define-members">Macros</a>  </div>
+<a href="#define-members">Macros</a> &#124;
+<a href="#typedef-members">Typedefs</a>  </div>
   <div class="headertitle"><div class="title">RF24Network.h File Reference</div></div>
 </div><!--header-->
 <div class="contents">
@@ -90,7 +91,7 @@ Classes</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structRF24NetworkFrame.html">RF24NetworkFrame</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classRF24Network.html">RF24Network</a></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classESBNetwork.html">ESBNetwork&lt; radio_t &gt;</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="define-members" name="define-members"></a>
@@ -139,9 +140,14 @@ Macros</h2></td></tr>
 <tr class="separator:a00fc52e4f9f6e4716c365bf201163b7e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4b3df085f3e9afddfa6d9647cd142c44"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="RF24Network_8h.html#a4b3df085f3e9afddfa6d9647cd142c44">FLAG_NO_POLL</a>&#160;&#160;&#160;8</td></tr>
 <tr class="separator:a4b3df085f3e9afddfa6d9647cd142c44"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="typedef-members" name="typedef-members"></a>
+Typedefs</h2></td></tr>
+<tr class="memitem:a014b0acbf07d381d57645ae9153288b6"><td class="memItemLeft" align="right" valign="top">typedef <a class="el" href="classESBNetwork.html">ESBNetwork</a>&lt; RF24 &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="RF24Network_8h.html#a014b0acbf07d381d57645ae9153288b6">RF24Network</a></td></tr>
+<tr class="separator:a014b0acbf07d381d57645ae9153288b6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Class declaration for <a class="el" href="classRF24Network.html">RF24Network</a> </p>
+<div class="textblock"><p>Class declaration for RF24Network </p>
 </div><h2 class="groupheader">Macro Definition Documentation</h2>
 <a id="a09198484bcfa0f13c7499304ce8bb6a7" name="a09198484bcfa0f13c7499304ce8bb6a7"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a09198484bcfa0f13c7499304ce8bb6a7">&#9670;&#160;</a></span>MIN_USER_DEFINED_HEADER_TYPE</h2>
@@ -294,7 +300,7 @@ Macros</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>A sentinel value signifying that the current radio channel should be unchanged when setting up the network node with <a class="el" href="classRF24Network.html#abf0da46b2e78b2010171c9f20cba8bae">RF24Network::begin(uint8_t _channel, uint16_t _node_address)</a>. </p>
+<p>A sentinel value signifying that the current radio channel should be unchanged when setting up the network node with <a class="el" href="classESBNetwork.html#ab2bf0e2d6c4e5b976f7d0f10c5789f2b">RF24Network::begin(uint8_t _channel, uint16_t _node_address)</a>. </p>
 
 </div>
 </div>
@@ -309,7 +315,7 @@ Macros</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>This flag (when asserted in <a class="el" href="classRF24Network.html#a476806538919b167465181ab872e0cad">RF24Network::networkFlags</a>) prevents repetitively configuring the radio during transmission of fragmented messages. </p>
+<p>This flag (when asserted in <a class="el" href="classESBNetwork.html#a9d4ab7fc671cdb2573535bfd0c9e2050">RF24Network::networkFlags</a>) prevents repetitively configuring the radio during transmission of fragmented messages. </p>
 
 </div>
 </div>
@@ -324,14 +330,36 @@ Macros</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>This flag (when asserted in <a class="el" href="classRF24Network.html#a476806538919b167465181ab872e0cad">RF24Network::networkFlags</a>) prevents a node from responding to mesh nodes looking to connect to the network. Calling RF24Mesh::setChild() uses this flag accordingly. </p>
+<p>This flag (when asserted in <a class="el" href="classESBNetwork.html#a9d4ab7fc671cdb2573535bfd0c9e2050">RF24Network::networkFlags</a>) prevents a node from responding to mesh nodes looking to connect to the network. Calling RF24Mesh::setChild() uses this flag accordingly. </p>
 
+</div>
+</div>
+<h2 class="groupheader">Typedef Documentation</h2>
+<a id="a014b0acbf07d381d57645ae9153288b6" name="a014b0acbf07d381d57645ae9153288b6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a014b0acbf07d381d57645ae9153288b6">&#9670;&#160;</a></span>RF24Network</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">typedef <a class="el" href="classESBNetwork.html">ESBNetwork</a>&lt;RF24&gt; <a class="el" href="RF24Network_8h.html#a014b0acbf07d381d57645ae9153288b6">RF24Network</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>A type definition of the template class <code><a class="el" href="classESBNetwork.html">ESBNetwork</a></code> to maintain backward compatibility.</p>
+<div class="fragment"><div class="line">RF24 radio(7, 8);</div>
+<div class="line"> </div>
+<div class="line"><a class="code hl_class" href="classESBNetwork.html">RF24Network</a> network(radio);</div>
+<div class="line"><span class="comment">// is equivalent to</span></div>
+<div class="line"><a class="code hl_class" href="classESBNetwork.html">ESBNetwork&lt;RF24&gt;</a> network(radio);</div>
+<div class="ttc" id="aclassESBNetwork_html"><div class="ttname"><a href="classESBNetwork.html">ESBNetwork</a></div><div class="ttdef"><b>Definition:</b> RF24Network.h:384</div></div>
+</div><!-- fragment --> 
 </div>
 </div>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Wed Jun 21 2023 06:57:48 for Newly Optimized RF24Network Layer by&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.6
+Generated on Thu Jun 22 2023 11:22:51 for Newly Optimized RF24Network Layer by&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.6
 </small></address>
 </body>
 </html>

@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.6"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Newly Optimized RF24Network Layer: RF24Network Class Reference</title>
+<title>Newly Optimized RF24Network Layer: ESBNetwork&lt; radio_t &gt; Class Template Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -23,7 +23,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">Newly Optimized RF24Network Layer<span id="projectnumber">&#160;v1.0.19</span>
+   <div id="projectname">Newly Optimized RF24Network Layer<span id="projectnumber">&#160;v2.0.0</span>
    </div>
    <div id="projectbrief">2020 - Optimized RF24 Network Layer for NRF24L01 radios</div>
   </td>
@@ -74,8 +74,8 @@ $(function() {
 <div class="header">
   <div class="summary">
 <a href="#nested-classes">Classes</a> &#124;
-<a href="classRF24Network-members.html">List of all members</a>  </div>
-  <div class="headertitle"><div class="title">RF24Network Class Reference</div></div>
+<a href="classESBNetwork-members.html">List of all members</a>  </div>
+  <div class="headertitle"><div class="title">ESBNetwork&lt; radio_t &gt; Class Template Reference</div></div>
 </div><!--header-->
 <div class="contents">
 
@@ -86,102 +86,118 @@ Public Member Functions</h2></td></tr>
 <tr><td colspan="2"><div class="groupHeader">Primary Interface</div></td></tr>
 <tr><td colspan="2"><div class="groupText"><p>These are the main methods you need to operate the network </p>
 </div></td></tr>
-<tr class="memitem:a814229a5a4e8e30f88a4bdce05807e50"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classRF24Network.html#a814229a5a4e8e30f88a4bdce05807e50">RF24Network</a> (RF24 &amp;_radio)</td></tr>
-<tr class="separator:a814229a5a4e8e30f88a4bdce05807e50"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aad6a74b55514a26e95e20eaa6a093a0b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classRF24Network.html#aad6a74b55514a26e95e20eaa6a093a0b">begin</a> (uint16_t _node_address)</td></tr>
-<tr class="separator:aad6a74b55514a26e95e20eaa6a093a0b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad59983f89b09d17d7d9b0581f658a41c"><td class="memItemLeft" align="right" valign="top">uint8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classRF24Network.html#ad59983f89b09d17d7d9b0581f658a41c">update</a> (void)</td></tr>
-<tr class="separator:ad59983f89b09d17d7d9b0581f658a41c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0e111e70bb7b95d885983ce92c89159e"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classRF24Network.html#a0e111e70bb7b95d885983ce92c89159e">available</a> (void)</td></tr>
-<tr class="separator:a0e111e70bb7b95d885983ce92c89159e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abac371cf064c23d181c5dd56f528bd08"><td class="memItemLeft" align="right" valign="top">uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classRF24Network.html#abac371cf064c23d181c5dd56f528bd08">peek</a> (<a class="el" href="structRF24NetworkHeader.html">RF24NetworkHeader</a> &amp;header)</td></tr>
-<tr class="separator:abac371cf064c23d181c5dd56f528bd08"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a11b612ccb5e1fcc547b7984f9cff37a5"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classRF24Network.html#a11b612ccb5e1fcc547b7984f9cff37a5">peek</a> (<a class="el" href="structRF24NetworkHeader.html">RF24NetworkHeader</a> &amp;header, void *message, uint16_t maxlen=<a class="el" href="RF24Network__config_8h.html#a6303f7392a2d06be5a121c54278d561b">MAX_PAYLOAD_SIZE</a>)</td></tr>
-<tr class="separator:a11b612ccb5e1fcc547b7984f9cff37a5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6630ab36b8a42cc376c925721f39188d"><td class="memItemLeft" align="right" valign="top">uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classRF24Network.html#a6630ab36b8a42cc376c925721f39188d">read</a> (<a class="el" href="structRF24NetworkHeader.html">RF24NetworkHeader</a> &amp;header, void *message, uint16_t maxlen=<a class="el" href="RF24Network__config_8h.html#a6303f7392a2d06be5a121c54278d561b">MAX_PAYLOAD_SIZE</a>)</td></tr>
-<tr class="separator:a6630ab36b8a42cc376c925721f39188d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac8e9571bb3d2c20d00955b8f5c15b541"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classRF24Network.html#ac8e9571bb3d2c20d00955b8f5c15b541">write</a> (<a class="el" href="structRF24NetworkHeader.html">RF24NetworkHeader</a> &amp;header, const void *message, uint16_t len)</td></tr>
-<tr class="separator:ac8e9571bb3d2c20d00955b8f5c15b541"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0ac71a8989fe3d7cdc86b1bb538a8251"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classESBNetwork.html#a0ac71a8989fe3d7cdc86b1bb538a8251">ESBNetwork</a> (radio_t &amp;_radio)</td></tr>
+<tr class="separator:a0ac71a8989fe3d7cdc86b1bb538a8251"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a48195ce31a771672723628579c6c80f5"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classESBNetwork.html#a48195ce31a771672723628579c6c80f5">begin</a> (uint16_t _node_address)</td></tr>
+<tr class="separator:a48195ce31a771672723628579c6c80f5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a828adf45c3b8a82b08644510f29a32d3"><td class="memItemLeft" align="right" valign="top">uint8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classESBNetwork.html#a828adf45c3b8a82b08644510f29a32d3">update</a> (void)</td></tr>
+<tr class="separator:a828adf45c3b8a82b08644510f29a32d3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a40bcc2562b1faf1c72eccf52efa1f5cd"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classESBNetwork.html#a40bcc2562b1faf1c72eccf52efa1f5cd">available</a> (void)</td></tr>
+<tr class="separator:a40bcc2562b1faf1c72eccf52efa1f5cd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaab290edc4485315a36de4c9e17a4134"><td class="memItemLeft" align="right" valign="top">uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classESBNetwork.html#aaab290edc4485315a36de4c9e17a4134">peek</a> (<a class="el" href="structRF24NetworkHeader.html">RF24NetworkHeader</a> &amp;header)</td></tr>
+<tr class="separator:aaab290edc4485315a36de4c9e17a4134"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a583d2e7096d502e97b5e9b12d935f711"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classESBNetwork.html#a583d2e7096d502e97b5e9b12d935f711">peek</a> (<a class="el" href="structRF24NetworkHeader.html">RF24NetworkHeader</a> &amp;header, void *message, uint16_t maxlen=<a class="el" href="RF24Network__config_8h.html#a6303f7392a2d06be5a121c54278d561b">MAX_PAYLOAD_SIZE</a>)</td></tr>
+<tr class="separator:a583d2e7096d502e97b5e9b12d935f711"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad3959000f609c598f9b98106f3f85f7b"><td class="memItemLeft" align="right" valign="top">uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classESBNetwork.html#ad3959000f609c598f9b98106f3f85f7b">read</a> (<a class="el" href="structRF24NetworkHeader.html">RF24NetworkHeader</a> &amp;header, void *message, uint16_t maxlen=<a class="el" href="RF24Network__config_8h.html#a6303f7392a2d06be5a121c54278d561b">MAX_PAYLOAD_SIZE</a>)</td></tr>
+<tr class="separator:ad3959000f609c598f9b98106f3f85f7b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af53965174dcc8f7bdbec70046f5e72bf"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classESBNetwork.html#af53965174dcc8f7bdbec70046f5e72bf">write</a> (<a class="el" href="structRF24NetworkHeader.html">RF24NetworkHeader</a> &amp;header, const void *message, uint16_t len)</td></tr>
+<tr class="separator:af53965174dcc8f7bdbec70046f5e72bf"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr><td colspan="2"><div class="groupHeader">Advanced Operation</div></td></tr>
 <tr><td colspan="2"><div class="groupText"><p>For advanced operation of the network </p>
 </div></td></tr>
-<tr class="memitem:acb84d7556df00c933208ecf44b227a4f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classRF24Network.html#acb84d7556df00c933208ecf44b227a4f">failures</a> (uint32_t *_fails, uint32_t *_ok)</td></tr>
-<tr class="separator:acb84d7556df00c933208ecf44b227a4f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a96a66907061c54ee1fea6ea7f78d6827"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classRF24Network.html#a96a66907061c54ee1fea6ea7f78d6827">multicast</a> (<a class="el" href="structRF24NetworkHeader.html">RF24NetworkHeader</a> &amp;header, const void *message, uint16_t len, uint8_t level=7)</td></tr>
-<tr class="separator:a96a66907061c54ee1fea6ea7f78d6827"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3d99643014071fef706c0320c8011648"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classRF24Network.html#a3d99643014071fef706c0320c8011648">write</a> (<a class="el" href="structRF24NetworkHeader.html">RF24NetworkHeader</a> &amp;header, const void *message, uint16_t len, uint16_t writeDirect)</td></tr>
-<tr class="separator:a3d99643014071fef706c0320c8011648"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:acc3e7809ffc7ff48579811d2e063142a"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classRF24Network.html#acc3e7809ffc7ff48579811d2e063142a">sleepNode</a> (unsigned int cycles, int interruptPin, uint8_t INTERRUPT_MODE=0)</td></tr>
-<tr class="separator:acc3e7809ffc7ff48579811d2e063142a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa6919435695051d522dfcce4e8395f5e"><td class="memItemLeft" align="right" valign="top">uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classRF24Network.html#aa6919435695051d522dfcce4e8395f5e">parent</a> () const</td></tr>
-<tr class="separator:aa6919435695051d522dfcce4e8395f5e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa4a11edb3860f4a0e3808bccad36a5dc"><td class="memItemLeft" align="right" valign="top">uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classRF24Network.html#aa4a11edb3860f4a0e3808bccad36a5dc">addressOfPipe</a> (uint16_t node, uint8_t pipeNo)</td></tr>
-<tr class="separator:aa4a11edb3860f4a0e3808bccad36a5dc"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab41da035bd7f469ea4364a06ab4efd1b"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classRF24Network.html#ab41da035bd7f469ea4364a06ab4efd1b">is_valid_address</a> (uint16_t node)</td></tr>
-<tr class="separator:ab41da035bd7f469ea4364a06ab4efd1b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7b4a446024163631477abf6bb641d759"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classESBNetwork.html#a7b4a446024163631477abf6bb641d759">failures</a> (uint32_t *_fails, uint32_t *_ok)</td></tr>
+<tr class="separator:a7b4a446024163631477abf6bb641d759"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3e6e9e74461290d6f648e972ee4aaf91"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classESBNetwork.html#a3e6e9e74461290d6f648e972ee4aaf91">multicast</a> (<a class="el" href="structRF24NetworkHeader.html">RF24NetworkHeader</a> &amp;header, const void *message, uint16_t len, uint8_t level=7)</td></tr>
+<tr class="separator:a3e6e9e74461290d6f648e972ee4aaf91"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1170b3e9e3c606daf17d1be45c9497db"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classESBNetwork.html#a1170b3e9e3c606daf17d1be45c9497db">write</a> (<a class="el" href="structRF24NetworkHeader.html">RF24NetworkHeader</a> &amp;header, const void *message, uint16_t len, uint16_t writeDirect)</td></tr>
+<tr class="separator:a1170b3e9e3c606daf17d1be45c9497db"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2d92a9ed0c845df12dc4180356955ad8"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classESBNetwork.html#a2d92a9ed0c845df12dc4180356955ad8">sleepNode</a> (unsigned int cycles, int interruptPin, uint8_t INTERRUPT_MODE=0)</td></tr>
+<tr class="separator:a2d92a9ed0c845df12dc4180356955ad8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aee407cd116e3157f6e81a191e8e46a0a"><td class="memItemLeft" align="right" valign="top">uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classESBNetwork.html#aee407cd116e3157f6e81a191e8e46a0a">parent</a> () const</td></tr>
+<tr class="separator:aee407cd116e3157f6e81a191e8e46a0a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aac2bef365c0cf9e4b12492f36d163ed8"><td class="memItemLeft" align="right" valign="top">uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classESBNetwork.html#aac2bef365c0cf9e4b12492f36d163ed8">addressOfPipe</a> (uint16_t node, uint8_t pipeNo)</td></tr>
+<tr class="separator:aac2bef365c0cf9e4b12492f36d163ed8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab09e06857bfa68fdbd93f31e27ac07d7"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classESBNetwork.html#ab09e06857bfa68fdbd93f31e27ac07d7">is_valid_address</a> (uint16_t node)</td></tr>
+<tr class="separator:ab09e06857bfa68fdbd93f31e27ac07d7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr><td colspan="2"><div class="groupHeader">Deprecated</div></td></tr>
 <tr><td colspan="2"><div class="groupText"><p>Maintained for backwards compatibility </p>
 </div></td></tr>
-<tr class="memitem:abf0da46b2e78b2010171c9f20cba8bae"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classRF24Network.html#abf0da46b2e78b2010171c9f20cba8bae">begin</a> (uint8_t _channel, uint16_t _node_address)</td></tr>
-<tr class="separator:abf0da46b2e78b2010171c9f20cba8bae"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab2bf0e2d6c4e5b976f7d0f10c5789f2b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classESBNetwork.html#ab2bf0e2d6c4e5b976f7d0f10c5789f2b">begin</a> (uint8_t _channel, uint16_t _node_address)</td></tr>
+<tr class="separator:ab2bf0e2d6c4e5b976f7d0f10c5789f2b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader">Advanced Configuration</h2></td></tr>
 <tr><td class="ititle" colspan="2"><p>For advanced configuration of the network </p>
 </td></tr>
-<tr class="memitem:add7408ca2b2f9ab15331ba77a747f7bb"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classRF24Network.html#add7408ca2b2f9ab15331ba77a747f7bb">multicastRelay</a></td></tr>
-<tr class="separator:add7408ca2b2f9ab15331ba77a747f7bb"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8838b42717e7c9da37213b020db1f88c"><td class="memItemLeft" align="right" valign="top">uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classRF24Network.html#a8838b42717e7c9da37213b020db1f88c">txTimeout</a></td></tr>
-<tr class="memdesc:a8838b42717e7c9da37213b020db1f88c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Network timeout value.  <br /></td></tr>
-<tr class="separator:a8838b42717e7c9da37213b020db1f88c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a657fd03730b6c9084cc440b4fe0177c3"><td class="memItemLeft" align="right" valign="top">uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classRF24Network.html#a657fd03730b6c9084cc440b4fe0177c3">routeTimeout</a></td></tr>
-<tr class="memdesc:a657fd03730b6c9084cc440b4fe0177c3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Timeout for routed payloads.  <br /></td></tr>
-<tr class="separator:a657fd03730b6c9084cc440b4fe0177c3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4fb7c61eee75d708a4ba20bb1caec54f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classRF24Network.html#a4fb7c61eee75d708a4ba20bb1caec54f">multicastLevel</a> (uint8_t level)</td></tr>
-<tr class="separator:a4fb7c61eee75d708a4ba20bb1caec54f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:acb09129760ac9b171833af3055b2b6f5"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classRF24Network.html#acb09129760ac9b171833af3055b2b6f5">setup_watchdog</a> (uint8_t prescalar)</td></tr>
-<tr class="separator:acb09129760ac9b171833af3055b2b6f5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad9b7bd82837e7a92f4dde9754fb4d03f"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classESBNetwork.html#ad9b7bd82837e7a92f4dde9754fb4d03f">multicastRelay</a></td></tr>
+<tr class="separator:ad9b7bd82837e7a92f4dde9754fb4d03f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a93188f3c0600e0b5f0e3d5e57eb86513"><td class="memItemLeft" align="right" valign="top">uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classESBNetwork.html#a93188f3c0600e0b5f0e3d5e57eb86513">txTimeout</a></td></tr>
+<tr class="memdesc:a93188f3c0600e0b5f0e3d5e57eb86513"><td class="mdescLeft">&#160;</td><td class="mdescRight">Network timeout value.  <br /></td></tr>
+<tr class="separator:a93188f3c0600e0b5f0e3d5e57eb86513"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a657d583b2f6ae0ec61a6fa771431470a"><td class="memItemLeft" align="right" valign="top">uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classESBNetwork.html#a657d583b2f6ae0ec61a6fa771431470a">routeTimeout</a></td></tr>
+<tr class="memdesc:a657d583b2f6ae0ec61a6fa771431470a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Timeout for routed payloads.  <br /></td></tr>
+<tr class="separator:a657d583b2f6ae0ec61a6fa771431470a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3c2b5449bd374c0d5a6ae11e3b4f1c02"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classESBNetwork.html#a3c2b5449bd374c0d5a6ae11e3b4f1c02">multicastLevel</a> (uint8_t level)</td></tr>
+<tr class="separator:a3c2b5449bd374c0d5a6ae11e3b4f1c02"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a77a3c8cc72b0c5e073501ef5f3744591"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classESBNetwork.html#a77a3c8cc72b0c5e073501ef5f3744591">setup_watchdog</a> (uint8_t prescalar)</td></tr>
+<tr class="separator:a77a3c8cc72b0c5e073501ef5f3744591"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader">External Applications/Systems</h2></td></tr>
 <tr><td class="ititle" colspan="2"><p>Interface for External Applications and Systems ( RF24Mesh, RF24Ethernet ) </p>
 </td></tr>
-<tr class="memitem:aa06f1fdd0fd986d427c2c5193b47b212"><td class="memItemLeft" align="right" valign="top">uint8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classRF24Network.html#aa06f1fdd0fd986d427c2c5193b47b212">frame_buffer</a> [<a class="el" href="RF24Network_8h.html#ad15d35a0d29a9dbf9324e3859ce3b008">MAX_FRAME_SIZE</a>]</td></tr>
-<tr class="memdesc:aa06f1fdd0fd986d427c2c5193b47b212"><td class="mdescLeft">&#160;</td><td class="mdescRight">The raw system frame buffer.  <br /></td></tr>
-<tr class="separator:aa06f1fdd0fd986d427c2c5193b47b212"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab387a2137dc1b62c1bf5cc783e34e2c0"><td class="memItemLeft" align="right" valign="top">std::queue&lt; <a class="el" href="structRF24NetworkFrame.html">RF24NetworkFrame</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classRF24Network.html#ab387a2137dc1b62c1bf5cc783e34e2c0">external_queue</a></td></tr>
-<tr class="separator:ab387a2137dc1b62c1bf5cc783e34e2c0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1c994c5fdcb2173b187c52b641aaeae0"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structRF24NetworkFrame.html">RF24NetworkFrame</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classRF24Network.html#a1c994c5fdcb2173b187c52b641aaeae0">frag_ptr</a></td></tr>
-<tr class="separator:a1c994c5fdcb2173b187c52b641aaeae0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:afb6b1d5c0fa3d982425f7a1f4fb48d13"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classRF24Network.html#afb6b1d5c0fa3d982425f7a1f4fb48d13">returnSysMsgs</a></td></tr>
-<tr class="separator:afb6b1d5c0fa3d982425f7a1f4fb48d13"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a476806538919b167465181ab872e0cad"><td class="memItemLeft" align="right" valign="top">uint8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classRF24Network.html#a476806538919b167465181ab872e0cad">networkFlags</a></td></tr>
-<tr class="separator:a476806538919b167465181ab872e0cad"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5b89e48e46eebb615b2ef152f057aca7"><td class="memItemLeft" align="right" valign="top">uint8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classRF24Network.html#a5b89e48e46eebb615b2ef152f057aca7">_multicast_level</a></td></tr>
-<tr class="separator:a5b89e48e46eebb615b2ef152f057aca7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a17017b584633bb969d004c4c43ca5c82"><td class="memItemLeft" align="right" valign="top">uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classRF24Network.html#a17017b584633bb969d004c4c43ca5c82">node_address</a></td></tr>
-<tr class="separator:a17017b584633bb969d004c4c43ca5c82"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac31a18d03d70371890d16d242a341631"><td class="memItemLeft" align="right" valign="top">uint8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classESBNetwork.html#ac31a18d03d70371890d16d242a341631">frame_buffer</a> [<a class="el" href="RF24Network_8h.html#ad15d35a0d29a9dbf9324e3859ce3b008">MAX_FRAME_SIZE</a>]</td></tr>
+<tr class="memdesc:ac31a18d03d70371890d16d242a341631"><td class="mdescLeft">&#160;</td><td class="mdescRight">The raw system frame buffer.  <br /></td></tr>
+<tr class="separator:ac31a18d03d70371890d16d242a341631"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1af1d7e26417c772adb897122d4368f1"><td class="memItemLeft" align="right" valign="top">std::queue&lt; <a class="el" href="structRF24NetworkFrame.html">RF24NetworkFrame</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classESBNetwork.html#a1af1d7e26417c772adb897122d4368f1">external_queue</a></td></tr>
+<tr class="separator:a1af1d7e26417c772adb897122d4368f1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa68d02f91212108906bac54f6d141e7e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structRF24NetworkFrame.html">RF24NetworkFrame</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classESBNetwork.html#aa68d02f91212108906bac54f6d141e7e">frag_ptr</a></td></tr>
+<tr class="separator:aa68d02f91212108906bac54f6d141e7e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a38f2b8e2665e9512e6953992cf08888f"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classESBNetwork.html#a38f2b8e2665e9512e6953992cf08888f">returnSysMsgs</a></td></tr>
+<tr class="separator:a38f2b8e2665e9512e6953992cf08888f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9d4ab7fc671cdb2573535bfd0c9e2050"><td class="memItemLeft" align="right" valign="top">uint8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classESBNetwork.html#a9d4ab7fc671cdb2573535bfd0c9e2050">networkFlags</a></td></tr>
+<tr class="separator:a9d4ab7fc671cdb2573535bfd0c9e2050"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aab52703c149001e4d3e1ae7c8311f8e0"><td class="memItemLeft" align="right" valign="top">uint8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classESBNetwork.html#aab52703c149001e4d3e1ae7c8311f8e0">_multicast_level</a></td></tr>
+<tr class="separator:aab52703c149001e4d3e1ae7c8311f8e0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3e5aa077d46a74acd31ca5242bb0c0a4"><td class="memItemLeft" align="right" valign="top">uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classESBNetwork.html#a3e5aa077d46a74acd31ca5242bb0c0a4">node_address</a></td></tr>
+<tr class="separator:a3e5aa077d46a74acd31ca5242bb0c0a4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>2014-2021 - Optimized Network Layer for RF24 Radios</p>
-<p>This class implements an OSI Network Layer using nRF24L01(+) radios driven by RF24 library. </p>
+<div class="textblock"><div class="compoundTemplParams">template&lt;class radio_t = RF24&gt;<br />
+class ESBNetwork&lt; radio_t &gt;</div><p>2014-2021 - Optimized Network Layer for RF24 Radios</p>
+<p>This class implements an OSI Network Layer using nRF24L01(+) radios driven by RF24 library.</p>
+<dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">radio_t</td><td>The <code>radio</code> object's type. Defaults to <code>RF24</code> for legacy behavior. This new abstraction is really meant for using the nRF52840 SoC as a drop-in replacement for the nRF24L01 radio. For more detail, see the <a href="https://github.com/TMRh20/nrf_to_nrf">nrf_to_nrf Arduino library</a>. </td></tr>
+  </table>
+  </dd>
+</dl>
 <dl class="section examples"><dt>Examples</dt><dd><a class="el" href="Network_Ping_8ino-example.html#_a0">Network_Ping.ino</a>, <a class="el" href="Network_Ping_Sleep_8ino-example.html#_a0">Network_Ping_Sleep.ino</a>, <a class="el" href="Network_Priority_RX_8ino-example.html#_a0">Network_Priority_RX.ino</a>, <a class="el" href="Network_Priority_TX_8ino-example.html#_a0">Network_Priority_TX.ino</a>, <a class="el" href="helloworld_rx_8ino-example.html#_a0">helloworld_rx.ino</a>, <a class="el" href="helloworld_rx_advanced_8ino-example.html#_a0">helloworld_rx_advanced.ino</a>, <a class="el" href="helloworld_tx_8ino-example.html#_a0">helloworld_tx.ino</a>, and <a class="el" href="helloworld_tx_advanced_8ino-example.html#_a0">helloworld_tx_advanced.ino</a>.</dd>
 </dl>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
-<a id="a814229a5a4e8e30f88a4bdce05807e50" name="a814229a5a4e8e30f88a4bdce05807e50"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a814229a5a4e8e30f88a4bdce05807e50">&#9670;&#160;</a></span>RF24Network()</h2>
+<a id="a0ac71a8989fe3d7cdc86b1bb538a8251" name="a0ac71a8989fe3d7cdc86b1bb538a8251"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0ac71a8989fe3d7cdc86b1bb538a8251">&#9670;&#160;</a></span>ESBNetwork()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<div class="memtemplate">
+template&lt;class radio_t &gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">RF24Network::RF24Network </td>
+          <td class="memname"><a class="el" href="classESBNetwork.html">ESBNetwork</a>&lt; radio_t &gt;<a class="el" href="classESBNetwork.html">::ESBNetwork</a> </td>
           <td>(</td>
-          <td class="paramtype">RF24 &amp;&#160;</td>
+          <td class="paramtype">radio_t &amp;&#160;</td>
           <td class="paramname"><em>_radio</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 <p>Construct the network</p>
+<p>v2.0 supports a backward compatible constructor: </p><div class="fragment"><div class="line">RF24 radio(7, 8);</div>
+<div class="line"><a class="code hl_class" href="classESBNetwork.html">RF24Network</a> network(radio); <span class="comment">// for nRF24L01</span></div>
+<div class="line"> </div>
+<div class="line">nrf_to_nrf radio1;</div>
+<div class="line">RF52Network network(radio1); <span class="comment">// for nRF52xxx family</span></div>
+<div class="ttc" id="aclassESBNetwork_html"><div class="ttname"><a href="classESBNetwork.html">ESBNetwork</a></div><div class="ttdef"><b>Definition:</b> RF24Network.h:384</div></div>
+</div><!-- fragment --><dl class="section see"><dt>See also</dt><dd>v2.0 supports <a href="https://github.com/TMRh20/nrf_to_nrf">nrf_to_nrf Arduino library</a> for nrf52 chips' internal radio.</dd></dl>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">_radio</td><td>The underlying radio driver instance </td></tr>
@@ -192,17 +208,19 @@ Public Member Functions</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a id="aad6a74b55514a26e95e20eaa6a093a0b" name="aad6a74b55514a26e95e20eaa6a093a0b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aad6a74b55514a26e95e20eaa6a093a0b">&#9670;&#160;</a></span>begin() <span class="overload">[1/2]</span></h2>
+<a id="a48195ce31a771672723628579c6c80f5" name="a48195ce31a771672723628579c6c80f5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a48195ce31a771672723628579c6c80f5">&#9670;&#160;</a></span>begin() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
+<div class="memtemplate">
+template&lt;class radio_t  = RF24&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">void RF24Network::begin </td>
+          <td class="memname">void <a class="el" href="classESBNetwork.html">ESBNetwork</a>&lt; radio_t &gt;::begin </td>
           <td>(</td>
           <td class="paramtype">uint16_t&#160;</td>
           <td class="paramname"><em>_node_address</em></td><td>)</td>
@@ -221,7 +239,7 @@ Public Member Functions</h2></td></tr>
 <p><b>Example 1:</b> Begin on current radio channel with address 0 (master node) </p><div class="fragment"><div class="line">network.begin(00); </div>
 </div><!-- fragment --><p> <b>Example 2:</b> Begin with address 01 (child of master) </p><div class="fragment"><div class="line">network.begin(01); </div>
 </div><!-- fragment --><p> <b>Example 3:</b> Begin with address 011 (child of 01, grandchild of master) </p><div class="fragment"><div class="line">network.begin(011); </div>
-</div><!-- fragment --><dl class="section see"><dt>See also</dt><dd><a class="el" href="classRF24Network.html#abf0da46b2e78b2010171c9f20cba8bae">begin(uint8_t _channel, uint16_t _node_address)</a> </dd></dl>
+</div><!-- fragment --><dl class="section see"><dt>See also</dt><dd><a class="el" href="classESBNetwork.html#ab2bf0e2d6c4e5b976f7d0f10c5789f2b">begin(uint8_t _channel, uint16_t _node_address)</a> </dd></dl>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">_node_address</td><td>The logical address of this node. </td></tr>
@@ -231,14 +249,16 @@ Public Member Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="ad59983f89b09d17d7d9b0581f658a41c" name="ad59983f89b09d17d7d9b0581f658a41c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad59983f89b09d17d7d9b0581f658a41c">&#9670;&#160;</a></span>update()</h2>
+<a id="a828adf45c3b8a82b08644510f29a32d3" name="a828adf45c3b8a82b08644510f29a32d3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a828adf45c3b8a82b08644510f29a32d3">&#9670;&#160;</a></span>update()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<div class="memtemplate">
+template&lt;class radio_t &gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">uint8_t RF24Network::update </td>
+          <td class="memname">uint8_t <a class="el" href="classESBNetwork.html">ESBNetwork</a>&lt; radio_t &gt;::update </td>
           <td>(</td>
           <td class="paramtype">void&#160;</td>
           <td class="paramname"></td><td>)</td>
@@ -252,14 +272,16 @@ Public Member Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a0e111e70bb7b95d885983ce92c89159e" name="a0e111e70bb7b95d885983ce92c89159e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0e111e70bb7b95d885983ce92c89159e">&#9670;&#160;</a></span>available()</h2>
+<a id="a40bcc2562b1faf1c72eccf52efa1f5cd" name="a40bcc2562b1faf1c72eccf52efa1f5cd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a40bcc2562b1faf1c72eccf52efa1f5cd">&#9670;&#160;</a></span>available()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<div class="memtemplate">
+template&lt;class radio_t &gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">bool RF24Network::available </td>
+          <td class="memname">bool <a class="el" href="classESBNetwork.html">ESBNetwork</a>&lt; radio_t &gt;::available </td>
           <td>(</td>
           <td class="paramtype">void&#160;</td>
           <td class="paramname"></td><td>)</td>
@@ -272,14 +294,16 @@ Public Member Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="abac371cf064c23d181c5dd56f528bd08" name="abac371cf064c23d181c5dd56f528bd08"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#abac371cf064c23d181c5dd56f528bd08">&#9670;&#160;</a></span>peek() <span class="overload">[1/2]</span></h2>
+<a id="aaab290edc4485315a36de4c9e17a4134" name="aaab290edc4485315a36de4c9e17a4134"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aaab290edc4485315a36de4c9e17a4134">&#9670;&#160;</a></span>peek() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
+<div class="memtemplate">
+template&lt;class radio_t &gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">uint16_t RF24Network::peek </td>
+          <td class="memname">uint16_t <a class="el" href="classESBNetwork.html">ESBNetwork</a>&lt; radio_t &gt;::peek </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="structRF24NetworkHeader.html">RF24NetworkHeader</a> &amp;&#160;</td>
           <td class="paramname"><em>header</em></td><td>)</td>
@@ -299,14 +323,16 @@ Public Member Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a11b612ccb5e1fcc547b7984f9cff37a5" name="a11b612ccb5e1fcc547b7984f9cff37a5"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a11b612ccb5e1fcc547b7984f9cff37a5">&#9670;&#160;</a></span>peek() <span class="overload">[2/2]</span></h2>
+<a id="a583d2e7096d502e97b5e9b12d935f711" name="a583d2e7096d502e97b5e9b12d935f711"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a583d2e7096d502e97b5e9b12d935f711">&#9670;&#160;</a></span>peek() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
+<div class="memtemplate">
+template&lt;class radio_t &gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">void RF24Network::peek </td>
+          <td class="memname">void <a class="el" href="classESBNetwork.html">ESBNetwork</a>&lt; radio_t &gt;::peek </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="structRF24NetworkHeader.html">RF24NetworkHeader</a> &amp;&#160;</td>
           <td class="paramname"><em>header</em>, </td>
@@ -331,7 +357,7 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <p>Read the next available payload</p>
-<p>Reads the next available payload without advancing to the next incoming message. Useful for doing a transparent packet manipulation layer on top of <a class="el" href="classRF24Network.html">RF24Network</a>.</p>
+<p>Reads the next available payload without advancing to the next incoming message. Useful for doing a transparent packet manipulation layer on top of RF24Network.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[out]</td><td class="paramname">header</td><td>The <a class="el" href="structRF24NetworkHeader.html">RF24NetworkHeader</a> (envelope) of this message </td></tr>
@@ -343,14 +369,16 @@ Public Member Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a6630ab36b8a42cc376c925721f39188d" name="a6630ab36b8a42cc376c925721f39188d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a6630ab36b8a42cc376c925721f39188d">&#9670;&#160;</a></span>read()</h2>
+<a id="ad3959000f609c598f9b98106f3f85f7b" name="ad3959000f609c598f9b98106f3f85f7b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad3959000f609c598f9b98106f3f85f7b">&#9670;&#160;</a></span>read()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<div class="memtemplate">
+template&lt;class radio_t &gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">uint16_t RF24Network::read </td>
+          <td class="memname">uint16_t <a class="el" href="classESBNetwork.html">ESBNetwork</a>&lt; radio_t &gt;::read </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="structRF24NetworkHeader.html">RF24NetworkHeader</a> &amp;&#160;</td>
           <td class="paramname"><em>header</em>, </td>
@@ -384,14 +412,14 @@ Public Member Functions</h2></td></tr>
 <div class="line">    Serial.println(time);</div>
 <div class="line">  }</div>
 <div class="line">}</div>
-<div class="ttc" id="astructRF24NetworkHeader_html"><div class="ttname"><a href="structRF24NetworkHeader.html">RF24NetworkHeader</a></div><div class="ttdef"><b>Definition:</b> RF24Network.h:226</div></div>
-<div class="ttc" id="astructRF24NetworkHeader_html_ac99ab14e561670f4445d1fea7775e2db"><div class="ttname"><a href="structRF24NetworkHeader.html#ac99ab14e561670f4445d1fea7775e2db">RF24NetworkHeader::type</a></div><div class="ttdeci">unsigned char type</div><div class="ttdef"><b>Definition:</b> RF24Network.h:243</div></div>
+<div class="ttc" id="astructRF24NetworkHeader_html"><div class="ttname"><a href="structRF24NetworkHeader.html">RF24NetworkHeader</a></div><div class="ttdef"><b>Definition:</b> RF24Network.h:229</div></div>
+<div class="ttc" id="astructRF24NetworkHeader_html_ac99ab14e561670f4445d1fea7775e2db"><div class="ttname"><a href="structRF24NetworkHeader.html#ac99ab14e561670f4445d1fea7775e2db">RF24NetworkHeader::type</a></div><div class="ttdeci">unsigned char type</div><div class="ttdef"><b>Definition:</b> RF24Network.h:246</div></div>
 </div><!-- fragment --> </dd></dl>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[out]</td><td class="paramname">header</td><td>The <a class="el" href="structRF24NetworkHeader.html">RF24NetworkHeader</a> (envelope) of this message </td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">message</td><td>Pointer to memory where the message should be placed </td></tr>
-    <tr><td class="paramdir"></td><td class="paramname">maxlen</td><td>The largest message size which can be held in <code>message</code> . If this parameter is left unspecified, the entire length of the message is fetched. Hint: Use <a class="el" href="classRF24Network.html#abac371cf064c23d181c5dd56f528bd08">peek(RF24NetworkHeader &amp;)</a> to get the length of next available message in the queue. </td></tr>
+    <tr><td class="paramdir"></td><td class="paramname">maxlen</td><td>The largest message size which can be held in <code>message</code> . If this parameter is left unspecified, the entire length of the message is fetched. Hint: Use <a class="el" href="classESBNetwork.html#aaab290edc4485315a36de4c9e17a4134">peek(RF24NetworkHeader &amp;)</a> to get the length of next available message in the queue. </td></tr>
   </table>
   </dd>
 </dl>
@@ -399,14 +427,16 @@ Public Member Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="ac8e9571bb3d2c20d00955b8f5c15b541" name="ac8e9571bb3d2c20d00955b8f5c15b541"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac8e9571bb3d2c20d00955b8f5c15b541">&#9670;&#160;</a></span>write() <span class="overload">[1/2]</span></h2>
+<a id="af53965174dcc8f7bdbec70046f5e72bf" name="af53965174dcc8f7bdbec70046f5e72bf"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af53965174dcc8f7bdbec70046f5e72bf">&#9670;&#160;</a></span>write() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
+<div class="memtemplate">
+template&lt;class radio_t &gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">bool RF24Network::write </td>
+          <td class="memname">bool <a class="el" href="classESBNetwork.html">ESBNetwork</a>&lt; radio_t &gt;::write </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="structRF24NetworkHeader.html">RF24NetworkHeader</a> &amp;&#160;</td>
           <td class="paramname"><em>header</em>, </td>
@@ -431,7 +461,7 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <p>Send a message</p>
-<dl class="section note"><dt>Note</dt><dd><a class="el" href="classRF24Network.html">RF24Network</a> now supports fragmentation for very long messages, send as normal. Fragmentation may need to be enabled or configured by editing the <a class="el" href="RF24Network__config_8h.html">RF24Network_config.h</a> file. Default max payload size is 120 bytes.</dd></dl>
+<dl class="section note"><dt>Note</dt><dd>RF24Network now supports fragmentation for very long messages, send as normal. Fragmentation may need to be enabled or configured by editing the <a class="el" href="RF24Network__config_8h.html">RF24Network_config.h</a> file. Default max payload size is 120 bytes.</dd></dl>
 <div class="fragment"><div class="line">uint32_t time = millis();</div>
 <div class="line">uint16_t to = 00; <span class="comment">// Send to master</span></div>
 <div class="line"><a class="code hl_struct" href="structRF24NetworkHeader.html">RF24NetworkHeader</a> header(to, <span class="charliteral">&#39;T&#39;</span>); <span class="comment">// Send header type &#39;T&#39;</span></div>
@@ -448,14 +478,16 @@ Public Member Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a4fb7c61eee75d708a4ba20bb1caec54f" name="a4fb7c61eee75d708a4ba20bb1caec54f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4fb7c61eee75d708a4ba20bb1caec54f">&#9670;&#160;</a></span>multicastLevel()</h2>
+<a id="a3c2b5449bd374c0d5a6ae11e3b4f1c02" name="a3c2b5449bd374c0d5a6ae11e3b4f1c02"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3c2b5449bd374c0d5a6ae11e3b4f1c02">&#9670;&#160;</a></span>multicastLevel()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<div class="memtemplate">
+template&lt;class radio_t &gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">void RF24Network::multicastLevel </td>
+          <td class="memname">void <a class="el" href="classESBNetwork.html">ESBNetwork</a>&lt; radio_t &gt;::multicastLevel </td>
           <td>(</td>
           <td class="paramtype">uint8_t&#160;</td>
           <td class="paramname"><em>level</em></td><td>)</td>
@@ -472,8 +504,8 @@ Public Member Functions</h2></td></tr>
 </ul>
 <p>Notice "n" (used in the list above) stands for an octal digit in range [0, 5]</p>
 <p>This optional function is used to override the default level set when a node's logical address changes, and it can be used to create custom multicast groups that all share a single address. </p><dl class="section see"><dt>See also</dt><dd><ul>
-<li><a class="el" href="classRF24Network.html#add7408ca2b2f9ab15331ba77a747f7bb">multicastRelay</a></li>
-<li><a class="el" href="classRF24Network.html#a96a66907061c54ee1fea6ea7f78d6827">multicast()</a></li>
+<li><a class="el" href="classESBNetwork.html#ad9b7bd82837e7a92f4dde9754fb4d03f">multicastRelay</a></li>
+<li><a class="el" href="classESBNetwork.html#a3e6e9e74461290d6f648e972ee4aaf91">multicast()</a></li>
 <li><a href="http://github.com/nRF24/RF24Network/blob/master/images/topologyImage.jpg">The topology image</a> </li>
 </ul>
 </dd></dl>
@@ -486,14 +518,16 @@ Public Member Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="acb09129760ac9b171833af3055b2b6f5" name="acb09129760ac9b171833af3055b2b6f5"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#acb09129760ac9b171833af3055b2b6f5">&#9670;&#160;</a></span>setup_watchdog()</h2>
+<a id="a77a3c8cc72b0c5e073501ef5f3744591" name="a77a3c8cc72b0c5e073501ef5f3744591"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a77a3c8cc72b0c5e073501ef5f3744591">&#9670;&#160;</a></span>setup_watchdog()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<div class="memtemplate">
+template&lt;class radio_t  = RF24&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">void RF24Network::setup_watchdog </td>
+          <td class="memname">void <a class="el" href="classESBNetwork.html">ESBNetwork</a>&lt; radio_t &gt;::setup_watchdog </td>
           <td>(</td>
           <td class="paramtype">uint8_t&#160;</td>
           <td class="paramname"><em>prescalar</em></td><td>)</td>
@@ -502,8 +536,8 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <p>Set up the watchdog timer for sleep mode using the number 0 through 10 to represent the following time periods:<br  />
- wdt_16ms = 0, wdt_32ms, wdt_64ms, wdt_128ms, wdt_250ms, wdt_500ms, wdt_1s, wdt_2s, wdt_4s, wdt_8s </p><div class="fragment"><div class="line"><a class="code hl_function" href="classRF24Network.html#acb09129760ac9b171833af3055b2b6f5">setup_watchdog</a>(7);   <span class="comment">// Sets the WDT to trigger every second</span></div>
-<div class="ttc" id="aclassRF24Network_html_acb09129760ac9b171833af3055b2b6f5"><div class="ttname"><a href="classRF24Network.html#acb09129760ac9b171833af3055b2b6f5">RF24Network::setup_watchdog</a></div><div class="ttdeci">void setup_watchdog(uint8_t prescalar)</div></div>
+ wdt_16ms = 0, wdt_32ms, wdt_64ms, wdt_128ms, wdt_250ms, wdt_500ms, wdt_1s, wdt_2s, wdt_4s, wdt_8s </p><div class="fragment"><div class="line"><a class="code hl_function" href="classESBNetwork.html#a77a3c8cc72b0c5e073501ef5f3744591">setup_watchdog</a>(7);   <span class="comment">// Sets the WDT to trigger every second</span></div>
+<div class="ttc" id="aclassESBNetwork_html_a77a3c8cc72b0c5e073501ef5f3744591"><div class="ttname"><a href="classESBNetwork.html#a77a3c8cc72b0c5e073501ef5f3744591">ESBNetwork::setup_watchdog</a></div><div class="ttdeci">void setup_watchdog(uint8_t prescalar)</div></div>
 </div><!-- fragment --> <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">prescalar</td><td>The WDT prescaler to define how often the node will wake up. When defining sleep mode cycles, this time period is 1 cycle. </td></tr>
@@ -513,14 +547,16 @@ Public Member Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="acb84d7556df00c933208ecf44b227a4f" name="acb84d7556df00c933208ecf44b227a4f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#acb84d7556df00c933208ecf44b227a4f">&#9670;&#160;</a></span>failures()</h2>
+<a id="a7b4a446024163631477abf6bb641d759" name="a7b4a446024163631477abf6bb641d759"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7b4a446024163631477abf6bb641d759">&#9670;&#160;</a></span>failures()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<div class="memtemplate">
+template&lt;class radio_t  = RF24&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">void RF24Network::failures </td>
+          <td class="memname">void <a class="el" href="classESBNetwork.html">ESBNetwork</a>&lt; radio_t &gt;::failures </td>
           <td>(</td>
           <td class="paramtype">uint32_t *&#160;</td>
           <td class="paramname"><em>_fails</em>, </td>
@@ -544,14 +580,16 @@ Public Member Functions</h2></td></tr>
 </div><!-- fragment --> 
 </div>
 </div>
-<a id="a96a66907061c54ee1fea6ea7f78d6827" name="a96a66907061c54ee1fea6ea7f78d6827"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a96a66907061c54ee1fea6ea7f78d6827">&#9670;&#160;</a></span>multicast()</h2>
+<a id="a3e6e9e74461290d6f648e972ee4aaf91" name="a3e6e9e74461290d6f648e972ee4aaf91"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3e6e9e74461290d6f648e972ee4aaf91">&#9670;&#160;</a></span>multicast()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<div class="memtemplate">
+template&lt;class radio_t &gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">bool RF24Network::multicast </td>
+          <td class="memname">bool <a class="el" href="classESBNetwork.html">ESBNetwork</a>&lt; radio_t &gt;::multicast </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="structRF24NetworkHeader.html">RF24NetworkHeader</a> &amp;&#160;</td>
           <td class="paramname"><em>header</em>, </td>
@@ -583,8 +621,8 @@ Public Member Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>Send a multicast message to multiple nodes at once Allows messages to be rapidly broadcast through the network</p>
 <p>Multicasting is arranged in levels, with all nodes on the same level listening to the same address Levels are assigned by network level ie: nodes 01-05: Level 1, nodes 011-055: Level 2 </p><dl class="section see"><dt>See also</dt><dd><ul>
-<li><a class="el" href="classRF24Network.html#a4fb7c61eee75d708a4ba20bb1caec54f">multicastLevel()</a></li>
-<li><a class="el" href="classRF24Network.html#add7408ca2b2f9ab15331ba77a747f7bb">multicastRelay</a> </li>
+<li><a class="el" href="classESBNetwork.html#a3c2b5449bd374c0d5a6ae11e3b4f1c02">multicastLevel()</a></li>
+<li><a class="el" href="classESBNetwork.html#ad9b7bd82837e7a92f4dde9754fb4d03f">multicastRelay</a> </li>
 </ul>
 </dd></dl>
 <dl class="params"><dt>Parameters</dt><dd>
@@ -592,7 +630,7 @@ Public Member Functions</h2></td></tr>
     <tr><td class="paramname">header</td><td>reference to the <a class="el" href="structRF24NetworkHeader.html">RF24NetworkHeader</a> object used for this <code>message</code> </td></tr>
     <tr><td class="paramname">message</td><td>Pointer to memory where the message is located </td></tr>
     <tr><td class="paramname">len</td><td>The size of the message </td></tr>
-    <tr><td class="paramname">level</td><td>Multicast level to broadcast to. If this parameter is unspecified, then the node's current <a class="el" href="classRF24Network.html#a4fb7c61eee75d708a4ba20bb1caec54f">multicastLevel()</a> is used. </td></tr>
+    <tr><td class="paramname">level</td><td>Multicast level to broadcast to. If this parameter is unspecified, then the node's current <a class="el" href="classESBNetwork.html#a3c2b5449bd374c0d5a6ae11e3b4f1c02">multicastLevel()</a> is used. </td></tr>
   </table>
   </dd>
 </dl>
@@ -600,14 +638,16 @@ Public Member Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a3d99643014071fef706c0320c8011648" name="a3d99643014071fef706c0320c8011648"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3d99643014071fef706c0320c8011648">&#9670;&#160;</a></span>write() <span class="overload">[2/2]</span></h2>
+<a id="a1170b3e9e3c606daf17d1be45c9497db" name="a1170b3e9e3c606daf17d1be45c9497db"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1170b3e9e3c606daf17d1be45c9497db">&#9670;&#160;</a></span>write() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
+<div class="memtemplate">
+template&lt;class radio_t &gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">bool RF24Network::write </td>
+          <td class="memname">bool <a class="el" href="classESBNetwork.html">ESBNetwork</a>&lt; radio_t &gt;::write </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="structRF24NetworkHeader.html">RF24NetworkHeader</a> &amp;&#160;</td>
           <td class="paramname"><em>header</em>, </td>
@@ -641,14 +681,16 @@ Public Member Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="acc3e7809ffc7ff48579811d2e063142a" name="acc3e7809ffc7ff48579811d2e063142a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#acc3e7809ffc7ff48579811d2e063142a">&#9670;&#160;</a></span>sleepNode()</h2>
+<a id="a2d92a9ed0c845df12dc4180356955ad8" name="a2d92a9ed0c845df12dc4180356955ad8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2d92a9ed0c845df12dc4180356955ad8">&#9670;&#160;</a></span>sleepNode()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<div class="memtemplate">
+template&lt;class radio_t  = RF24&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">bool RF24Network::sleepNode </td>
+          <td class="memname">bool <a class="el" href="classESBNetwork.html">ESBNetwork</a>&lt; radio_t &gt;::sleepNode </td>
           <td>(</td>
           <td class="paramtype">unsigned int&#160;</td>
           <td class="paramname"><em>cycles</em>, </td>
@@ -674,7 +716,7 @@ Public Member Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>Sleep this node - For AVR devices only </p><dl class="section note"><dt>Note</dt><dd>NEW - Nodes can now be slept while the radio is not actively transmitting. This must be manually enabled by uncommenting the <code>#define ENABLE_SLEEP_MODE</code> in <a class="el" href="RF24Network__config_8h.html">RF24Network_config.h</a> </dd>
 <dd>
-The watchdog timer should be configured in the sketch's <code>setup()</code> if using sleep mode. This function will sleep the node, with the radio still active in receive mode. See <a class="el" href="classRF24Network.html#acb09129760ac9b171833af3055b2b6f5">setup_watchdog()</a>.</dd></dl>
+The watchdog timer should be configured in the sketch's <code>setup()</code> if using sleep mode. This function will sleep the node, with the radio still active in receive mode. See <a class="el" href="classESBNetwork.html#a77a3c8cc72b0c5e073501ef5f3744591">setup_watchdog()</a>.</dd></dl>
 <p>The node can be awoken in two ways, both of which can be enabled simultaneously:</p><ol type="1">
 <li>An interrupt - usually triggered by the radio receiving a payload. Must use pin 2 (interrupt 0) or 3 (interrupt 1) on Uno, Nano, etc.</li>
 <li>The watchdog timer waking the MCU after a designated period of time, can also be used instead of delays to control transmission intervals.</li>
@@ -709,17 +751,16 @@ The watchdog timer should be configured in the sketch's <code>setup()</code> if 
 
 </div>
 </div>
-<a id="aa6919435695051d522dfcce4e8395f5e" name="aa6919435695051d522dfcce4e8395f5e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa6919435695051d522dfcce4e8395f5e">&#9670;&#160;</a></span>parent()</h2>
+<a id="aee407cd116e3157f6e81a191e8e46a0a" name="aee407cd116e3157f6e81a191e8e46a0a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aee407cd116e3157f6e81a191e8e46a0a">&#9670;&#160;</a></span>parent()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<div class="memtemplate">
+template&lt;class radio_t &gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">uint16_t RF24Network::parent </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td> const</td>
+          <td class="memname">uint16_t <a class="el" href="classESBNetwork.html">ESBNetwork</a>&lt; radio_t &gt;::parent</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -728,14 +769,16 @@ The watchdog timer should be configured in the sketch's <code>setup()</code> if 
 
 </div>
 </div>
-<a id="aa4a11edb3860f4a0e3808bccad36a5dc" name="aa4a11edb3860f4a0e3808bccad36a5dc"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa4a11edb3860f4a0e3808bccad36a5dc">&#9670;&#160;</a></span>addressOfPipe()</h2>
+<a id="aac2bef365c0cf9e4b12492f36d163ed8" name="aac2bef365c0cf9e4b12492f36d163ed8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aac2bef365c0cf9e4b12492f36d163ed8">&#9670;&#160;</a></span>addressOfPipe()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<div class="memtemplate">
+template&lt;class radio_t &gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">uint16_t RF24Network::addressOfPipe </td>
+          <td class="memname">uint16_t <a class="el" href="classESBNetwork.html">ESBNetwork</a>&lt; radio_t &gt;::addressOfPipe </td>
           <td>(</td>
           <td class="paramtype">uint16_t&#160;</td>
           <td class="paramname"><em>node</em>, </td>
@@ -753,18 +796,20 @@ The watchdog timer should be configured in the sketch's <code>setup()</code> if 
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Provided a node address and a pipe number, will return the <a class="el" href="classRF24Network.html">RF24Network</a> address of that child pipe for that node. </p>
+<p>Provided a node address and a pipe number, will return the RF24Network address of that child pipe for that node. </p>
 
 </div>
 </div>
-<a id="ab41da035bd7f469ea4364a06ab4efd1b" name="ab41da035bd7f469ea4364a06ab4efd1b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab41da035bd7f469ea4364a06ab4efd1b">&#9670;&#160;</a></span>is_valid_address()</h2>
+<a id="ab09e06857bfa68fdbd93f31e27ac07d7" name="ab09e06857bfa68fdbd93f31e27ac07d7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab09e06857bfa68fdbd93f31e27ac07d7">&#9670;&#160;</a></span>is_valid_address()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<div class="memtemplate">
+template&lt;class radio_t &gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">bool RF24Network::is_valid_address </td>
+          <td class="memname">bool <a class="el" href="classESBNetwork.html">ESBNetwork</a>&lt; radio_t &gt;::is_valid_address </td>
           <td>(</td>
           <td class="paramtype">uint16_t&#160;</td>
           <td class="paramname"><em>node</em></td><td>)</td>
@@ -784,14 +829,16 @@ The watchdog timer should be configured in the sketch's <code>setup()</code> if 
 
 </div>
 </div>
-<a id="abf0da46b2e78b2010171c9f20cba8bae" name="abf0da46b2e78b2010171c9f20cba8bae"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#abf0da46b2e78b2010171c9f20cba8bae">&#9670;&#160;</a></span>begin() <span class="overload">[2/2]</span></h2>
+<a id="ab2bf0e2d6c4e5b976f7d0f10c5789f2b" name="ab2bf0e2d6c4e5b976f7d0f10c5789f2b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab2bf0e2d6c4e5b976f7d0f10c5789f2b">&#9670;&#160;</a></span>begin() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
+<div class="memtemplate">
+template&lt;class radio_t &gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">void RF24Network::begin </td>
+          <td class="memname">void <a class="el" href="classESBNetwork.html">ESBNetwork</a>&lt; radio_t &gt;::begin </td>
           <td>(</td>
           <td class="paramtype">uint8_t&#160;</td>
           <td class="paramname"><em>_channel</em>, </td>
@@ -809,7 +856,7 @@ The watchdog timer should be configured in the sketch's <code>setup()</code> if 
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Bring up the network on a specific radio frequency/channel. </p><dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000001">Deprecated:</a></b></dt><dd>Use <code>RF24::setChannel()</code> to configure the radio channel. Use <a class="el" href="classRF24Network.html#aad6a74b55514a26e95e20eaa6a093a0b">RF24Network::begin(uint16_t _node_address)</a> to set the node address.</dd></dl>
+<p>Bring up the network on a specific radio frequency/channel. </p><dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000001">Deprecated:</a></b></dt><dd>Use <code>RF24::setChannel()</code> to configure the radio channel. Use <a class="el" href="classESBNetwork.html#a48195ce31a771672723628579c6c80f5">ESBNetwork::begin(uint16_t _node_address)</a> to set the node address.</dd></dl>
 <p><b>Example 1:</b> Begin on channel 90 with address 0 (master node) </p><div class="fragment"><div class="line">network.begin(90, 0);</div>
 </div><!-- fragment --><p> <b>Example 2:</b> Begin on channel 90 with address 01 (child of master) </p><div class="fragment"><div class="line">network.begin(90, 01);</div>
 </div><!-- fragment --><p> <b>Example 3:</b> Begin on channel 90 with address 011 (child of 01, grandchild of master) </p><div class="fragment"><div class="line">network.begin(90, 011);</div>
@@ -824,30 +871,34 @@ The watchdog timer should be configured in the sketch's <code>setup()</code> if 
 </div>
 </div>
 <h2 class="groupheader">Member Data Documentation</h2>
-<a id="add7408ca2b2f9ab15331ba77a747f7bb" name="add7408ca2b2f9ab15331ba77a747f7bb"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#add7408ca2b2f9ab15331ba77a747f7bb">&#9670;&#160;</a></span>multicastRelay</h2>
+<a id="ad9b7bd82837e7a92f4dde9754fb4d03f" name="ad9b7bd82837e7a92f4dde9754fb4d03f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad9b7bd82837e7a92f4dde9754fb4d03f">&#9670;&#160;</a></span>multicastRelay</h2>
 
 <div class="memitem">
 <div class="memproto">
+<div class="memtemplate">
+template&lt;class radio_t  = RF24&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">bool RF24Network::multicastRelay</td>
+          <td class="memname">bool <a class="el" href="classESBNetwork.html">ESBNetwork</a>&lt; radio_t &gt;::multicastRelay</td>
         </tr>
       </table>
 </div><div class="memdoc">
 <p>Enabling this will allow this node to automatically forward received multicast frames to the next highest multicast level. Forwarded frames will also be enqueued on the forwarding node as a received frame.</p>
-<p>This is disabled by default. </p><dl class="section see"><dt>See also</dt><dd><a class="el" href="classRF24Network.html#a4fb7c61eee75d708a4ba20bb1caec54f">multicastLevel()</a> </dd></dl>
+<p>This is disabled by default. </p><dl class="section see"><dt>See also</dt><dd><a class="el" href="classESBNetwork.html#a3c2b5449bd374c0d5a6ae11e3b4f1c02">multicastLevel()</a> </dd></dl>
 
 </div>
 </div>
-<a id="a8838b42717e7c9da37213b020db1f88c" name="a8838b42717e7c9da37213b020db1f88c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8838b42717e7c9da37213b020db1f88c">&#9670;&#160;</a></span>txTimeout</h2>
+<a id="a93188f3c0600e0b5f0e3d5e57eb86513" name="a93188f3c0600e0b5f0e3d5e57eb86513"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a93188f3c0600e0b5f0e3d5e57eb86513">&#9670;&#160;</a></span>txTimeout</h2>
 
 <div class="memitem">
 <div class="memproto">
+<div class="memtemplate">
+template&lt;class radio_t  = RF24&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">uint32_t RF24Network::txTimeout</td>
+          <td class="memname">uint32_t <a class="el" href="classESBNetwork.html">ESBNetwork</a>&lt; radio_t &gt;::txTimeout</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -858,14 +909,16 @@ The watchdog timer should be configured in the sketch's <code>setup()</code> if 
 
 </div>
 </div>
-<a id="a657fd03730b6c9084cc440b4fe0177c3" name="a657fd03730b6c9084cc440b4fe0177c3"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a657fd03730b6c9084cc440b4fe0177c3">&#9670;&#160;</a></span>routeTimeout</h2>
+<a id="a657d583b2f6ae0ec61a6fa771431470a" name="a657d583b2f6ae0ec61a6fa771431470a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a657d583b2f6ae0ec61a6fa771431470a">&#9670;&#160;</a></span>routeTimeout</h2>
 
 <div class="memitem">
 <div class="memproto">
+<div class="memtemplate">
+template&lt;class radio_t  = RF24&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">uint16_t RF24Network::routeTimeout</td>
+          <td class="memname">uint16_t <a class="el" href="classESBNetwork.html">ESBNetwork</a>&lt; radio_t &gt;::routeTimeout</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -875,14 +928,16 @@ The watchdog timer should be configured in the sketch's <code>setup()</code> if 
 
 </div>
 </div>
-<a id="aa06f1fdd0fd986d427c2c5193b47b212" name="aa06f1fdd0fd986d427c2c5193b47b212"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa06f1fdd0fd986d427c2c5193b47b212">&#9670;&#160;</a></span>frame_buffer</h2>
+<a id="ac31a18d03d70371890d16d242a341631" name="ac31a18d03d70371890d16d242a341631"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac31a18d03d70371890d16d242a341631">&#9670;&#160;</a></span>frame_buffer</h2>
 
 <div class="memitem">
 <div class="memproto">
+<div class="memtemplate">
+template&lt;class radio_t  = RF24&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">uint8_t RF24Network::frame_buffer[<a class="el" href="RF24Network_8h.html#ad15d35a0d29a9dbf9324e3859ce3b008">MAX_FRAME_SIZE</a>]</td>
+          <td class="memname">uint8_t <a class="el" href="classESBNetwork.html">ESBNetwork</a>&lt; radio_t &gt;::frame_buffer[<a class="el" href="RF24Network_8h.html#ad15d35a0d29a9dbf9324e3859ce3b008">MAX_FRAME_SIZE</a>]</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -893,14 +948,16 @@ The watchdog timer should be configured in the sketch's <code>setup()</code> if 
 
 </div>
 </div>
-<a id="ab387a2137dc1b62c1bf5cc783e34e2c0" name="ab387a2137dc1b62c1bf5cc783e34e2c0"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab387a2137dc1b62c1bf5cc783e34e2c0">&#9670;&#160;</a></span>external_queue</h2>
+<a id="a1af1d7e26417c772adb897122d4368f1" name="a1af1d7e26417c772adb897122d4368f1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1af1d7e26417c772adb897122d4368f1">&#9670;&#160;</a></span>external_queue</h2>
 
 <div class="memitem">
 <div class="memproto">
+<div class="memtemplate">
+template&lt;class radio_t  = RF24&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">std::queue&lt;<a class="el" href="structRF24NetworkFrame.html">RF24NetworkFrame</a>&gt; RF24Network::external_queue</td>
+          <td class="memname">std::queue&lt;<a class="el" href="structRF24NetworkFrame.html">RF24NetworkFrame</a>&gt; <a class="el" href="classESBNetwork.html">ESBNetwork</a>&lt; radio_t &gt;::external_queue</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -914,25 +971,27 @@ The watchdog timer should be configured in the sketch's <code>setup()</code> if 
 <div class="line">  memcpy(&amp;myBuffer, &amp;f.<a class="code hl_variable" href="structRF24NetworkFrame.html#a2ca805d90caa7aef8005fafd2c55fbc6">message_buffer</a>, dataSize);</div>
 <div class="line">  network.external_queue.pop();</div>
 <div class="line">}</div>
-<div class="ttc" id="astructRF24NetworkFrame_html"><div class="ttname"><a href="structRF24NetworkFrame.html">RF24NetworkFrame</a></div><div class="ttdef"><b>Definition:</b> RF24Network.h:309</div></div>
-<div class="ttc" id="astructRF24NetworkFrame_html_a2ca805d90caa7aef8005fafd2c55fbc6"><div class="ttname"><a href="structRF24NetworkFrame.html#a2ca805d90caa7aef8005fafd2c55fbc6">RF24NetworkFrame::message_buffer</a></div><div class="ttdeci">uint8_t * message_buffer</div><div class="ttdef"><b>Definition:</b> RF24Network.h:323</div></div>
-<div class="ttc" id="astructRF24NetworkFrame_html_a6d44701fc5ef58ed6f674fde132bedff"><div class="ttname"><a href="structRF24NetworkFrame.html#a6d44701fc5ef58ed6f674fde132bedff">RF24NetworkFrame::message_size</a></div><div class="ttdeci">uint16_t message_size</div><div class="ttdef"><b>Definition:</b> RF24Network.h:314</div></div>
+<div class="ttc" id="astructRF24NetworkFrame_html"><div class="ttname"><a href="structRF24NetworkFrame.html">RF24NetworkFrame</a></div><div class="ttdef"><b>Definition:</b> RF24Network.h:312</div></div>
+<div class="ttc" id="astructRF24NetworkFrame_html_a2ca805d90caa7aef8005fafd2c55fbc6"><div class="ttname"><a href="structRF24NetworkFrame.html#a2ca805d90caa7aef8005fafd2c55fbc6">RF24NetworkFrame::message_buffer</a></div><div class="ttdeci">uint8_t * message_buffer</div><div class="ttdef"><b>Definition:</b> RF24Network.h:326</div></div>
+<div class="ttc" id="astructRF24NetworkFrame_html_a6d44701fc5ef58ed6f674fde132bedff"><div class="ttname"><a href="structRF24NetworkFrame.html#a6d44701fc5ef58ed6f674fde132bedff">RF24NetworkFrame::message_size</a></div><div class="ttdeci">uint16_t message_size</div><div class="ttdef"><b>Definition:</b> RF24Network.h:317</div></div>
 </div><!-- fragment --> 
 </div>
 </div>
-<a id="a1c994c5fdcb2173b187c52b641aaeae0" name="a1c994c5fdcb2173b187c52b641aaeae0"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a1c994c5fdcb2173b187c52b641aaeae0">&#9670;&#160;</a></span>frag_ptr</h2>
+<a id="aa68d02f91212108906bac54f6d141e7e" name="aa68d02f91212108906bac54f6d141e7e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa68d02f91212108906bac54f6d141e7e">&#9670;&#160;</a></span>frag_ptr</h2>
 
 <div class="memitem">
 <div class="memproto">
+<div class="memtemplate">
+template&lt;class radio_t  = RF24&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structRF24NetworkFrame.html">RF24NetworkFrame</a>* RF24Network::frag_ptr</td>
+          <td class="memname"><a class="el" href="structRF24NetworkFrame.html">RF24NetworkFrame</a>* <a class="el" href="classESBNetwork.html">ESBNetwork</a>&lt; radio_t &gt;::frag_ptr</td>
         </tr>
       </table>
 </div><div class="memdoc">
 <p><b>ARDUINO platforms only</b></p>
-<p>The <code>frag_ptr</code> is only used with Arduino (not RPi/Linux) and is mainly used for external data systems like RF24Ethernet. When a payload of type <a class="el" href="group__DEFINED__TYPES.html#gac6bbd2772e776d10ca7c5f3c7eddf982">EXTERNAL_DATA_TYPE</a> is received, and returned from <a class="el" href="classRF24Network.html#ad59983f89b09d17d7d9b0581f658a41c">update()</a>, the <code>frag_ptr</code> will always point to the starting memory location of the received frame. This is used by external data systems (RF24Ethernet) to immediately copy the received data to a buffer, without using the user-cache.</p>
+<p>The <code>frag_ptr</code> is only used with Arduino (not RPi/Linux) and is mainly used for external data systems like RF24Ethernet. When a payload of type <a class="el" href="group__DEFINED__TYPES.html#gac6bbd2772e776d10ca7c5f3c7eddf982">EXTERNAL_DATA_TYPE</a> is received, and returned from <a class="el" href="classESBNetwork.html#a828adf45c3b8a82b08644510f29a32d3">update()</a>, the <code>frag_ptr</code> will always point to the starting memory location of the received frame. This is used by external data systems (RF24Ethernet) to immediately copy the received data to a buffer, without using the user-cache.</p>
 <dl class="section see"><dt>See also</dt><dd><a class="el" href="structRF24NetworkFrame.html">RF24NetworkFrame</a></dd></dl>
 <div class="fragment"><div class="line">uint8_t return_type = network.update();</div>
 <div class="line"><span class="keywordflow">if</span>(return_type == <a class="code hl_define" href="group__DEFINED__TYPES.html#gac6bbd2772e776d10ca7c5f3c7eddf982">EXTERNAL_DATA_TYPE</a>) {</div>
@@ -943,18 +1002,20 @@ The watchdog timer should be configured in the sketch's <code>setup()</code> if 
 
 </div>
 </div>
-<a id="afb6b1d5c0fa3d982425f7a1f4fb48d13" name="afb6b1d5c0fa3d982425f7a1f4fb48d13"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#afb6b1d5c0fa3d982425f7a1f4fb48d13">&#9670;&#160;</a></span>returnSysMsgs</h2>
+<a id="a38f2b8e2665e9512e6953992cf08888f" name="a38f2b8e2665e9512e6953992cf08888f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a38f2b8e2665e9512e6953992cf08888f">&#9670;&#160;</a></span>returnSysMsgs</h2>
 
 <div class="memitem">
 <div class="memproto">
+<div class="memtemplate">
+template&lt;class radio_t  = RF24&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">bool RF24Network::returnSysMsgs</td>
+          <td class="memname">bool <a class="el" href="classESBNetwork.html">ESBNetwork</a>&lt; radio_t &gt;::returnSysMsgs</td>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Variable to determine whether <a class="el" href="classRF24Network.html#ad59983f89b09d17d7d9b0581f658a41c">update()</a> will return after the radio buffers have been emptied (DEFAULT), or whether to return immediately when (most) system types are received.</p>
+<p>Variable to determine whether <a class="el" href="classESBNetwork.html#a828adf45c3b8a82b08644510f29a32d3">update()</a> will return after the radio buffers have been emptied (DEFAULT), or whether to return immediately when (most) system types are received.</p>
 <p>As an example, this is used with RF24Mesh to catch and handle system messages without loading them into the user cache.</p>
 <p>The following reserved/system message types are handled automatically, and not returned.</p>
 <table class="markdownTable">
@@ -974,14 +1035,16 @@ The watchdog timer should be configured in the sketch's <code>setup()</code> if 
 
 </div>
 </div>
-<a id="a476806538919b167465181ab872e0cad" name="a476806538919b167465181ab872e0cad"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a476806538919b167465181ab872e0cad">&#9670;&#160;</a></span>networkFlags</h2>
+<a id="a9d4ab7fc671cdb2573535bfd0c9e2050" name="a9d4ab7fc671cdb2573535bfd0c9e2050"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9d4ab7fc671cdb2573535bfd0c9e2050">&#9670;&#160;</a></span>networkFlags</h2>
 
 <div class="memitem">
 <div class="memproto">
+<div class="memtemplate">
+template&lt;class radio_t  = RF24&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">uint8_t RF24Network::networkFlags</td>
+          <td class="memname">uint8_t <a class="el" href="classESBNetwork.html">ESBNetwork</a>&lt; radio_t &gt;::networkFlags</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -999,17 +1062,19 @@ The watchdog timer should be configured in the sketch's <code>setup()</code> if 
 
 </div>
 </div>
-<a id="a5b89e48e46eebb615b2ef152f057aca7" name="a5b89e48e46eebb615b2ef152f057aca7"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5b89e48e46eebb615b2ef152f057aca7">&#9670;&#160;</a></span>_multicast_level</h2>
+<a id="aab52703c149001e4d3e1ae7c8311f8e0" name="aab52703c149001e4d3e1ae7c8311f8e0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aab52703c149001e4d3e1ae7c8311f8e0">&#9670;&#160;</a></span>_multicast_level</h2>
 
 <div class="memitem">
 <div class="memproto">
+<div class="memtemplate">
+template&lt;class radio_t  = RF24&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">uint8_t RF24Network::_multicast_level</td>
+          <td class="memname">uint8_t <a class="el" href="classESBNetwork.html">ESBNetwork</a>&lt; radio_t &gt;::_multicast_level</td>
         </tr>
       </table>
   </td>
@@ -1018,21 +1083,23 @@ The watchdog timer should be configured in the sketch's <code>setup()</code> if 
   </tr>
 </table>
 </div><div class="memdoc">
-<p>The current node's network level (used for multicast TX/RX-ing). </p><dl class="section see"><dt>See also</dt><dd>Use <a class="el" href="classRF24Network.html#a4fb7c61eee75d708a4ba20bb1caec54f">multicastLevel()</a> to adjust this when needed. </dd></dl>
+<p>The current node's network level (used for multicast TX/RX-ing). </p><dl class="section see"><dt>See also</dt><dd>Use <a class="el" href="classESBNetwork.html#a3c2b5449bd374c0d5a6ae11e3b4f1c02">multicastLevel()</a> to adjust this when needed. </dd></dl>
 
 </div>
 </div>
-<a id="a17017b584633bb969d004c4c43ca5c82" name="a17017b584633bb969d004c4c43ca5c82"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a17017b584633bb969d004c4c43ca5c82">&#9670;&#160;</a></span>node_address</h2>
+<a id="a3e5aa077d46a74acd31ca5242bb0c0a4" name="a3e5aa077d46a74acd31ca5242bb0c0a4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3e5aa077d46a74acd31ca5242bb0c0a4">&#9670;&#160;</a></span>node_address</h2>
 
 <div class="memitem">
 <div class="memproto">
+<div class="memtemplate">
+template&lt;class radio_t  = RF24&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">uint16_t RF24Network::node_address</td>
+          <td class="memname">uint16_t <a class="el" href="classESBNetwork.html">ESBNetwork</a>&lt; radio_t &gt;::node_address</td>
         </tr>
       </table>
   </td>
@@ -1048,7 +1115,7 @@ The watchdog timer should be configured in the sketch's <code>setup()</code> if 
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Wed Jun 21 2023 06:57:48 for Newly Optimized RF24Network Layer by&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.6
+Generated on Thu Jun 22 2023 11:22:51 for Newly Optimized RF24Network Layer by&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.6
 </small></address>
 </body>
 </html>

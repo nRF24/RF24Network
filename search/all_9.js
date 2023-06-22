@@ -8,7 +8,7 @@ var searchData=
   ['message_5fbuffer_5',['message_buffer',['../structRF24NetworkFrame.html#a2ca805d90caa7aef8005fafd2c55fbc6',1,'RF24NetworkFrame']]],
   ['message_5fsize_6',['message_size',['../structRF24NetworkFrame.html#a6d44701fc5ef58ed6f674fde132bedff',1,'RF24NetworkFrame']]],
   ['min_5fuser_5fdefined_5fheader_5ftype_7',['MIN_USER_DEFINED_HEADER_TYPE',['../RF24Network_8h.html#a09198484bcfa0f13c7499304ce8bb6a7',1,'RF24Network.h']]],
-  ['multicast_8',['multicast',['../classRF24Network.html#a96a66907061c54ee1fea6ea7f78d6827',1,'RF24Network']]],
-  ['multicastlevel_9',['multicastLevel',['../classRF24Network.html#a4fb7c61eee75d708a4ba20bb1caec54f',1,'RF24Network']]],
-  ['multicastrelay_10',['multicastRelay',['../classRF24Network.html#add7408ca2b2f9ab15331ba77a747f7bb',1,'RF24Network']]]
+  ['multicast_8',['multicast',['../classESBNetwork.html#a3e6e9e74461290d6f648e972ee4aaf91',1,'ESBNetwork']]],
+  ['multicastlevel_9',['multicastLevel',['../classESBNetwork.html#a3c2b5449bd374c0d5a6ae11e3b4f1c02',1,'ESBNetwork']]],
+  ['multicastrelay_10',['multicastRelay',['../classESBNetwork.html#ad9b7bd82837e7a92f4dde9754fb4d03f',1,'ESBNetwork']]]
 ];

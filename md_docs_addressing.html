@@ -23,7 +23,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">Newly Optimized RF24Network Layer<span id="projectnumber">&#160;v1.0.19</span>
+   <div id="projectname">Newly Optimized RF24Network Layer<span id="projectnumber">&#160;v2.0.0</span>
    </div>
    <div id="projectbrief">2020 - Optimized RF24 Network Layer for NRF24L01 radios</div>
   </td>
@@ -83,11 +83,11 @@ $(function() {
 <li class="level1"><a href="#autotoc_md4">Displaying Addresses</a></li>
 </ul>
 </div>
-<div class="textblock"><p>An overview of addressing in <a class="el" href="classRF24Network.html">RF24Network</a></p>
+<div class="textblock"><p>An overview of addressing in RF24Network</p>
 <h1><a class="anchor" id="autotoc_md1"></a>
 Overview</h1>
 <p>The nrf24 radio modules typically use a 40-bit address format, requiring 5-bytes of storage space per address, and allowing a wide array of addresses to be utilized. In addition, the radios are limited to direct communication with 6 other nodes while using the Enhanced-Shock-Burst (ESB) functionality of the radios.</p>
-<p><a class="el" href="classRF24Network.html">RF24Network</a> uses a simple method of data compression to store the addresses using only 2 bytes, in a format designed to represent the network topology in an intuitive way. See the <a href="md_docs_tuning.html">Topology and Overview</a> page for more info regarding topology.</p>
+<p>RF24Network uses a simple method of data compression to store the addresses using only 2 bytes, in a format designed to represent the network topology in an intuitive way. See the <a href="md_docs_tuning.html">Topology and Overview</a> page for more info regarding topology.</p>
 <h1><a class="anchor" id="autotoc_md2"></a>
 Decimal, Octal and Binary formats</h1>
 <p>Say we want to designate a logical address to a node, using a tree topology as defined by the manufacturer. In the simplest format, we could assign the first node the address of 1, the second 2, and so on. Since a single node can only connect to 6 other nodes (1 parent and 5 children) subnets need to be created if using more than 6 nodes. In this case, the</p>
@@ -95,7 +95,7 @@ Decimal, Octal and Binary formats</h1>
 <li>children of node 1 could simply be designated as 11, 21, 31, 41, and 51</li>
 <li>children of node 2 could be designated as 12, 22, 32, 42, and 52</li>
 </ul>
-<p>The above example is exactly how <a class="el" href="classRF24Network.html">RF24Network</a> manages the addresses, but they are represented in Octal format.</p>
+<p>The above example is exactly how RF24Network manages the addresses, but they are represented in Octal format.</p>
 <h2><a class="anchor" id="autotoc_md3"></a>
 Decimal, Octal and Binary</h2>
 <table class="markdownTable">
@@ -130,7 +130,7 @@ Displaying Addresses</h1>
 </div><!-- PageDoc -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Wed Jun 21 2023 06:57:48 for Newly Optimized RF24Network Layer by&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.6
+Generated on Thu Jun 22 2023 11:22:51 for Newly Optimized RF24Network Layer by&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.6
 </small></address>
 </body>
 </html>

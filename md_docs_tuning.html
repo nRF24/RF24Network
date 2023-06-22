@@ -23,7 +23,7 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">Newly Optimized RF24Network Layer<span id="projectnumber">&#160;v1.0.19</span>
+   <div id="projectname">Newly Optimized RF24Network Layer<span id="projectnumber">&#160;v2.0.0</span>
    </div>
    <div id="projectbrief">2020 - Optimized RF24 Network Layer for NRF24L01 radios</div>
   </td>
@@ -101,7 +101,7 @@ Understanding Radio Communication and Topology</h1>
 <p>Radios in this network are linked by <b>addresses</b> assigned to <b>pipes</b>. Each radio can listen to 6 addresses on 6 pipes, therefore each radio has a parent pipe and 4-5 child pipes, which are used to form a tree structure. Nodes communicate directly with their parent and children nodes. Any other traffic to or from a node must be routed through the network.</p>
 <h1><a class="anchor" id="autotoc_md21"></a>
 Topology of RF24Network</h1>
-<p>Anybody who is familiar at all with IP networking should be able to easily understand <a class="el" href="classRF24Network.html">RF24Network</a> topology. The master node can be seen as the gateway, with up to 4 directly connected nodes. Each of those nodes creates a subnet below it, with up to 4 additional child nodes. The numbering scheme can also be related to IP addresses, for purposes of understanding the topology via subnetting. Nodes can have 5 children if multicast is disabled.</p>
+<p>Anybody who is familiar at all with IP networking should be able to easily understand RF24Network topology. The master node can be seen as the gateway, with up to 4 directly connected nodes. Each of those nodes creates a subnet below it, with up to 4 additional child nodes. The numbering scheme can also be related to IP addresses, for purposes of understanding the topology via subnetting. Nodes can have 5 children if multicast is disabled.</p>
 <h2><a class="anchor" id="autotoc_md22"></a>
 Expressing RF24Network addresses in IP format</h2>
 <p>As an example, we could designate the master node in theory, as Address <code>10.10.10.10</code></p>
@@ -109,7 +109,7 @@ Expressing RF24Network addresses in IP format</h2>
 <li>The children nodes of the master would be <code>10.10.10.1</code>, <code>10.10.10.2</code>, <code>10.10.10.3</code>, <code>10.10.10.4</code> and <code>10.10.10.5</code></li>
 <li>The children nodes of <code>10.10.10.1</code> would be <code>10.10.1.1</code>, <code>10.10.2.1</code>, <code>10.10.3.1</code>, <code>10.10.4.1</code> and <code>10.10.5.1</code></li>
 </ul>
-<p>In <a class="el" href="classRF24Network.html">RF24Network</a>, the master is just <code>00</code></p>
+<p>In RF24Network, the master is just <code>00</code></p>
 <ul>
 <li>Children of master are <code>01</code>, <code>02</code>, <code>03</code>, <code>04</code>, <code>05</code></li>
 <li>Children of <code>01</code> are <code>011</code>, <code>021</code>, <code>031</code>, <code>041</code>, <code>051</code></li>
@@ -166,7 +166,7 @@ Example 2</h2>
 </div><!-- PageDoc -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Wed Jun 21 2023 06:57:48 for Newly Optimized RF24Network Layer by&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.6
+Generated on Thu Jun 22 2023 11:22:51 for Newly Optimized RF24Network Layer by&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.6
 </small></address>
 </body>
 </html>
