@@ -92,7 +92,10 @@ void ESBNetwork<radio_t>::begin(uint8_t _channel, uint16_t _node_address)
         radio.setChannel(_channel);
 
     #if defined (multichannel)
-      baseChannel = radio.getChannel();
+      baseChannel = USE_CURRENT_CHANNEL == 255 ? 97 : _channel;
+      //Serial.print("Base Chan:");
+      //Serial.println(baseChannel);
+      networkChannel = baseChannel;
     #endif
     //radio.enableDynamicAck();
     radio.setAutoAck(1);
@@ -963,17 +966,29 @@ void ESBNetwork<radio_t>::logicalToPhysicalAddress(logicalToPhysicalStruct* conv
     }
     #endif    
     
-    if (*directTo > TX_ROUTED) {
-        #if defined (multichannel)
-          newChannel = baseChannel;
-        #endif
+    if (*directTo > TX_ROUTED) { //Serial.println("txrouted");
+      
+      #if defined (multichannel)
+      uint16_t node_mask_check = 0xFFFF;
+      uint8_t count = 0;
+      while (*to_node & node_mask_check) {
+        node_mask_check <<= 3;
+        count++;
+      }
+      //Serial.print("to_node");
+      //Serial.println(*to_node, OCT);
+ 
+      newChannel = (networkChannel + (5 * count));
+      #endif
+      
+        
         pre_conversion_send_node = *to_node;
         *multicast = 1;
         //if(*directTo == USER_TX_MULTICAST || *directTo == USER_TX_TO_PHYSICAL_ADDRESS){
         pre_conversion_send_pipe = 0;
         //}
     }
-    else if (is_descendant(*to_node)) {
+    else if (is_descendant(*to_node)) { //Serial.println("desc");
         pre_conversion_send_pipe = 5; // Send to its listening pipe
         // If the node is a direct child,
         if (is_direct_child(*to_node)) {
@@ -984,7 +999,7 @@ void ESBNetwork<radio_t>::logicalToPhysicalAddress(logicalToPhysicalStruct* conv
         // talk on our child's listening pipe,
         // and let the direct child relay it.
         else {
-            pre_conversion_send_node = direct_child_route_to(*to_node);
+            pre_conversion_send_node = direct_child_route_to(*to_node); //Serial.println("default");
         }
         #if defined (multichannel)
           newChannel = baseChannel + 5;
@@ -1026,7 +1041,7 @@ bool ESBNetwork<radio_t>::write_to_pipe(uint16_t node, uint8_t pipe, bool multic
     }
     #if defined (multichannel)
       radio.setChannel(baseChannel);
-      //Serial.print("Set channel");
+      //Serial.print("Set channel write");
       //Serial.println(baseChannel);
     #endif
     /*
@@ -1095,9 +1110,9 @@ void ESBNetwork<radio_t>::setup_address(void)
 #endif
 #if defined (multichannel)
     radio.setChannel( (baseChannel + (_multicast_level * 5)) % 127);
-    baseChannel = radio.getChannel();
-    //Serial.print("Set channel");
-    //Serial.println(baseChannel + (_multicast_level *5));
+    baseChannel = (baseChannel + (_multicast_level * 5)) % 127;
+    //Serial.print("Set Initial channel");
+    //Serial.println(baseChannel);
     
 #endif
 
