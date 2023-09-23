@@ -82,6 +82,9 @@
         #define ENABLE_DYNAMIC_PAYLOADS
     #endif // DISABLE_DYNAMIC_PAYLOADS
 
+    #define multichannel
+    
+    
     /* Debug Options */
     //#define SERIAL_DEBUG
     //#define SERIAL_DEBUG_MINIMAL
@@ -100,6 +103,7 @@
     #define DISABLE_FRAGMENTATION
     #define ENABLE_DYNAMIC_PAYLOADS
     //#define DISABLE_USER_PAYLOADS
+    #define multichannel
 #endif
 /*************************************/
 

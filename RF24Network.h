@@ -975,6 +975,10 @@ private:
     uint16_t levelToAddress(uint8_t level);
 #endif
 
+#if defined (multichannel)
+    uint8_t baseChannel;
+#endif
+
     /** @} */
 };
 

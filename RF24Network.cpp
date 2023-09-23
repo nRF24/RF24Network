@@ -54,6 +54,9 @@ ESBNetwork<radio_t>::ESBNetwork(radio_t& _radio) : radio(_radio), frame_size(MAX
     networkFlags = 0;
     returnSysMsgs = 0;
     multicastRelay = 0;
+    #if defined (multichannel)
+      baseChannel = 0;
+    #endif
 }
 #else
 template<class radio_t>
@@ -66,6 +69,9 @@ ESBNetwork<radio_t>::ESBNetwork(radio_t& _radio) : radio(_radio), next_frame(fra
     networkFlags = 0;
     returnSysMsgs = 0;
     multicastRelay = 0;
+    #if defined (multichannel)
+      baseChannel = 0;
+    #endif
 }
 #endif
 /******************************************************************/
@@ -85,6 +91,9 @@ void ESBNetwork<radio_t>::begin(uint8_t _channel, uint16_t _node_address)
     if (_channel != USE_CURRENT_CHANNEL)
         radio.setChannel(_channel);
 
+    #if defined (multichannel)
+      baseChannel = radio.getChannel();
+    #endif
     //radio.enableDynamicAck();
     radio.setAutoAck(1);
     radio.setAutoAck(0, 0);
@@ -947,8 +956,17 @@ void ESBNetwork<radio_t>::logicalToPhysicalAddress(logicalToPhysicalStruct* conv
 
     // On which pipe
     uint8_t pre_conversion_send_pipe = parent_pipe;
-
+    #if defined (multichannel)
+    uint8_t newChannel = baseChannel;
+    if(node_address){
+      newChannel -= 5;
+    }
+    #endif    
+    
     if (*directTo > TX_ROUTED) {
+        #if defined (multichannel)
+          newChannel = baseChannel;
+        #endif
         pre_conversion_send_node = *to_node;
         *multicast = 1;
         //if(*directTo == USER_TX_MULTICAST || *directTo == USER_TX_TO_PHYSICAL_ADDRESS){
@@ -968,8 +986,16 @@ void ESBNetwork<radio_t>::logicalToPhysicalAddress(logicalToPhysicalStruct* conv
         else {
             pre_conversion_send_node = direct_child_route_to(*to_node);
         }
+        #if defined (multichannel)
+          newChannel = baseChannel + 5;
+        #endif
     }
-
+    #if defined (multichannel)
+      
+      radio.setChannel(newChannel % 127);
+      //Serial.print("Set channel");
+      //Serial.println(newChannel);
+    #endif
     *to_node = pre_conversion_send_node;
     *directTo = pre_conversion_send_pipe;
 }
@@ -998,7 +1024,11 @@ bool ESBNetwork<radio_t>::write_to_pipe(uint16_t node, uint8_t pipe, bool multic
         ok = radio.txStandBy(txTimeout);
         radio.setAutoAck(0, 0);
     }
-
+    #if defined (multichannel)
+      radio.setChannel(baseChannel);
+      //Serial.print("Set channel");
+      //Serial.println(baseChannel);
+    #endif
     /*
     #if defined (__arm__) || defined (RF24_LINUX)
     IF_SERIAL_DEBUG(printf_P(PSTR("%u: MAC Sent on %x %s\n\r"), millis(), (uint32_t)out_pipe, ok ? PSTR("ok") : PSTR("failed")));
@@ -1050,18 +1080,25 @@ void ESBNetwork<radio_t>::setup_address(void)
 {
     // First, establish the node_mask
     uint16_t node_mask_check = 0xFFFF;
-#if defined(RF24NetworkMulticast)
+#if defined(RF24NetworkMulticast) || defined (multichannel)
     uint8_t count = 0;
 #endif
 
     while (node_address & node_mask_check) {
         node_mask_check <<= 3;
-#if defined(RF24NetworkMulticast)
+#if defined(RF24NetworkMulticast) || defined (multichannel)
         count++;
     }
     _multicast_level = count;
 #else
     }
+#endif
+#if defined (multichannel)
+    radio.setChannel( (baseChannel + (_multicast_level * 5)) % 127);
+    baseChannel = radio.getChannel();
+    //Serial.print("Set channel");
+    //Serial.println(baseChannel + (_multicast_level *5));
+    
 #endif
 
     node_mask = ~node_mask_check;
