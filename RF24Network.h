@@ -978,6 +978,7 @@ private:
 #if defined (multichannel)
     uint8_t baseChannel;
     uint8_t networkChannel;
+    uint8_t initialChannel;
 #endif
 
     /** @} */

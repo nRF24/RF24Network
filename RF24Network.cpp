@@ -56,6 +56,7 @@ ESBNetwork<radio_t>::ESBNetwork(radio_t& _radio) : radio(_radio), frame_size(MAX
     multicastRelay = 0;
     #if defined (multichannel)
       baseChannel = 0;
+      initialChannel = 255;
     #endif
 }
 #else
@@ -71,6 +72,7 @@ ESBNetwork<radio_t>::ESBNetwork(radio_t& _radio) : radio(_radio), next_frame(fra
     multicastRelay = 0;
     #if defined (multichannel)
       baseChannel = 0;
+      initialChannel = 255;
     #endif
 }
 #endif
@@ -91,8 +93,12 @@ void ESBNetwork<radio_t>::begin(uint8_t _channel, uint16_t _node_address)
     if (_channel != USE_CURRENT_CHANNEL)
         radio.setChannel(_channel);
 
+    
+    if(initialChannel == 255){
+      initialChannel = radio.getChannel();
+    }
     #if defined (multichannel)
-        baseChannel = USE_CURRENT_CHANNEL == 255 ? radio.getChannel() : _channel;
+        baseChannel = USE_CURRENT_CHANNEL == 255 ? initialChannel : _channel;
         networkChannel = baseChannel;
     #endif
     //radio.enableDynamicAck();
