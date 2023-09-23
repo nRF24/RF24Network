@@ -92,10 +92,8 @@ void ESBNetwork<radio_t>::begin(uint8_t _channel, uint16_t _node_address)
         radio.setChannel(_channel);
 
     #if defined (multichannel)
-      baseChannel = USE_CURRENT_CHANNEL == 255 ? 97 : _channel;
-      //Serial.print("Base Chan:");
-      //Serial.println(baseChannel);
-      networkChannel = baseChannel;
+        baseChannel = USE_CURRENT_CHANNEL == 255 ? radio.getChannel() : _channel;
+        networkChannel = baseChannel;
     #endif
     //radio.enableDynamicAck();
     radio.setAutoAck(1);
