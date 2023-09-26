@@ -103,7 +103,7 @@ void ESBNetwork<radio_t>::begin(uint8_t _channel, uint16_t _node_address)
     setup_address();
 
     // Open up all listening pipes
-    uint8_t i = 6;
+    uint8_t i = NUM_PIPES;
     while (i--)
         radio.openReadingPipe(i, pipe_address(_node_address, i));
 
@@ -956,7 +956,7 @@ void ESBNetwork<radio_t>::logicalToPhysicalAddress(logicalToPhysicalStruct* conv
         //}
     }
     else if (is_descendant(*to_node)) {
-        pre_conversion_send_pipe = 5; // Send to its listening pipe
+        pre_conversion_send_pipe = NUM_PIPES - 1; // Send to its listening pipe
         // If the node is a direct child,
         if (is_direct_child(*to_node)) {
             // Send directly
@@ -1131,7 +1131,7 @@ bool ESBNetwork<radio_t>::is_valid_address(uint16_t node)
 #endif
     while (node) {
         uint8_t digit = node & 0x07;
-        if (digit < 1 || digit > 5) {
+        if (digit < 1 || digit > (NUM_PIPES - 1)) {
             result = false;
             IF_SERIAL_DEBUG_MINIMAL(printf_P(PSTR("*** WARNING *** Invalid address 0%o\n\r"), origNode););
             break;
@@ -1181,7 +1181,14 @@ template<class radio_t>
 uint64_t ESBNetwork<radio_t>::pipe_address(uint16_t node, uint8_t pipe)
 {
 
-    static uint8_t address_translation[] = {0xc3, 0x3c, 0x33, 0xce, 0x3e, 0xe3, 0xec};
+    static uint8_t address_translation[] = {0xc3, 0x3c, 0x33, 0xce, 0x3e, 0xe3, 0xec
+#if NUM_PIPES > 6
+, 0xee
+    #if NUM_PIPES > 7
+, 0xed
+    #endif
+#endif
+};
     uint64_t result = 0xCCCCCCCCCCLL;
     uint8_t* out = reinterpret_cast<uint8_t*>(&result);
 
