@@ -82,7 +82,7 @@
         #define ENABLE_DYNAMIC_PAYLOADS
     #endif // DISABLE_DYNAMIC_PAYLOADS
     
-    /* The number of 'pipes' available for addressing in the current device
+    /** The number of 'pipes' available for addressing in the current device
      * Networks with NRF24L01 devices only have 6 pipes
      * NRF52x networks support up to 8 pipes
      */
