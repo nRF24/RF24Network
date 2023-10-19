@@ -116,7 +116,7 @@ void loop() {
       RF24NetworkHeader header;                  // Create an empty header
       uint16_t dataSize = network.peek(header);  // Peek to get the size of the data
       uint32_t someVariable;
-      if (header.type = 32) {                                       // If a certain header type is recieved
+      if (header.type == 32) {                                      // If a certain header type is recieved
         network.read(header, &someVariable, sizeof(someVariable));  // Handle the data a specific way
         Serial.print(F("RX User Data:\nHeader Type "));
         Serial.print(header.type);
