@@ -314,9 +314,9 @@ struct RF24NetworkFrame
     uint16_t message_size;
 
 /**
-     * On Arduino, the message buffer is just a pointer, and can be pointed to any memory location.
-     * On Linux the message buffer is a standard byte array, equal in size to the defined MAX_PAYLOAD_SIZE
-     */
+ * On Arduino, the message buffer is just a pointer, and can be pointed to any memory location.
+ * On Linux the message buffer is a standard byte array, equal in size to the defined MAX_PAYLOAD_SIZE
+ */
 #if defined(RF24_LINUX)
     uint8_t message_buffer[MAX_PAYLOAD_SIZE]; // Array to store the message
 #else
@@ -331,15 +331,15 @@ struct RF24NetworkFrame
     RF24NetworkFrame() {}
 
 /**
-     * **Constructor for Linux platforms** - create a network frame with data
-     * Frames are constructed and handled differently on Arduino/AVR and Linux devices (`#if defined RF24_LINUX`)
-     *
-     * @param _header The RF24Network header to be stored in the frame
-     * @param _message The 'message' or data.
-     * @param _len The size of the 'message' or data.
-     *
-     * Frames are used internally and by external systems. See RF24NetworkHeader.
-     */
+ * **Constructor for Linux platforms** - create a network frame with data
+ * Frames are constructed and handled differently on Arduino/AVR and Linux devices (`#if defined RF24_LINUX`)
+ *
+ * @param _header The RF24Network header to be stored in the frame
+ * @param _message The 'message' or data.
+ * @param _len The size of the 'message' or data.
+ *
+ * Frames are used internally and by external systems. See RF24NetworkHeader.
+ */
 #if defined(RF24_LINUX) || defined(DOXYGEN_FORCED)
     RF24NetworkFrame(RF24NetworkHeader& _header, const void* _message = NULL, uint16_t _len = 0) : header(_header), message_size(_len)
     {

@@ -779,7 +779,7 @@ bool RF24Network::_write(RF24NetworkHeader& header, const void* message, uint16_
 
     //IF_SERIAL_DEBUG(printf_P(PSTR("NET Sending " PRIPSTR
     //                              "\n\r"),
-     //                        header.toString()));
+    //                        header.toString()));
     if (len) {
 #if defined(RF24_LINUX)
         memcpy(frame_buffer + sizeof(RF24NetworkHeader), message, rf24_min(frame_size - sizeof(RF24NetworkHeader), len));
@@ -828,7 +828,7 @@ bool RF24Network::write(uint16_t to_node, uint8_t sendType)
         isAckType = true;
 
     /*if( ( (frame_buffer[7] % 2) && frame_buffer[6] == NETWORK_MORE_FRAGMENTS) ){
-	isAckType = 0;
+    isAckType = 0;
     }*/
 
     // Throw it away if it's not a valid address
