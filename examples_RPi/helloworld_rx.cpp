@@ -45,7 +45,6 @@ int main(int argc, char** argv)
     delay(5);
     radio.setChannel(90);
     network.begin(/*node address*/ this_node);
-    radio.setPALevel(RF24_PA_HIGH,0);
     radio.printDetails();
 
     while (1) {
