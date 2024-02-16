@@ -1181,14 +1181,22 @@ template<class radio_t>
 uint64_t ESBNetwork<radio_t>::pipe_address(uint16_t node, uint8_t pipe)
 {
 
-    static uint8_t address_translation[] = {0xc3, 0x3c, 0x33, 0xce, 0x3e, 0xe3, 0xec
+    static uint8_t address_translation[] = { 0xc3,
+                                             0x3c,
+                                             0x33,
+                                             0xce,
+                                             0x3e,
+                                             0xe3,
+                                             0xec
 #if NUM_PIPES > 6
-, 0xee
+                                             ,
+                                             0xee
     #if NUM_PIPES > 7
-, 0xed
+                                             ,
+                                             0xed
     #endif
 #endif
-};
+    };
     uint64_t result = 0xCCCCCCCCCCLL;
     uint8_t* out = reinterpret_cast<uint8_t*>(&result);
 
