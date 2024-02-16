@@ -29,8 +29,8 @@ const uint16_t other_node = 01;
 
 struct payload_t
 { // Structure of our payload
-    unsigned long ms;
-    unsigned long counter;
+    uint32_t ms;
+    uint32_t counter;
 };
 
 int main(int argc, char** argv)
@@ -56,7 +56,7 @@ int main(int argc, char** argv)
             payload_t payload;
             network.read(header, &payload, sizeof(payload));
 
-            printf("Received payload: counter=%lu, origin timestamp=%lu\n", payload.counter, payload.ms);
+            printf("Received payload: counter=%u, origin timestamp=%u\n", payload.counter, payload.ms);
         }
         //sleep(2);
         delay(2000);

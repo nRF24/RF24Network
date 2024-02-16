@@ -27,17 +27,17 @@ const uint16_t other_node = 01;
 
 struct payload_power_t
 { // Structure of our payload
-    unsigned long nodeId;
+    uint32_t nodeId;
     float power;
     float current;
 };
 
 struct payload_weather_t
 {
-    unsigned long nodeId;
+    uint32_t nodeId;
     float temperature;
     float humidity;
-    unsigned long lux;
+    uint32_t lux;
 };
 
 int main(int argc, char** argv)
