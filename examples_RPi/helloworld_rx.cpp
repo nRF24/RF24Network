@@ -29,8 +29,8 @@ const uint16_t other_node = 01;
 
 struct payload_t
 { // Structure of our payload
-    unsigned long ms;
-    unsigned long counter;
+    uint32_t ms;
+    uint32_t counter;
 };
 
 int main(int argc, char** argv)

@@ -32,13 +32,13 @@ const uint16_t other_node = 00;
 // How often (in milliseconds) to send a message to the `other_node`
 const unsigned long interval = 2000;
 
-unsigned long last_sent;    // When did we last send?
-unsigned long packets_sent; // How many have we sent already
+uint32_t last_sent;    // When did we last send?
+uint32_t packets_sent; // How many have we sent already
 
 struct payload_t
 { // Structure of our payload
-    unsigned long ms;
-    unsigned long counter;
+    uint32_t ms;
+    uint32_t counter;
 };
 
 int main(int argc, char** argv)
@@ -58,7 +58,7 @@ int main(int argc, char** argv)
     while (1) {
 
         network.update();
-        unsigned long now = millis(); // If it's time to send a message, send it!
+        uint32_t now = millis(); // If it's time to send a message, send it!
         if (now - last_sent >= interval) {
             last_sent = now;
 
