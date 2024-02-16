@@ -2,6 +2,7 @@ name: PlatformIO build
 
 on:
   pull_request:
+    branches: [master, 1.x]
     types: [opened, reopened]
     paths:
       - ".github/workflows/build_platformIO.yml"
@@ -9,6 +10,7 @@ on:
       - "examples/**"
       - "!examples/*.zip"
   push:
+    branches: [master, 1.x]
     paths:
       - ".github/workflows/build_platformIO.yml"
       - "library.json"
