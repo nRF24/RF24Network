@@ -45,6 +45,7 @@ int main(int argc, char** argv)
     delay(5);
     radio.setChannel(90);
     network.begin(/*node address*/ this_node);
+    radio.setPALevel(RF24_PA_HIGH,0);
     radio.printDetails();
 
     while (1) {
@@ -56,7 +57,7 @@ int main(int argc, char** argv)
             payload_t payload;
             network.read(header, &payload, sizeof(payload));
 
-            printf("Received payload: counter=%lu, origin timestamp=%lu\n", payload.counter, payload.ms);
+            printf("Received payload: counter=%u, origin timestamp=%u\n", payload.counter, payload.ms);
         }
         //sleep(2);
         delay(2000);
