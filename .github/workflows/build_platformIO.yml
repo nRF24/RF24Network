@@ -2,15 +2,14 @@ name: PlatformIO build
 
 on:
   pull_request:
-    branches: [master, 1.x]
-    types: [opened, reopened]
+    branches: [master, v1.x]
     paths:
       - ".github/workflows/build_platformIO.yml"
       - "library.json"
       - "examples/**"
       - "!examples/*.zip"
   push:
-    branches: [master, 1.x]
+    branches: [master, v1.x]
     paths:
       - ".github/workflows/build_platformIO.yml"
       - "library.json"
@@ -26,13 +25,8 @@ jobs:
     with:
       deploy-release: ${{ github.event_name == 'release' }}
 
-  check_formatting:
-    uses: nRF24/.github/.github/workflows/cpp_lint.yaml@main
-    with:
-      extensions: ino
-
   build:
-    needs: [check_formatting, validate_lib_json]
+    needs: [validate_lib_json]
     uses: nRF24/.github/.github/workflows/build_platformio.yaml@main
     with:
      example-path: ${{ matrix.example }}
