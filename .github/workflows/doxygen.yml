@@ -3,7 +3,6 @@ name: build Docs
 on:
   pull_request:
     branches: [master, v1.x]
-    types: [opened, reopened]
     paths:
       - "*.h"
       - "docs/**"

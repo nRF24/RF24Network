@@ -12,7 +12,6 @@ on:
       - "examples_pico/*"
   pull_request:
     branches: [master, v1.x]
-    types: [opened, reopened]
     paths:
       - ".github/workflows/build_rp2xxx.yml"
       - "*.h"
