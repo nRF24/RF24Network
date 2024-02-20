@@ -1,0 +1,13 @@
+name: check code formatting
+
+on:
+    push:
+        branches: [master, v1.x]
+    pull_request:
+        branches: [master, v1.x]
+
+jobs:
+    check_formatting:
+        uses: nRF24/.github/.github/workflows/cpp_lint.yaml@main
+        with:
+          extensions: ino,c,cpp,h

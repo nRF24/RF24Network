@@ -848,7 +848,7 @@ bool ESBNetwork<radio_t>::write(uint16_t to_node, uint8_t sendType)
         isAckType = true;
 
     /*if( ( (frame_buffer[7] % 2) && frame_buffer[6] == NETWORK_MORE_FRAGMENTS) ){
-	isAckType = 0;
+    isAckType = 0;
     }*/
 
     // Throw it away if it's not a valid address

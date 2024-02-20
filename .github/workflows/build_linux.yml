@@ -2,7 +2,7 @@ name: Linux build
 
 on:
   pull_request:
-    types: [opened, reopened]
+    branches: [master, v1.x]
     paths:
       - "*.h"
       - "*.cpp"
@@ -15,6 +15,7 @@ on:
       - "**pyRF24Network/*.cpp"
       - ".github/workflows/linux_build.yml"
   push:
+    branches: [master, v1.x]
     paths:
       - "*.h"
       - "*.cpp"
@@ -30,13 +31,7 @@ on:
     types: [created]
 
 jobs:
-  check_formatting:
-    uses: nRF24/.github/.github/workflows/cpp_lint.yaml@main
-    with:
-      ignore: 'examples|examples_pico'
-
   using_cmake:
-    needs: check_formatting
     uses: nRF24/.github/.github/workflows/build_linux_cmake.yaml@main
     with:
       rf24network-ref: ${{ github.sha }}
