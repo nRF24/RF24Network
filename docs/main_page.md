@@ -3,7 +3,8 @@
 @tableofcontents
 
 This class implements an [OSI Network Layer](http://en.wikipedia.org/wiki/Network_layer) using nRF24L01(+) radios driven
-by the newly optimized [RF24 library fork](http://nRF24.github.com/RF24/).
+by the newly optimized [RF24 library fork](http://nRF24.github.com/RF24/) or using nRF52x radios with the newly created 
+[nrf_to_nrf library](https://github.com/TMRh20/nrf_to_nrf).
 
 @see
 [RF24 Library docs](http://nRF24.github.io/RF24/) for general RF24 configuration and setup.
