@@ -27,6 +27,14 @@ subnets need to be created if using more than 6 nodes. In this case, the
 
 The above example is exactly how RF24Network manages the addresses, but they are represented in Octal format.
 
+## Available Addresses
+
+RF24Network supports various configurations, but by default has multicast enabled. This means one additional pipe is taken up on each
+node for multicasting. The master node will support 5 nodes (01 through 05) and 1 multicast address, while the nodes themselves will
+support 4 nodes (01n to 04n etc), 1 multicast address and 1 parent pipe. Users can edit RF24Network_config.h and comment out
+`#define RF24NetworkMulticast` as well. This allows the master to support 6 children, with nodes supporting 5 children each.
+See the [Topology and Overview](md_docs_tuning.html) page for more info regarding topology.
+
 ### Decimal, Octal and Binary
 
 | Decimal | Octal |  Binary  |
