@@ -13,7 +13,7 @@ Enhanced-Shock-Burst (ESB) functionality of the radios.
 
 RF24Network uses a simple method of data compression to store the addresses using only 2 bytes, in a format designed to represent the
 network topology in an intuitive way.
-See the [Topology and Overview](md_docs_tuning.html) page for more info regarding topology.
+See the [Topology and Overview](tuning.md) page for more info regarding topology.
 
 ## Decimal, Octal and Binary formats
 
@@ -67,4 +67,4 @@ printf("0%o\n", address);
 
 @see
 - [This cplusplus.com tutorial](http://www.cplusplus.com/doc/hex/) for more information number bases.
-- The [Topology and Overview page](md_docs_tuning.html) for more information regarding network topology.
+- The [Topology and Overview page](tuning.md) for more information regarding network topology.

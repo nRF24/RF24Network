@@ -58,7 +58,7 @@ Multicasting is also used by the RF24Mesh layer for dynamic addressing requests.
 
 Routing of traffic is handled invisibly to the user, by the network layer. If the network addresses are
 assigned in accordance with the physical layout of the network, nodes will route traffic automatically
-as required. Users simply constuct a header containing the appropriate destination address, and the network
+as required. Users simply construct a header containing the appropriate destination address, and the network
 will forward it through to the correct node. Individual nodes only route individual fragments, so if using
 fragmentation, routing nodes do not need it enabled, unless sending or receiving fragmented payloads themselves.
 
@@ -111,7 +111,7 @@ and adjusting the value of X from 1 to 15 (steps of 250us).
 The core radio library also provides the ability to adjust the internal auto-retry count of the radio
 modules. The default setting is 15 automatic retries per payload, and can be extended by configuring
 the network.txTimeout variable. This default retry count should generally be left at 15, as per the
-example in the above section. An interval/retry setting of (15,15) will provide 15 retrys at intervals of
+example in the above section. An interval/retry setting of (15,15) will provide 15 retries at intervals of
 4ms, taking up to 60ms per payload. The library now provides staggered timeout periods by default, but
 they can also be adjusted on a per-node basis.
 
@@ -154,4 +154,4 @@ will not affect the operation greatly.
    radio.setRetries(8, 15);
    network.txTimeout = 553;
    ```
-3. First and third leaf nodes configured with default timeout periods or slightly increased timout periods.
+3. First and third leaf nodes configured with default timeout periods or slightly increased timeout periods.
