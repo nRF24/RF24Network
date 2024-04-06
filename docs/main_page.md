@@ -8,7 +8,7 @@ by the newly optimized [RF24 library fork](http://nRF24.github.com/RF24/) or usi
 
 @see
 [RF24 Library docs](http://nRF24.github.io/RF24/) for general RF24 configuration and setup.
-    - [Linux Installation](http://nRF24.github.io/RF24/md_docs_linux_install.html) and [General Linux/RPi configuration and setup](http://nRF24.github.io/RF24/md_docs_rpi_general.html) documentation
+    - [Linux Installation](https://nrf24.github.io/RF24/md_docs_2linux__install.html) and [General Linux/RPi configuration and setup](https://nrf24.github.io/RF24/md_docs_2rpi__general.html) documentation
 
 ## Purpose/Goal
 
@@ -81,9 +81,9 @@ Please see the recent changes listed in [the github releases page](https://githu
 ## How to learn more
 
 - [RF24Network Class Documentation](classRF24Network.html)
-- [Advanced Configuration Options](md_docs_advanced_config.html)
-- [Addressing format](md_docs_addressing.html)
-- [Topology and Overview](md_docs_tuning.html)
+- [Advanced Configuration Options](advanced_config.md)
+- [Addressing format](addressing.md)
+- [Topology and Overview](tuning.md)
 - [Examples Page](examples.html). Start with `helloworld_*` examples.
 
 ### Additional Information & Add-ons

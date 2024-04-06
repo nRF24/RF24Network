@@ -413,10 +413,10 @@ public:
     /**
      * Bring up the network using the current radio frequency/channel.
      * Calling begin brings up the network, and configures the address, which designates the
-     * location of the node within [RF24Network topology](md_docs_tuning.html).
+     * location of the node within [RF24Network topology](tuning.md).
      *
      * @note Node addresses are specified in Octal format, see
-     * [RF24Network Addressing](md_docs_addressing.html) for more information. The address `04444`
+     * [RF24Network Addressing](addressing.md) for more information. The address `04444`
      * is reserved for RF24Mesh usage (when a mesh node is connecting to the network).
      * @warning Be sure to first call `RF24::begin()` to initialize the radio properly.
      *
@@ -694,7 +694,7 @@ public:
     /**
      * Validate a network address as a proper logical address
      * @note Addresses are specified in octal form, ie 011, 034.
-     * Review [RF24Network addressing](md_docs_addressing.html) for more information.
+     * Review [RF24Network addressing](addressing.md) for more information.
      * @param node The specified logical address of a network node.
      * @return True if the specified `node` address is a valid network address, otherwise false.
      * @remark This function will validate an improper address of `0100` as it is the reserved
