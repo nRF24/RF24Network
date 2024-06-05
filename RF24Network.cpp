@@ -46,6 +46,9 @@ volatile bool wasInterrupted;
 #endif
 uint16_t RF24NetworkHeader::next_id = 1;
 
+#define NETWORK_MULTICAST_ADDRESS_LEVEL_2 010
+#define NETWORK_MULTICAST_ADDRESS_LEVEL_4 01000
+
 #if defined(RF24_LINUX)
 /******************************************************************/
 template<class radio_t>
@@ -1122,7 +1125,7 @@ template<class radio_t>
 bool ESBNetwork<radio_t>::is_valid_address(uint16_t node)
 {
     bool result = true;
-    if (node == NETWORK_MULTICAST_ADDRESS || node == 010) {
+    if (node == NETWORK_MULTICAST_ADDRESS || node == NETWORK_MULTICAST_ADDRESS_LEVEL_2 || node == NETWORK_MULTICAST_ADDRESS_LEVEL_4) {
         return result;
     }
     uint8_t count = 0;
