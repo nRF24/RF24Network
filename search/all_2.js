@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['_5fmulticast_5flevel_0',['_multicast_level',['../classESBNetwork.html#aab52703c149001e4d3e1ae7c8311f8e0',1,'ESBNetwork']]]
+  ['begin_0',['begin',['../classRF24Network.html#aad6a74b55514a26e95e20eaa6a093a0b',1,'RF24Network::begin(uint16_t _node_address)'],['../classRF24Network.html#abf0da46b2e78b2010171c9f20cba8bae',1,'RF24Network::begin(uint8_t _channel, uint16_t _node_address)']]]
 ];
