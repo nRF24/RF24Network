@@ -634,8 +634,8 @@ uint16_t ESBNetwork<radio_t>::read(RF24NetworkHeader& header, void* message, uin
     IF_RF24NETWORK_DEBUG(printf_P(PSTR("%u: FRG message "), millis()); const char* charPtr = reinterpret_cast<const char*>(message); for (uint16_t i = 0; i < bufsize; i++) { printf_P(PSTR("%02X "), charPtr[i]); }; printf(PSTR("\n\r")));
 
     IF_RF24NETWORK_DEBUG(printf_P(PSTR("%u: NET read " PRIPSTR
-                                  "\n\r"),
-                             millis(), header.toString()));
+                                       "\n\r"),
+                                  millis(), header.toString()));
 
     frame_queue.pop();
 
