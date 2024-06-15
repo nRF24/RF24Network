@@ -130,6 +130,11 @@
     #endif
 #endif
 
+#ifdef RF24NETWORK_DEBUG
+    #define IF_RF24NETWORK_DEBUG(x) ({ x; })
+#else
+    #define IF_RF24NETWORK_DEBUG(x)
+#endif
 #if defined(RF24NETWORK_DEBUG_MINIMAL)
     #define IF_RF24NETWORK_DEBUG_MINIMAL(x) ({ x; })
 #else
