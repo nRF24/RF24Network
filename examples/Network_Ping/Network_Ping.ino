@@ -18,7 +18,7 @@
  * periodically sends out its whole known list of nodes to everyone.
  *
  * To see the underlying frames being relayed, compile RF24Network with
- * #define SERIAL_DEBUG.
+ * #define RF24NETWORK_DEBUG.
  *
  * Update: The logical node address of each node is set below, and are grouped in twos for demonstration.
  * Number 0 is the master node. Numbers 1-2 represent the 2nd layer in the tree (02,05).

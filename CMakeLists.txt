@@ -29,17 +29,17 @@ target_compile_features(${LibTargetName}_project_options INTERFACE cxx_std_17)
 add_compile_options(-Ofast -Wall)
 
 # allow using CMake options to adjust RF24Network_config.h without modiying source code
-option(SERIAL_DEBUG "enable/disable general debugging output" OFF)
-option(SERIAL_DEBUG_MINIMAL "enable/disable minimal debugging output" OFF)
-option(SERIAL_DEBUG_ROUTING
+option(RF24NETWORK_DEBUG "enable/disable general debugging output" OFF)
+option(RF24NETWORK_DEBUG_MINIMAL "enable/disable minimal debugging output" OFF)
+option(RF24NETWORK_DEBUG_ROUTING
     "enable/disable debugging output related to transmission routing"
     OFF
 )
-option(SERIAL_DEBUG_FRAGMENTATION
+option(RF24NETWORK_DEBUG_FRAGMENTATION
     "enable/disable debugging output related to message fragmentation"
     OFF
 )
-option(SERIAL_DEBUG_FRAGMENTATION_L2
+option(RF24NETWORK_DEBUG_FRAGMENTATION_L2
     "enable/disable debugging output related to fragmented messages' transmission success"
     OFF
 )
@@ -114,25 +114,25 @@ set_target_properties(
 )
 
 # assert the appropriate preprocessor macros for RF24Network_config.h
-if(SERIAL_DEBUG)
-    message(STATUS "SERIAL_DEBUG asserted")
-    target_compile_definitions(${LibTargetName} PUBLIC SERIAL_DEBUG)
+if(RF24NETWORK_DEBUG)
+    message(STATUS "RF24NETWORK_DEBUG asserted")
+    target_compile_definitions(${LibTargetName} PUBLIC RF24NETWORK_DEBUG)
 endif()
-if(SERIAL_DEBUG_MINIMAL)
-    message(STATUS "SERIAL_DEBUG_MINIMAL asserted")
-    target_compile_definitions(${LibTargetName} PUBLIC SERIAL_DEBUG_MINIMAL)
+if(RF24NETWORK_DEBUG_MINIMAL)
+    message(STATUS "RF24NETWORK_DEBUG_MINIMAL asserted")
+    target_compile_definitions(${LibTargetName} PUBLIC RF24NETWORK_DEBUG_MINIMAL)
 endif()
-if(SERIAL_DEBUG_ROUTING)
-    message(STATUS "SERIAL_DEBUG_ROUTING asserted")
-    target_compile_definitions(${LibTargetName} PUBLIC SERIAL_DEBUG_ROUTING)
+if(RF24NETWORK_DEBUG_ROUTING)
+    message(STATUS "RF24NETWORK_DEBUG_ROUTING asserted")
+    target_compile_definitions(${LibTargetName} PUBLIC RF24NETWORK_DEBUG_ROUTING)
 endif()
-if(SERIAL_DEBUG_FRAGMENTATION)
-    message(STATUS "SERIAL_DEBUG_FRAGMENTATION asserted")
-    target_compile_definitions(${LibTargetName} PUBLIC SERIAL_DEBUG_FRAGMENTATION)
+if(RF24NETWORK_DEBUG_FRAGMENTATION)
+    message(STATUS "RF24NETWORK_DEBUG_FRAGMENTATION asserted")
+    target_compile_definitions(${LibTargetName} PUBLIC RF24NETWORK_DEBUG_FRAGMENTATION)
 endif()
-if(SERIAL_DEBUG_FRAGMENTATION_L2)
-    message(STATUS "SERIAL_DEBUG_FRAGMENTATION_L2 asserted")
-    target_compile_definitions(${LibTargetName} PUBLIC SERIAL_DEBUG_FRAGMENTATION_L2)
+if(RF24NETWORK_DEBUG_FRAGMENTATION_L2)
+    message(STATUS "RF24NETWORK_DEBUG_FRAGMENTATION_L2 asserted")
+    target_compile_definitions(${LibTargetName} PUBLIC RF24NETWORK_DEBUG_FRAGMENTATION_L2)
 endif()
 if(DISABLE_FRAGMENTATION)
     message(STATUS "DISABLE_FRAGMENTATION asserted")

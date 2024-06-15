@@ -89,11 +89,11 @@
     #define NUM_PIPES 6
 
     /* Debug Options */
-    //#define SERIAL_DEBUG
-    //#define SERIAL_DEBUG_MINIMAL
-    //#define SERIAL_DEBUG_ROUTING
-    //#define SERIAL_DEBUG_FRAGMENTATION
-    //#define SERIAL_DEBUG_FRAGMENTATION_L2
+    //#define RF24NETWORK_DEBUG
+    //#define RF24NETWORK_DEBUG_MINIMAL
+    //#define RF24NETWORK_DEBUG_ROUTING
+    //#define RF24NETWORK_DEBUG_FRAGMENTATION
+    //#define RF24NETWORK_DEBUG_FRAGMENTATION_L2
     /*************************************/
 
 #else // Different set of defaults for ATTiny - fragmentation is disabled and user payloads are set to 3 max
@@ -130,28 +130,33 @@
     #endif
 #endif
 
-#if defined(SERIAL_DEBUG_MINIMAL)
-    #define IF_SERIAL_DEBUG_MINIMAL(x) ({ x; })
+#ifdef RF24NETWORK_DEBUG
+    #define IF_RF24NETWORK_DEBUG(x) ({ x; })
 #else
-    #define IF_SERIAL_DEBUG_MINIMAL(x)
+    #define IF_RF24NETWORK_DEBUG(x)
+#endif
+#if defined(RF24NETWORK_DEBUG_MINIMAL)
+    #define IF_RF24NETWORK_DEBUG_MINIMAL(x) ({ x; })
+#else
+    #define IF_RF24NETWORK_DEBUG_MINIMAL(x)
 #endif
 
-#if defined(SERIAL_DEBUG_FRAGMENTATION)
-    #define IF_SERIAL_DEBUG_FRAGMENTATION(x) ({ x; })
+#if defined(RF24NETWORK_DEBUG_FRAGMENTATION)
+    #define IF_RF24NETWORK_DEBUG_FRAGMENTATION(x) ({ x; })
 #else
-    #define IF_SERIAL_DEBUG_FRAGMENTATION(x)
+    #define IF_RF24NETWORK_DEBUG_FRAGMENTATION(x)
 #endif
 
-#if defined(SERIAL_DEBUG_FRAGMENTATION_L2)
-    #define IF_SERIAL_DEBUG_FRAGMENTATION_L2(x) ({ x; })
+#if defined(RF24NETWORK_DEBUG_FRAGMENTATION_L2)
+    #define IF_RF24NETWORK_DEBUG_FRAGMENTATION_L2(x) ({ x; })
 #else
-    #define IF_SERIAL_DEBUG_FRAGMENTATION_L2(x)
+    #define IF_RF24NETWORK_DEBUG_FRAGMENTATION_L2(x)
 #endif
 
-#if defined(SERIAL_DEBUG_ROUTING)
-    #define IF_SERIAL_DEBUG_ROUTING(x) ({ x; })
+#if defined(RF24NETWORK_DEBUG_ROUTING)
+    #define IF_RF24NETWORK_DEBUG_ROUTING(x) ({ x; })
 #else
-    #define IF_SERIAL_DEBUG_ROUTING(x)
+    #define IF_RF24NETWORK_DEBUG_ROUTING(x)
 #endif
 
 #endif // RF24_CONFIG_H
