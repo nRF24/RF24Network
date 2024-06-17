@@ -979,7 +979,9 @@ bool RF24Network::write_to_pipe(uint16_t node, uint8_t pipe, bool multicast)
         ok = radio.txStandBy(txTimeout);
         radio.setAutoAck(0, 0);
     }
-
+    else if (!ok) {
+        ok = radio.txStandBy(txTimeout);
+    }
     /*
     #if defined (__arm__) || defined (RF24_LINUX)
     IF_RF24NETWORK_DEBUG(printf_P(PSTR("%u: MAC Sent on %x %s\n\r"), millis(), (uint32_t)out_pipe, ok ? PSTR("ok") : PSTR("failed")));
