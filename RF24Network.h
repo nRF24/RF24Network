@@ -804,7 +804,7 @@ public:
      * | @ref FLAG_FAST_FRAG| 4 (bit 2 asserted) | INTERNAL: Replaces the fastFragTransfer variable, and allows for faster transfers between directly connected nodes. |
      * | @ref FLAG_NO_POLL| 8 (bit 3 asserted) | EXTERNAL/USER: Disables @ref NETWORK_POLL responses on a node-by-node basis. |
      *
-     * @note Bit posistions 0 & 1 in the `networkFlags` byte are no longer used as they once were
+     * @note Bit positions 0 & 1 in the `networkFlags` byte are no longer used as they once were
      * during experimental development.
      */
     uint8_t networkFlags;
