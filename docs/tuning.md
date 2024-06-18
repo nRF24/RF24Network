@@ -124,7 +124,8 @@ should generally only be configured on leaf nodes that do not receive data.
 ## Usage with NRF52x devices
 
 1. Users can utilize large payloads by calling `radio.begin();` then `radio.enableDynamicPayloads(123);`
-   prior to calling `network.begin();`
+   prior to calling `network.begin();`. Users would also need to edit RF24Network.h and set
+   MAX_FRAME_SIZE to a maximum of 111 if encryption is enabled, 123 without encryption.
 2. Users can allow more nodes by modifying RF24Network_config.h and setting NUM_PIPES to 8 (Allows
    master to have 7 child nodes, other nodes can have 6 children by default)
 3. The MAX_PAYLOAD_SIZE is also defined in RF24Network_config.h. Raise to a multiple of 123 to allow
