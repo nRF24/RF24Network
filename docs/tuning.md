@@ -131,6 +131,10 @@ should generally only be configured on leaf nodes that do not receive data.
 3. The MAX_PAYLOAD_SIZE is also defined in RF24Network_config.h. Raise to a multiple of 123 to allow
    multiple large payloads to be cached in memory.
 
+@see
+- [RX example using encryption](https://github.com/TMRh20/nrf_to_nrf/blob/main/examples/RF24Network/helloworld_rxEncryption/helloworld_rxEncryption.ino)
+- [TX example using encryption](https://github.com/TMRh20/nrf_to_nrf/blob/main/examples/RF24Network/helloworld_txEncryption/helloworld_txEncryption.ino)
+
 ## Scenarios
 
 ### Example 1
