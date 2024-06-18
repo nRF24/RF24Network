@@ -11,6 +11,9 @@ The nrf24 radio modules typically use a 40-bit address format, requiring 5-bytes
 array of addresses to be utilized. In addition, the radios are limited to direct communication with 6 other nodes while using the
 Enhanced-Shock-Burst (ESB) functionality of the radios.
 
+The NRF52x modules use a similar format for addressing, but can communicate directly with 8 other nodes while using the
+Enhanced-Shock-Burst (ESB) functionality of the radios.
+
 RF24Network uses a simple method of data compression to store the addresses using only 2 bytes, in a format designed to represent the
 network topology in an intuitive way.
 See the [Topology and Overview](tuning.md) page for more info regarding topology.
@@ -34,6 +37,9 @@ node for multicasting. The master node will support 5 nodes (01 through 05) and 
 support 4 nodes (01n to 04n etc), 1 multicast address and 1 parent pipe. Users can edit RF24Network_config.h and comment out
 `#define RF24NetworkMulticast` as well. This allows the master to support 5 children, with nodes supporting 5 children also.
 See the [Topology and Overview](md_docs_tuning.html) page for more info regarding topology.
+
+With the newer NRF52x devices, the master node will support 7 nodes (01 through 07) and 1 multicast address, while the nodes
+themselves support 6 nodes (01n to 06n etc), 1 multicast address and 1 parent pipe.
 
 ### Decimal, Octal and Binary
 

@@ -22,16 +22,17 @@ Retrying failed payloads over and over on a radio network can hinder communicati
 reduce throughput and errors on routing nodes.
 
 Radios in this network are linked by **addresses** assigned to **pipes**. Each radio can listen
-to 6 addresses on 6 pipes, therefore each radio has a parent pipe and 4-5 child pipes, which are used
-to form a tree structure. Nodes communicate directly with their parent and children nodes. Any other
+to 6 addresses on 6 pipes, (8 pipes on NRF52x) therefore each radio has a parent pipe and 4-5 child pipes, which are
+used to form a tree structure. Nodes communicate directly with their parent and children nodes. Any other
 traffic to or from a node must be routed through the network.
 
 ## Topology of RF24Network
 
 Anybody who is familiar at all with IP networking should be able to easily understand RF24Network topology. The
-master node can be seen as the gateway, with up to 4 directly connected nodes. Each of those nodes creates a
-subnet below it, with up to 4 additional child nodes. The numbering scheme can also be related to IP addresses,
-for purposes of understanding the topology via subnetting. Nodes can have 5 children if multicast is disabled.
+master node can be seen as the gateway, with (by default) up to 5 directly connected nodes. Each of those nodes
+creates a subnet below it, with up to 4 additional child nodes. The numbering scheme can also be related to IP
+addresses, for purposes of understanding the topology via subnetting. Nodes can have 5 children if multicast is
+disabled.
 
 ### Expressing RF24Network addresses in IP format
 
@@ -47,12 +48,12 @@ In RF24Network, the master is just `00`
 
 ## Multicast
 
-Multicast is enabled by default, which limits the master node to 5 child pipes and other nodes to 4. Nodes are
-arranged in multicast 'levels' with the master node being level 0, nodes 01-05 are level 1, nodes n1-n5 are level 2,
-and so on. The multicast level of each node can be configured as desired by the user, or multicast can be
-disabled by editing RF24Network_config.h. For example, if all nodes are in range of the master node, all nodes can
-be configured to use multicast level 1, allowing the master node to contact all of them by sending a single payload.
-Multicasting is also used by the RF24Mesh layer for dynamic addressing requests.
+Multicast is enabled by default, which limits the master node to 5 child pipes and other nodes to 4 when using RF24
+modules. Nodes are arranged in multicast 'levels' with the master node being level 0, nodes 01-05 are level 1, nodes
+n1-n5 are level 2, and so on. The multicast level of each node can be configured as desired by the user, or
+multicast can be disabled by editing RF24Network_config.h. For example, if all nodes are in range of the master node,
+all nodes can be configured to use multicast level 1, allowing the master node to contact all of them by sending a
+single payload. Multicasting is also used by the RF24Mesh layer for dynamic addressing requests.
 
 ## Routing
 
@@ -119,6 +120,15 @@ The txTimeout variable is used to extend the retry count to a defined duration i
 network.txTimeout variable. Timeout periods of extended duration (500+) will generally not help when payloads
 are failing due to data collisions, it will only extend the duration of the errors. Extended duration timeouts
 should generally only be configured on leaf nodes that do not receive data.
+
+## Usage with NRF52x devices
+
+1. Users can utilize large payloads by calling `radio.begin();` then `radio.enableDynamicPayloads(123);`
+   prior to calling `network.begin();`
+2. Users can allow more nodes by modifying RF24Network_config.h and setting NUM_PIPES to 8 (Allows
+   master to have 7 child nodes, other nodes can have 6 children by default)
+3. The MAX_PAYLOAD_SIZE is also defined in RF24Network_config.h. Raise to a multiple of 123 to allow
+   multiple large payloads to be cached in memory.
 
 ## Scenarios
 

@@ -97,7 +97,7 @@ Please see the recent changes listed in [the github releases page](https://githu
 ## Topology for Mesh Networks using nRF24L01(+)
 
 This network layer takes advantage of the fundamental capability of the nRF24L01(+) radio to
-listen actively to up to 6 other radios at once. The network is arranged in a
+listen actively to up to 6 other radios at once (8 with NRF52x). The network is arranged in a
 [Tree Topology](http://en.wikipedia.org/wiki/Network_Topology#Tree), where
 one node is the base, and all other nodes are children either of that node, or of another.
 Unlike a true mesh network, multiple nodes are not connected together, so there is only one
@@ -116,6 +116,7 @@ digit in the address represents a position in the tree further from the base.
 - The largest node address is 05555, so up to 781 nodes are allowed on a single channel.
   An example topology is shown below, with 5 nodes in direct communication with the master node,
   and multiple leaf nodes spread out at a distance, using intermediate nodes to reach other nodes.
+- With the newer NRF52x devices, up to 3200 nodes are allowed on a single channel
 
 @image html example_tree.svg
 
