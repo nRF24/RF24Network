@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['naming_0',['Node Naming',['../md_docs_2zigabee.html#autotoc_md35',1,'']]],
+  ['naming_0',['Node Naming',['../md_docs_2zigabee.html#autotoc_md36',1,'']]],
   ['network_1',['Performance and Data Loss: Tuning the Network',['../md_docs_2tuning.html',1,'']]],
   ['network_20layer_20for_20rf24_20radios_2',['Network Layer for RF24 Radios',['../index.html',1,'']]],
   ['network_5fack_3',['NETWORK_ACK',['../group__DEFINED__TYPES.html#gac60baa80629bef34c13bd6a171f278c7',1,'RF24Network.h']]],
@@ -22,9 +22,10 @@ var searchData=
   ['news_202023_20api_20changes_19',['News - 2023 API Changes',['../index.html#autotoc_md9',1,'']]],
   ['next_5fid_20',['next_id',['../structRF24NetworkHeader.html#af02a00fa410f6c34bb395f7d0afe2bfd',1,'RF24NetworkHeader']]],
   ['node_21',['Starting up a node',['../index.html#autotoc_md18',1,'']]],
-  ['node_20naming_22',['Node Naming',['../md_docs_2zigabee.html#autotoc_md35',1,'']]],
+  ['node_20naming_22',['Node Naming',['../md_docs_2zigabee.html#autotoc_md36',1,'']]],
   ['node_5faddress_23',['node_address',['../classESBNetwork.html#a3e5aa077d46a74acd31ca5242bb0c0a4',1,'ESBNetwork']]],
   ['not_20provide_24',['The layer does not provide',['../index.html#autotoc_md12',1,'']]],
   ['nrf24l01_25',['Topology for Mesh Networks using nRF24L01(+)',['../index.html#autotoc_md15',1,'']]],
-  ['num_5fpipes_26',['NUM_PIPES',['../RF24Network__config_8h.html#aea10fcc3ece9abf30d548a2cba57d2aa',1,'RF24Network_config.h']]]
+  ['nrf52x_20devices_26',['Usage with NRF52x devices',['../md_docs_2tuning.html#autotoc_md29',1,'']]],
+  ['num_5fpipes_27',['NUM_PIPES',['../RF24Network__config_8h.html#aea10fcc3ece9abf30d548a2cba57d2aa',1,'RF24Network_config.h']]]
 ];
