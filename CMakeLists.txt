@@ -151,11 +151,6 @@ if(DEFINED SLOW_ADDR_POLL_RESPONSE)
     message(STATUS "SLOW_ADDR_POLL_RESPONSE set to ${SLOW_ADDR_POLL_RESPONSE}")
     target_compile_definitions(${LibTargetName} PUBLIC SLOW_ADDR_POLL_RESPONSE=${SLOW_ADDR_POLL_RESPONSE})
 endif()
-# conditionally disable interruot support (a pigpio specific feature)
-if("${LibPIGPIO}" STREQUAL "LibPIGPIO-NOTFOUND" OR DEFINED RF24_NO_INTERRUPT)
-    message(STATUS "Disabling IRQ pin support")
-    target_compile_definitions(${LibTargetName} PUBLIC RF24_NO_INTERRUPT)
-endif()
 
 ###########################
 # target install rules for the RF24Network lib
