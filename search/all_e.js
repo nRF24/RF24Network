@@ -1,10 +1,14 @@
 var searchData=
 [
-  ['to_5fnode_0',['to_node',['../structRF24NetworkHeader.html#adb8d6d05bb359b4b89322d15055e73a1',1,'RF24NetworkHeader']]],
-  ['tostring_1',['toString',['../structRF24NetworkHeader.html#a70efc9fd32fd3f73a98d96f57c04c815',1,'RF24NetworkHeader']]],
-  ['tuning_2emd_2',['tuning.md',['../tuning_8md.html',1,'']]],
-  ['tx_5fnormal_3',['TX_NORMAL',['../RF24Network_8h.html#ad0da85e1332b474b17de9b77d580bd73',1,'RF24Network.h']]],
-  ['tx_5frouted_4',['TX_ROUTED',['../RF24Network_8h.html#aea221535d8326d4ea6a483c9715a5d0c',1,'RF24Network.h']]],
-  ['txtimeout_5',['txTimeout',['../classRF24Network.html#a8838b42717e7c9da37213b020db1f88c',1,'RF24Network']]],
-  ['type_6',['type',['../structRF24NetworkHeader.html#ac99ab14e561670f4445d1fea7775e2db',1,'RF24NetworkHeader']]]
+  ['data_20loss_3a_20tuning_20the_20network_0',['Performance and Data Loss: Tuning the Network',['../md_docs_2tuning.html',1,'']]],
+  ['decimal_20octal_20and_20binary_1',['Decimal, Octal and Binary',['../md_docs_2addressing.html#autotoc_md108',1,'']]],
+  ['decimal_20octal_20and_20binary_20formats_2',['Decimal, Octal and Binary formats',['../md_docs_2addressing.html#autotoc_md106',1,'']]],
+  ['deprecated_3',['&lt;!-- 2 --&gt; 🚫 Deprecated',['../md_CHANGELOG.html#autotoc_md27',1,'']]],
+  ['deprecated_20list_4',['Deprecated List',['../deprecated.html',1,'']]],
+  ['devices_5',['Usage with NRF52x devices',['../md_docs_2tuning.html#autotoc_md133',1,'']]],
+  ['differences_6',['Similiarities &amp; Differences',['../md_docs_2zigabee.html#autotoc_md139',1,'']]],
+  ['directionality_7',['Directionality',['../index.html#autotoc_md123',1,'']]],
+  ['displaying_20addresses_8',['Displaying Addresses',['../md_docs_2addressing.html#autotoc_md109',1,'']]],
+  ['documentation_9',['Documentation',['../md_CHANGELOG.html#autotoc_md4',1,'&lt;!-- 8 --&gt; 📝 Documentation'],['../md_CHANGELOG.html#autotoc_md9',1,'&lt;!-- 8 --&gt; 📝 Documentation'],['../md_CHANGELOG.html#autotoc_md17',1,'&lt;!-- 8 --&gt; 📝 Documentation'],['../md_CHANGELOG.html#autotoc_md23',1,'&lt;!-- 8 --&gt; 📝 Documentation'],['../md_CHANGELOG.html#autotoc_md30',1,'&lt;!-- 8 --&gt; 📝 Documentation'],['../md_CHANGELOG.html#autotoc_md36',1,'&lt;!-- 8 --&gt; 📝 Documentation'],['../md_CHANGELOG.html#autotoc_md41',1,'&lt;!-- 8 --&gt; 📝 Documentation'],['../md_CHANGELOG.html#autotoc_md52',1,'&lt;!-- 8 --&gt; 📝 Documentation'],['../md_CHANGELOG.html#autotoc_md101',1,'&lt;!-- 8 --&gt; 📝 Documentation']]],
+  ['does_20not_20provide_10',['The layer does not provide',['../index.html#autotoc_md116',1,'']]]
 ];
