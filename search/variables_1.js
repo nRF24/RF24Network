@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['external_5fqueue_0',['external_queue',['../classESBNetwork.html#a1af1d7e26417c772adb897122d4368f1',1,'ESBNetwork']]]
+  ['external_5fqueue_0',['external_queue',['../classRF24Network.html#ab387a2137dc1b62c1bf5cc783e34e2c0',1,'RF24Network']]]
 ];

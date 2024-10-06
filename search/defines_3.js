@@ -5,6 +5,5 @@ var searchData=
   ['network_5fmore_5ffragments_5fnack_2',['NETWORK_MORE_FRAGMENTS_NACK',['../RF24Network_8h.html#a359c70d3c925dc46c47efa65b3850e47',1,'RF24Network.h']]],
   ['network_5fmulticast_5faddress_3',['NETWORK_MULTICAST_ADDRESS',['../RF24Network__config_8h.html#a9384801ca5f2283143ab651994179e8c',1,'RF24Network_config.h']]],
   ['network_5fmulticast_5faddress_5flevel_5f2_4',['NETWORK_MULTICAST_ADDRESS_LEVEL_2',['../RF24Network_8cpp.html#a63d136981c3c1939843500f811e5a907',1,'RF24Network.cpp']]],
-  ['network_5fmulticast_5faddress_5flevel_5f4_5',['NETWORK_MULTICAST_ADDRESS_LEVEL_4',['../RF24Network_8cpp.html#ac526d119155cb828fad3c439d9839983',1,'RF24Network.cpp']]],
-  ['num_5fpipes_6',['NUM_PIPES',['../RF24Network__config_8h.html#aea10fcc3ece9abf30d548a2cba57d2aa',1,'RF24Network_config.h']]]
+  ['network_5fmulticast_5faddress_5flevel_5f4_5',['NETWORK_MULTICAST_ADDRESS_LEVEL_4',['../RF24Network_8cpp.html#ac526d119155cb828fad3c439d9839983',1,'RF24Network.cpp']]]
 ];

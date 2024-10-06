@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['esbnetwork_0',['ESBNetwork',['../classESBNetwork.html#a0ac71a8989fe3d7cdc86b1bb538a8251',1,'ESBNetwork']]]
+  ['failures_0',['failures',['../classRF24Network.html#acb84d7556df00c933208ecf44b227a4f',1,'RF24Network']]]
 ];
