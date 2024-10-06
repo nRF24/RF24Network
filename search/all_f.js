@@ -1,11 +1,8 @@
 var searchData=
 [
-  ['enable_5fdynamic_5fpayloads_0',['ENABLE_DYNAMIC_PAYLOADS',['../RF24Network__config_8h.html#ad899459e243820796dd98c2afb044218',1,'RF24Network_config.h']]],
-  ['esbnetwork_1',['ESBNetwork',['../classESBNetwork.html',1,'ESBNetwork&lt; radio_t &gt;'],['../classESBNetwork.html#a0ac71a8989fe3d7cdc86b1bb538a8251',1,'ESBNetwork::ESBNetwork()']]],
-  ['example_201_2',['Example 1',['../md_docs_2tuning.html#autotoc_md135',1,'']]],
-  ['example_202_3',['Example 2',['../md_docs_2tuning.html#autotoc_md136',1,'']]],
-  ['expressing_20rf24network_20addresses_20in_20ip_20format_4',['Expressing RF24Network addresses in IP format',['../md_docs_2tuning.html#autotoc_md127',1,'']]],
-  ['extended_20timeouts_5',['Auto-Retry Count and Extended Timeouts',['../md_docs_2tuning.html#autotoc_md132',1,'']]],
-  ['external_5fdata_5ftype_6',['EXTERNAL_DATA_TYPE',['../group__DEFINED__TYPES.html#gac6bbd2772e776d10ca7c5f3c7eddf982',1,'RF24Network.h']]],
-  ['external_5fqueue_7',['external_queue',['../classESBNetwork.html#a1af1d7e26417c772adb897122d4368f1',1,'ESBNetwork']]]
+  ['update_0',['update',['../classRF24Network.html#ad59983f89b09d17d7d9b0581f658a41c',1,'RF24Network']]],
+  ['use_5fcurrent_5fchannel_1',['USE_CURRENT_CHANNEL',['../RF24Network_8h.html#a3701f6ea99dcf399641f2ad29303f8cc',1,'RF24Network.h']]],
+  ['user_5ftx_5fmulticast_2',['USER_TX_MULTICAST',['../RF24Network_8h.html#ae2f8b695f040aa6f1e8ec92b438aa303',1,'RF24Network.h']]],
+  ['user_5ftx_5fto_5flogical_5faddress_3',['USER_TX_TO_LOGICAL_ADDRESS',['../RF24Network_8h.html#a4726586dd8fbf75bbfffffd18ebdbeb3',1,'RF24Network.h']]],
+  ['user_5ftx_5fto_5fphysical_5faddress_4',['USER_TX_TO_PHYSICAL_ADDRESS',['../RF24Network_8h.html#afbef4cc504fbd93102265ff8d01cbafc',1,'RF24Network.h']]]
 ];

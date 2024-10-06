@@ -1,8 +1,8 @@
 var searchData=
 [
-  ['3_20🗑️_20removed_0',['3 🗑️ Removed',['../md_CHANGELOG.html#autotoc_md15',1,'&lt;!-- 3 --&gt; 🗑️ Removed'],['../md_CHANGELOG.html#autotoc_md21',1,'&lt;!-- 3 --&gt; 🗑️ Removed'],['../md_CHANGELOG.html#autotoc_md28',1,'&lt;!-- 3 --&gt; 🗑️ Removed'],['../md_CHANGELOG.html#autotoc_md34',1,'&lt;!-- 3 --&gt; 🗑️ Removed'],['../md_CHANGELOG.html#autotoc_md39',1,'&lt;!-- 3 --&gt; 🗑️ Removed'],['../md_CHANGELOG.html#autotoc_md46',1,'&lt;!-- 3 --&gt; 🗑️ Removed'],['../md_CHANGELOG.html#autotoc_md50',1,'&lt;!-- 3 --&gt; 🗑️ Removed'],['../md_CHANGELOG.html#autotoc_md59',1,'&lt;!-- 3 --&gt; 🗑️ Removed'],['../md_CHANGELOG.html#autotoc_md74',1,'&lt;!-- 3 --&gt; 🗑️ Removed'],['../md_CHANGELOG.html#autotoc_md77',1,'&lt;!-- 3 --&gt; 🗑️ Removed'],['../md_CHANGELOG.html#autotoc_md86',1,'&lt;!-- 3 --&gt; 🗑️ Removed'],['../md_CHANGELOG.html#autotoc_md95',1,'&lt;!-- 3 --&gt; 🗑️ Removed'],['../md_CHANGELOG.html#autotoc_md98',1,'&lt;!-- 3 --&gt; 🗑️ Removed']]],
-  ['3_201_200_203_20a_202015_2012_2014_1',['&lt;a href=&quot;https://github.com/nRF24/RF24Network/compare/v1.0.2...v1.0.3&quot; &gt;1.0.3&lt;/a&gt; - 2015-12-14',['../md_CHANGELOG.html#autotoc_md84',1,'']]],
-  ['3_20a_202015_2012_2014_2',['&lt;a href=&quot;https://github.com/nRF24/RF24Network/compare/v1.0.2...v1.0.3&quot; &gt;1.0.3&lt;/a&gt; - 2015-12-14',['../md_CHANGELOG.html#autotoc_md84',1,'']]],
-  ['3_20v1_200_204_201_200_204_20a_202015_2012_2015_3',['&lt;a href=&quot;https://github.com/nRF24/RF24Network/compare/v1.0.3...v1.0.4&quot; &gt;1.0.4&lt;/a&gt; - 2015-12-15',['../md_CHANGELOG.html#autotoc_md81',1,'']]],
-  ['30_4',['&lt;a href=&quot;https://github.com/nRF24/RF24Network/compare/v1.0.12...v1.0.13&quot; &gt;1.0.13&lt;/a&gt; - 2020-08-30',['../md_CHANGELOG.html#autotoc_md43',1,'']]]
+  ['changelog_0',['Changelog',['../md_CHANGELOG.html',1,'']]],
+  ['changelog_2emd_1',['CHANGELOG.md',['../CHANGELOG_8md.html',1,'']]],
+  ['comparison_20to_20zigbee_2',['Comparison to ZigBee',['../md_docs_zigabee.html',1,'']]],
+  ['contributing_3',['CONTRIBUTING',['../md_CONTRIBUTING.html',1,'']]],
+  ['contributing_2emd_4',['CONTRIBUTING.md',['../CONTRIBUTING_8md.html',1,'']]]
 ];

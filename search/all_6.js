@@ -1,6 +1,10 @@
 var searchData=
 [
-  ['6_201_200_206_20a_202016_2004_2012_0',['&lt;a href=&quot;https://github.com/nRF24/RF24Network/compare/v1.0.5...v1.0.6&quot; &gt;1.0.6&lt;/a&gt; - 2016-04-12',['../md_CHANGELOG.html#autotoc_md73',1,'']]],
-  ['6_20a_202016_2004_2012_1',['&lt;a href=&quot;https://github.com/nRF24/RF24Network/compare/v1.0.5...v1.0.6&quot; &gt;1.0.6&lt;/a&gt; - 2016-04-12',['../md_CHANGELOG.html#autotoc_md73',1,'']]],
-  ['6_20v1_200_207_201_200_207_20a_202016_2009_2020_2',['&lt;a href=&quot;https://github.com/nRF24/RF24Network/compare/v1.0.6...v1.0.7&quot; &gt;1.0.7&lt;/a&gt; - 2016-09-20',['../md_CHANGELOG.html#autotoc_md68',1,'']]]
+  ['failures_0',['failures',['../classRF24Network.html#acb84d7556df00c933208ecf44b227a4f',1,'RF24Network']]],
+  ['flag_5ffast_5ffrag_1',['FLAG_FAST_FRAG',['../RF24Network_8h.html#a00fc52e4f9f6e4716c365bf201163b7e',1,'RF24Network.h']]],
+  ['flag_5fno_5fpoll_2',['FLAG_NO_POLL',['../RF24Network_8h.html#a4b3df085f3e9afddfa6d9647cd142c44',1,'RF24Network.h']]],
+  ['frag_5fptr_3',['frag_ptr',['../classRF24Network.html#a1c994c5fdcb2173b187c52b641aaeae0',1,'RF24Network']]],
+  ['frame_5fbuffer_4',['frame_buffer',['../classRF24Network.html#aa06f1fdd0fd986d427c2c5193b47b212',1,'RF24Network']]],
+  ['frame_5fheader_5fsize_5',['FRAME_HEADER_SIZE',['../RF24Network_8h.html#a6a4e3b4099bd5e93bfec5835b2379eb8',1,'RF24Network.h']]],
+  ['from_5fnode_6',['from_node',['../structRF24NetworkHeader.html#aff9461f6546b5b7c87465809eb4f9f56',1,'RF24NetworkHeader']]]
 ];
