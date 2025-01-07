@@ -515,7 +515,7 @@ uint8_t ESBNetwork<radio_t>::enqueue(RF24NetworkHeader* header)
     return 0;
 }
     #else // !defined(DISABLE_USER_PAYLOADS)
-    if (message_size + (next_frame - frame_queue) <= MAIN_BUFFER_SIZE) {
+    if (message_size + (next_frame - frame_queue) <= MAX_PAYLOAD_SIZE) {
         memcpy(next_frame, &frame_buffer, 8);
         memcpy(next_frame + 8, &message_size, 2);
         memcpy(next_frame + 10, frame_buffer + 8, message_size);
