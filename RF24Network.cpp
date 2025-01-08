@@ -515,7 +515,16 @@ uint8_t ESBNetwork<radio_t>::enqueue(RF24NetworkHeader* header)
     return 0;
 }
     #else // !defined(DISABLE_USER_PAYLOADS)
-    if (message_size + (next_frame - frame_queue) <= MAX_PAYLOAD_SIZE) {
+        #if !defined(ARDUINO_ARCH_AVR)
+    uint8_t padding = (message_size + 10) % 4;
+    padding = padding ? 4 - padding : 0;
+    if (padding +
+        #else
+    if (
+        #endif
+            message_size + 10 + (next_frame - frame_queue)
+        <= MAIN_BUFFER_SIZE)
+    {
         memcpy(next_frame, &frame_buffer, 8);
         memcpy(next_frame + 8, &message_size, 2);
         memcpy(next_frame + 10, frame_buffer + 8, message_size);
@@ -524,9 +533,7 @@ uint8_t ESBNetwork<radio_t>::enqueue(RF24NetworkHeader* header)
 
         next_frame += (message_size + 10);
         #if !defined(ARDUINO_ARCH_AVR)
-        if (uint8_t padding = (message_size + 10) % 4) {
-            next_frame += 4 - padding;
-        }
+        next_frame += padding;
         #endif
         //IF_RF24NETWORK_DEBUG_FRAGMENTATION( Serial.print("Enq "); Serial.println(next_frame-frame_queue); );//printf_P(PSTR("enq %d\n"),next_frame-frame_queue); );
 
