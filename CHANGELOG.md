@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 <!-- markdownlint-disable MD024 -->
 
+## [1.0.22] - 2025-01-10
+
+### <!-- 4 --> 🛠️ Fixed
+
+- Fix buffering of user payloads in [`de66f95`](https://github.com/nRF24/RF24Network/commit/de66f9526a3da1bc991681547235689c0e7439f7)
+
+[1.0.22]: https://github.com/nRF24/RF24Network/compare/v1.0.21...v1.0.22
+
+Full commit diff: [`v1.0.21...v1.0.22`][1.0.22]
+
 ## [1.0.21] - 2024-10-06
 
 ### <!-- 1 --> 🚀 Added
@@ -25,6 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Change SERIAL_DEBUG into RF24NETWORK_DEBUG in [`5a71a66`](https://github.com/nRF24/RF24Network/commit/5a71a66994945c983d9f32024276867a3ad8d0c5)
 - [CMake] default to SPIDEV driver in [`2bf2412`](https://github.com/nRF24/RF24Network/commit/2bf2412992949a784527e5e35f6a4fbc6552bdf8)
+- Bump version to v1.0.21 in [`11c367b`](https://github.com/nRF24/RF24Network/commit/11c367b071cb155a8b31de9e7af453a5c17011c5)
 
 [1.0.21]: https://github.com/nRF24/RF24Network/compare/v1.0.20...v1.0.21
 
@@ -309,6 +320,8 @@ Full commit diff: [`v1.0.15...v1.0.16`][1.0.16]
 
 Full commit diff: [`v1.0.14...v1.0.15`][1.0.15]
 
+## New Contributors
+* \@kripton made their first contribution in [#171](https://github.com/nRF24/RF24Network/pull/171)
 ## [1.0.14] - 2020-12-14
 
 ### <!-- 3 --> 🗑️ Removed
@@ -340,6 +353,8 @@ Full commit diff: [`v1.0.14...v1.0.15`][1.0.15]
 
 Full commit diff: [`v1.0.13...v1.0.14`][1.0.14]
 
+## New Contributors
+* \@2bndy5 made their first contribution in [#163](https://github.com/nRF24/RF24Network/pull/163)
 ## [1.0.13] - 2020-08-30
 
 ### <!-- 9 --> 🗨️ Changed
@@ -576,6 +591,7 @@ Full commit diff: [`v1.0.5...v1.0.6`][1.0.6]
 Full commit diff: [`v1.0.4...v1.0.5`][1.0.5]
 
 ## New Contributors
+* \@martin-mat made their first contribution
 * \@gregj1 made their first contribution
 * \@yozik04 made their first contribution
 ## [1.0.4] - 2015-12-15
@@ -993,8 +1009,11 @@ Full commit diff: [`v1.0...v1.0.1`][1.0.1]
 Full commit diff: [`f54c0ac...v1.0`][1.0]
 
 ## New Contributors
+* \@TMRh20 made their first contribution
+* \@Avamander made their first contribution
 * \@gehel made their first contribution
 * \@crcastle made their first contribution
+* \@ivankravets made their first contribution
 * \@dsbaha made their first contribution
 * \@spaniakos made their first contribution
 * \@lnxbil made their first contribution
