@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['5_201_200_205_20a_202016_2003_2027_0',['&lt;a href=&quot;https://github.com/nRF24/RF24Network/compare/v1.0.4...v1.0.5&quot; &gt;1.0.5&lt;/a&gt; - 2016-03-27',['../md_CHANGELOG.html#autotoc_md80',1,'']]],
-  ['5_20a_202016_2003_2027_1',['&lt;a href=&quot;https://github.com/nRF24/RF24Network/compare/v1.0.4...v1.0.5&quot; &gt;1.0.5&lt;/a&gt; - 2016-03-27',['../md_CHANGELOG.html#autotoc_md80',1,'']]],
-  ['5_20v1_200_206_201_200_206_20a_202016_2004_2012_2',['&lt;a href=&quot;https://github.com/nRF24/RF24Network/compare/v1.0.5...v1.0.6&quot; &gt;1.0.6&lt;/a&gt; - 2016-04-12',['../md_CHANGELOG.html#autotoc_md77',1,'']]]
+  ['enable_5fdynamic_5fpayloads_0',['ENABLE_DYNAMIC_PAYLOADS',['../RF24Network__config_8h.html#ad899459e243820796dd98c2afb044218',1,'RF24Network_config.h']]],
+  ['external_5fdata_5ftype_1',['EXTERNAL_DATA_TYPE',['../group__DEFINED__TYPES.html#gac6bbd2772e776d10ca7c5f3c7eddf982',1,'RF24Network.h']]],
+  ['external_5fqueue_2',['external_queue',['../classRF24Network.html#ab387a2137dc1b62c1bf5cc783e34e2c0',1,'RF24Network']]]
 ];

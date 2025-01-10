@@ -1,10 +1,8 @@
 var searchData=
 [
-  ['3_20🗑️_20removed_0',['3 🗑️ Removed',['../md_CHANGELOG.html#autotoc_md17',1,'&lt;!-- 3 --&gt; 🗑️ Removed'],['../md_CHANGELOG.html#autotoc_md23',1,'&lt;!-- 3 --&gt; 🗑️ Removed'],['../md_CHANGELOG.html#autotoc_md30',1,'&lt;!-- 3 --&gt; 🗑️ Removed'],['../md_CHANGELOG.html#autotoc_md36',1,'&lt;!-- 3 --&gt; 🗑️ Removed'],['../md_CHANGELOG.html#autotoc_md42',1,'&lt;!-- 3 --&gt; 🗑️ Removed'],['../md_CHANGELOG.html#autotoc_md50',1,'&lt;!-- 3 --&gt; 🗑️ Removed'],['../md_CHANGELOG.html#autotoc_md54',1,'&lt;!-- 3 --&gt; 🗑️ Removed'],['../md_CHANGELOG.html#autotoc_md63',1,'&lt;!-- 3 --&gt; 🗑️ Removed'],['../md_CHANGELOG.html#autotoc_md78',1,'&lt;!-- 3 --&gt; 🗑️ Removed'],['../md_CHANGELOG.html#autotoc_md81',1,'&lt;!-- 3 --&gt; 🗑️ Removed'],['../md_CHANGELOG.html#autotoc_md90',1,'&lt;!-- 3 --&gt; 🗑️ Removed'],['../md_CHANGELOG.html#autotoc_md99',1,'&lt;!-- 3 --&gt; 🗑️ Removed'],['../md_CHANGELOG.html#autotoc_md102',1,'&lt;!-- 3 --&gt; 🗑️ Removed']]],
-  ['3_201_200_203_20a_202015_2012_2014_1',['&lt;a href=&quot;https://github.com/nRF24/RF24Network/compare/v1.0.2...v1.0.3&quot; &gt;1.0.3&lt;/a&gt; - 2015-12-14',['../md_CHANGELOG.html#autotoc_md88',1,'']]],
-  ['3_202_200_203_20a_202025_2001_2010_2',['&lt;a href=&quot;https://github.com/nRF24/RF24Network/compare/v2.0.2...v2.0.3&quot; &gt;2.0.3&lt;/a&gt; - 2025-01-10',['../md_CHANGELOG.html#autotoc_md1',1,'']]],
-  ['3_20a_202015_2012_2014_3',['&lt;a href=&quot;https://github.com/nRF24/RF24Network/compare/v1.0.2...v1.0.3&quot; &gt;1.0.3&lt;/a&gt; - 2015-12-14',['../md_CHANGELOG.html#autotoc_md88',1,'']]],
-  ['3_20a_202025_2001_2010_4',['&lt;a href=&quot;https://github.com/nRF24/RF24Network/compare/v2.0.2...v2.0.3&quot; &gt;2.0.3&lt;/a&gt; - 2025-01-10',['../md_CHANGELOG.html#autotoc_md1',1,'']]],
-  ['3_20v1_200_204_201_200_204_20a_202015_2012_2015_5',['&lt;a href=&quot;https://github.com/nRF24/RF24Network/compare/v1.0.3...v1.0.4&quot; &gt;1.0.4&lt;/a&gt; - 2015-12-15',['../md_CHANGELOG.html#autotoc_md85',1,'']]],
-  ['30_6',['&lt;a href=&quot;https://github.com/nRF24/RF24Network/compare/v1.0.12...v1.0.13&quot; &gt;1.0.13&lt;/a&gt; - 2020-08-30',['../md_CHANGELOG.html#autotoc_md47',1,'']]]
+  ['changelog_0',['Changelog',['../md_CHANGELOG.html',1,'']]],
+  ['changelog_2emd_1',['CHANGELOG.md',['../CHANGELOG_8md.html',1,'']]],
+  ['comparison_20to_20zigbee_2',['Comparison to ZigBee',['../md_docs_zigabee.html',1,'']]],
+  ['contributing_3',['CONTRIBUTING',['../md_CONTRIBUTING.html',1,'']]],
+  ['contributing_2emd_4',['CONTRIBUTING.md',['../CONTRIBUTING_8md.html',1,'']]]
 ];

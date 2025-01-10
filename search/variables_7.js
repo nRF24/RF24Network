@@ -1,6 +1,6 @@
 var searchData=
 [
   ['reserved_0',['reserved',['../structRF24NetworkHeader.html#a80672a22cedcf24db8abbcef2eea9cfd',1,'RF24NetworkHeader']]],
-  ['returnsysmsgs_1',['returnSysMsgs',['../classESBNetwork.html#a38f2b8e2665e9512e6953992cf08888f',1,'ESBNetwork']]],
-  ['routetimeout_2',['routeTimeout',['../classESBNetwork.html#a657d583b2f6ae0ec61a6fa771431470a',1,'ESBNetwork']]]
+  ['returnsysmsgs_1',['returnSysMsgs',['../classRF24Network.html#afb6b1d5c0fa3d982425f7a1f4fb48d13',1,'RF24Network']]],
+  ['routetimeout_2',['routeTimeout',['../classRF24Network.html#a657fd03730b6c9084cc440b4fe0177c3',1,'RF24Network']]]
 ];

@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['failures_0',['failures',['../classESBNetwork.html#a7b4a446024163631477abf6bb641d759',1,'ESBNetwork']]]
+  ['is_5fvalid_5faddress_0',['is_valid_address',['../classRF24Network.html#ab41da035bd7f469ea4364a06ab4efd1b',1,'RF24Network']]]
 ];
