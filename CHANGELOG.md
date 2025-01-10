@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 <!-- markdownlint-disable MD024 -->
 
+## [2.0.3] - 2025-01-10
+
+### <!-- 4 --> 🛠️ Fixed
+
+- Fix buffering of user payloads by \@TMRh20 in [#243](https://github.com/nRF24/RF24Network/pull/243)
+
+[2.0.3]: https://github.com/nRF24/RF24Network/compare/v2.0.2...v2.0.3
+
+Full commit diff: [`v2.0.2...v2.0.3`][2.0.3]
+
 ## [2.0.2] - 2024-10-06
 
 ### <!-- 1 --> 🚀 Added
@@ -27,6 +37,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Change SERIAL_DEBUG into RF24NETWORK_DEBUG by \@2bndy5 in [#228](https://github.com/nRF24/RF24Network/pull/228)
 - [CMake] default to SPIDEV driver by \@2bndy5 in [#232](https://github.com/nRF24/RF24Network/pull/232)
+- Bump version to v2.0.2 by \@2bndy5 in [`fd8126a`](https://github.com/nRF24/RF24Network/commit/fd8126a9910404bdd1d0014dcf438ba9a7859d37)
 
 [2.0.2]: https://github.com/nRF24/RF24Network/compare/v2.0.1...v2.0.2
 
@@ -323,6 +334,8 @@ Full commit diff: [`v1.0.15...v1.0.16`][1.0.16]
 
 Full commit diff: [`v1.0.14...v1.0.15`][1.0.15]
 
+## New Contributors
+* \@kripton made their first contribution in [#171](https://github.com/nRF24/RF24Network/pull/171)
 ## [1.0.14] - 2020-12-14
 
 ### <!-- 3 --> 🗑️ Removed
@@ -354,6 +367,8 @@ Full commit diff: [`v1.0.14...v1.0.15`][1.0.15]
 
 Full commit diff: [`v1.0.13...v1.0.14`][1.0.14]
 
+## New Contributors
+* \@2bndy5 made their first contribution in [#163](https://github.com/nRF24/RF24Network/pull/163)
 ## [1.0.13] - 2020-08-30
 
 ### <!-- 9 --> 🗨️ Changed
@@ -590,6 +605,7 @@ Full commit diff: [`v1.0.5...v1.0.6`][1.0.6]
 Full commit diff: [`v1.0.4...v1.0.5`][1.0.5]
 
 ## New Contributors
+* \@martin-mat made their first contribution
 * \@gregj1 made their first contribution
 * \@yozik04 made their first contribution
 ## [1.0.4] - 2015-12-15
@@ -1007,8 +1023,11 @@ Full commit diff: [`v1.0...v1.0.1`][1.0.1]
 Full commit diff: [`f54c0ac...v1.0`][1.0]
 
 ## New Contributors
+* \@TMRh20 made their first contribution
+* \@Avamander made their first contribution
 * \@gehel made their first contribution
 * \@crcastle made their first contribution
+* \@ivankravets made their first contribution
 * \@dsbaha made their first contribution
 * \@spaniakos made their first contribution
 * \@lnxbil made their first contribution
