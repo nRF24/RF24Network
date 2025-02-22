@@ -192,7 +192,12 @@
 #define USER_TX_TO_LOGICAL_ADDRESS  3 // network ACK
 #define USER_TX_MULTICAST           4
 
-#define MAX_FRAME_SIZE    32 // Size of individual radio frames
+#if defined NRF52_RADIO_LIBRARY
+    #define MAX_FRAME_SIZE 123 // Size of individual radio frames is larger with NRF52
+#else
+    #define MAX_FRAME_SIZE 32 // Size of individual radio frames
+#endif
+
 #define FRAME_HEADER_SIZE 10 // Size of RF24Network frames - data
 
 /**
