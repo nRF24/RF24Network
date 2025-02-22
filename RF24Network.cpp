@@ -700,10 +700,39 @@ template<class radio_t>
 bool ESBNetwork<radio_t>::write(RF24NetworkHeader& header, const void* message, uint16_t len, uint16_t writeDirect)
 {
 
+#if defined(NRF52_RADIO_LIBRARY)
+    uint8_t max_frame_size = NRF_RADIO->PCNF1;
+    /*if(radio.enableEncryption == true){
+       max_frame_size -= CCM_IV_SIZE + CCM_COUNTER_SIZE + CCM_MIC_SIZE;
+    }*/
+    uint8_t max_frame_payload_size2 = max_frame_size - sizeof(RF24NetworkHeader);
+#endif
+
 #if defined(DISABLE_FRAGMENTATION)
+    #if defined(NRF52_RADIO_LIBRARY)
+    frame_size = rf24_min(len + sizeof(RF24NetworkHeader), max_frame_size;
+    return _write(header, message, rf24_min(len, max_frame_payload_size2), writeDirect);
+    #else
     frame_size = rf24_min(len + sizeof(RF24NetworkHeader), MAX_FRAME_SIZE);
     return _write(header, message, rf24_min(len, max_frame_payload_size), writeDirect);
+    #endif
 #else // !defined(DISABLE_FRAGMENTATION)
+    #if defined(NRF52_RADIO_LIBRARY)
+    if (len <= max_frame_payload_size2) {
+        //Normal Write (Un-Fragmented)
+        frame_size = len + sizeof(RF24NetworkHeader);
+        return _write(header, message, len, writeDirect);
+    }
+    //Check payload size
+
+    if (len > MAX_PAYLOAD_SIZE) {
+        IF_RF24NETWORK_DEBUG(printf_P(PSTR("NET write message failed. Given 'len' %d is bigger than the MAX Payload size %i\n\r"), len, MAX_PAYLOAD_SIZE););
+        return false;
+    }
+
+    //Divide the message payload into chunks of max_frame_payload_size
+    uint8_t fragment_id = (len % max_frame_payload_size2 != 0) + ((len) / max_frame_payload_size2); //the number of fragments to send = ceil(len/max_frame_payload_size)
+    #else // !defined(NRF52_RADIO_LIBRARY)
     if (len <= max_frame_payload_size) {
         //Normal Write (Un-Fragmented)
         frame_size = len + sizeof(RF24NetworkHeader);
@@ -718,7 +747,7 @@ bool ESBNetwork<radio_t>::write(RF24NetworkHeader& header, const void* message, 
 
     //Divide the message payload into chunks of max_frame_payload_size
     uint8_t fragment_id = (len % max_frame_payload_size != 0) + ((len) / max_frame_payload_size); //the number of fragments to send = ceil(len/max_frame_payload_size)
-
+    #endif
     uint8_t msgCount = 0;
 
     IF_RF24NETWORK_DEBUG_FRAGMENTATION(printf_P(PSTR("FRG Total message fragments %d\n\r"), fragment_id););
@@ -749,8 +778,13 @@ bool ESBNetwork<radio_t>::write(RF24NetworkHeader& header, const void* message, 
             header.type = NETWORK_MORE_FRAGMENTS; //Set the more fragments flag to indicate a fragmented frame
         }
 
+    #if defined(NRF52_RADIO_LIBRARY)
+        uint16_t offset = msgCount * max_frame_payload_size2;
+        uint16_t fragmentLen = rf24_min((uint16_t)(len - offset), max_frame_payload_size2);
+    #else
         uint16_t offset = msgCount * max_frame_payload_size;
         uint16_t fragmentLen = rf24_min((uint16_t)(len - offset), max_frame_payload_size);
+    #endif
 
         //Try to send the payload chunk with the copied header
         frame_size = sizeof(RF24NetworkHeader) + fragmentLen;
