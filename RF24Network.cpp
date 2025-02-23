@@ -691,13 +691,13 @@ bool ESBNetwork<radio_t>::multicast(RF24NetworkHeader& header, const void* messa
 template<class radio_t>
 bool ESBNetwork<radio_t>::write(RF24NetworkHeader& header, const void* message, uint16_t len)
 {
-    return beginWrite(radioTag<radio_t> {}, header, message, len, NETWORK_AUTO_ROUTING);
+    return beginWrite(header, message, len, NETWORK_AUTO_ROUTING);
 }
 
 /******************************************************************/
 
-template<class radio_t>
-bool ESBNetwork<radio_t>::beginWrite(radioTag<RF24>, RF24NetworkHeader& header, const void* message, uint16_t len, uint16_t writeDirect)
+template<>
+bool ESBNetwork<RF24>::beginWrite(RF24NetworkHeader& header, const void* message, uint16_t len, uint16_t writeDirect)
 {
     max_frame_size = MAX_FRAME_SIZE;
     return write(header, message, len, writeDirect);
@@ -705,8 +705,8 @@ bool ESBNetwork<radio_t>::beginWrite(radioTag<RF24>, RF24NetworkHeader& header, 
 
 /******************************************************************/
 #if defined(NRF52_RADIO_LIBRARY)
-template<class radio_t>
-bool ESBNetwork<radio_t>::beginWrite(radioTag<nrf_to_nrf>, RF24NetworkHeader& header, const void* message, uint16_t len, uint16_t writeDirect)
+template<>
+bool ESBNetwork<nrf_to_nrf>::beginWrite(RF24NetworkHeader& header, const void* message, uint16_t len, uint16_t writeDirect)
 {
     max_frame_size = (uint8_t)NRF_RADIO->PCNF1;
     if (radio.enableEncryption == true) {
