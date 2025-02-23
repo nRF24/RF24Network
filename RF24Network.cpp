@@ -706,7 +706,7 @@ bool ESBNetwork<radio_t>::write(RF24NetworkHeader& header, const void* message, 
       max_frame_size -= CCM_IV_SIZE + CCM_COUNTER_SIZE + CCM_MIC_SIZE;
     }*/
 #else
-    max_frame_size = MAX_FRAME_BUFFER_SIZE;
+    max_frame_size = MAX_FRAME_SIZE;
 #endif
     max_frame_payload_size = max_frame_size - sizeof(RF24NetworkHeader);
 
