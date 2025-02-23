@@ -193,9 +193,9 @@
 #define USER_TX_MULTICAST           4
 
 #if defined NRF52_RADIO_LIBRARY
-    #define MAX_FRAME_SIZE 123 // Size of individual radio frames is larger with NRF52
+    #define MAX_FRAME_BUFFER_SIZE 123 // Size of individual radio frames is larger with NRF52
 #else
-    #define MAX_FRAME_SIZE 32 // Size of individual radio frames
+    #define MAX_FRAME_BUFFER_SIZE 32 // Size of individual radio frames
 #endif
 
 #define FRAME_HEADER_SIZE 10 // Size of RF24Network frames - data
@@ -755,7 +755,7 @@ public:
      * outgoing or incoming).
      * @note The first 8 bytes of this buffer is latest handled frame's RF24NetworkHeader data.
      */
-    uint8_t frame_buffer[MAX_FRAME_SIZE];
+    uint8_t frame_buffer[MAX_FRAME_BUFFER_SIZE];
 
     /**
      * **Linux platforms only**
@@ -851,6 +851,8 @@ protected:
      */
     uint16_t node_address;
 
+    uint8_t max_frame_size;
+
 private:
     /**
      * @brief This function is the second to last stage a frame reaches before transmission.
@@ -939,8 +941,8 @@ private:
 
     radio_t& radio; /** Underlying radio driver, provides link/physical layers */
 
-    uint8_t frame_size;                                                                            /* The outgoing frame's total size including the header info. Ranges [8, MAX_PAYLOAD_SIZE] */
-    const static unsigned int max_frame_payload_size = MAX_FRAME_SIZE - sizeof(RF24NetworkHeader); /* always 24 bytes to compensate for the frame's header */
+    uint8_t frame_size;                                                                      /* The outgoing frame's total size including the header info. Ranges [8, MAX_PAYLOAD_SIZE] */
+    unsigned int max_frame_payload_size = MAX_FRAME_BUFFER_SIZE - sizeof(RF24NetworkHeader); /* always 24 bytes to compensate for the frame's header */
 
 #if defined(RF24_LINUX)
     std::queue<RF24NetworkFrame> frame_queue;
