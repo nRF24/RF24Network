@@ -909,6 +909,16 @@ private:
      */
     bool _write(RF24NetworkHeader& header, const void* message, uint16_t len, uint16_t writeDirect);
 
+    /*
+     * Overloaded beginWrite function to differentiate between RF24 and nrf_to_nrf behavior
+     */
+    template<typename>
+    struct radioTag
+    {
+    };
+    bool beginWrite(radioTag<RF24>, RF24NetworkHeader& header, const void* message, uint16_t len, uint16_t writeDirect);
+    bool beginWrite(radioTag<nrf_to_nrf>, RF24NetworkHeader& header, const void* message, uint16_t len, uint16_t writeDirect);
+
     struct logicalToPhysicalStruct
     {
         /** The immediate destination (1 hop) of an outgoing frame */
