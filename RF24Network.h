@@ -851,8 +851,6 @@ protected:
      */
     uint16_t node_address;
 
-    uint8_t max_frame_size;
-
 private:
     /**
      * @brief This function is the second to last stage a frame reaches before transmission.
@@ -954,7 +952,10 @@ private:
 
     radio_t& radio; /** Underlying radio driver, provides link/physical layers */
 
-    uint8_t frame_size;                                                               /* The outgoing frame's total size including the header info. Ranges [8, MAX_PAYLOAD_SIZE] */
+    uint8_t frame_size; /* The outgoing frame's total size including the header info. Ranges [8, MAX_PAYLOAD_SIZE] */
+
+    uint8_t max_frame_size;
+
     unsigned int max_frame_payload_size = MAX_FRAME_SIZE - sizeof(RF24NetworkHeader); /* always 24 bytes to compensate for the frame's header */
 
 #if defined(RF24_LINUX)
