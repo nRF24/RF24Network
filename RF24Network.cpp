@@ -704,7 +704,7 @@ bool ESBNetwork<radio_t>::beginWrite(radioTag<RF24>, RF24NetworkHeader& header, 
 }
 
 /******************************************************************/
-#if defined (NRF52_RADIO_LIBRARY)
+#if defined(NRF52_RADIO_LIBRARY)
 template<class radio_t>
 bool ESBNetwork<radio_t>::beginWrite(radioTag<nrf_to_nrf>, RF24NetworkHeader& header, const void* message, uint16_t len, uint16_t writeDirect)
 {
