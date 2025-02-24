@@ -907,14 +907,6 @@ private:
      */
     bool _write(RF24NetworkHeader& header, const void* message, uint16_t len, uint16_t writeDirect);
 
-    /**
-     * A function to allow specific implementation for different specializations.
-     *
-     * This function needs to be defined for each specialization of the ESBNetwork class.
-     * Currently, only RF24 and nrf_to_nrf specializations are supported/implemented.
-     */
-    inline bool beginWrite(RF24NetworkHeader& header, const void* message, uint16_t len, uint16_t writeDirect);
-
     struct logicalToPhysicalStruct
     {
         /** The immediate destination (1 hop) of an outgoing frame */
