@@ -688,31 +688,19 @@ bool ESBNetwork<radio_t>::multicast(RF24NetworkHeader& header, const void* messa
 
 /******************************************************************/
 
-template<>
-bool ESBNetwork<RF24>::write(RF24NetworkHeader& header, const void* message, uint16_t len)
-{
-    max_frame_size = MAX_FRAME_SIZE;
-    return write(header, message, len, NETWORK_AUTO_ROUTING);
-}
-
-/******************************************************************/
-#if defined(NRF52_RADIO_LIBRARY)
-template<>
-bool ESBNetwork<nrf_to_nrf>::write(RF24NetworkHeader& header, const void* message, uint16_t len)
-{
-    max_frame_size = (uint8_t)NRF_RADIO->PCNF1;
-    if (radio.enableEncryption == true) {
-        max_frame_size -= CCM_IV_SIZE + CCM_COUNTER_SIZE + CCM_MIC_SIZE;
-    }
-    return write(header, message, len, NETWORK_AUTO_ROUTING);
-}
-#endif
-/******************************************************************/
-
 template<class radio_t>
-bool ESBNetwork<radio_t>::write(RF24NetworkHeader& header, const void* message, uint16_t len, uint16_t writeDirect)
+bool ESBNetwork<radio_t>::write(RF24NetworkHeader& header, const void* message, uint16_t len)
+{
+    return write(header, message, len, NETWORK_AUTO_ROUTING);
+}
+
+/******************************************************************/
+
+template<>
+bool ESBNetwork<RF24>::write(RF24NetworkHeader& header, const void* message, uint16_t len, uint16_t writeDirect)
 {
 
+    max_frame_size = MAX_FRAME_SIZE;
     max_frame_payload_size = max_frame_size - sizeof(RF24NetworkHeader);
 
 #if defined(DISABLE_FRAGMENTATION)
@@ -813,6 +801,117 @@ bool ESBNetwork<radio_t>::write(RF24NetworkHeader& header, const void* message, 
 #endif //Fragmentation enabled
 }
 
+/******************************************************************/
+
+#if defined NRF52_RADIO_LIBRARY
+template<>
+bool ESBNetwork<nrf_to_nrf>::write(RF24NetworkHeader& header, const void* message, uint16_t len, uint16_t writeDirect)
+{
+
+    max_frame_size = (uint8_t)NRF_RADIO->PCNF1;
+    if (radio.enableEncryption == true) {
+        max_frame_size -= CCM_IV_SIZE + CCM_COUNTER_SIZE + CCM_MIC_SIZE;
+    }
+    max_frame_payload_size = max_frame_size - sizeof(RF24NetworkHeader);
+
+    #if defined(DISABLE_FRAGMENTATION)
+
+    frame_size = rf24_min(len + sizeof(RF24NetworkHeader), max_frame_size);
+    return _write(header, message, rf24_min(len, max_frame_payload_size), writeDirect);
+
+    #else // !defined(DISABLE_FRAGMENTATION)
+
+    if (len <= max_frame_payload_size) {
+        //Normal Write (Un-Fragmented)
+        frame_size = len + sizeof(RF24NetworkHeader);
+        return _write(header, message, len, writeDirect);
+    }
+    //Check payload size
+
+    if (len > MAX_PAYLOAD_SIZE) {
+        IF_RF24NETWORK_DEBUG(printf_P(PSTR("NET write message failed. Given 'len' %d is bigger than the MAX Payload size %i\n\r"), len, MAX_PAYLOAD_SIZE););
+        return false;
+    }
+
+    //Divide the message payload into chunks of max_frame_payload_size
+    uint8_t fragment_id = (len % max_frame_payload_size != 0) + ((len) / max_frame_payload_size); //the number of fragments to send = ceil(len/max_frame_payload_size)
+
+    uint8_t msgCount = 0;
+
+    IF_RF24NETWORK_DEBUG_FRAGMENTATION(printf_P(PSTR("FRG Total message fragments %d\n\r"), fragment_id););
+
+    if (header.to_node != NETWORK_MULTICAST_ADDRESS) {
+        networkFlags |= FLAG_FAST_FRAG;
+        radio.stopListening();
+    }
+
+    uint8_t retriesPerFrag = 0;
+    uint8_t type = header.type;
+    bool ok = 0;
+
+    while (fragment_id > 0) {
+
+        //Copy and fill out the header
+        //RF24NetworkHeader fragmentHeader = header;
+        header.reserved = fragment_id;
+
+        if (fragment_id == 1) {
+            header.type = NETWORK_LAST_FRAGMENT; //Set the last fragment flag to indicate the last fragment
+            header.reserved = type;              //The reserved field is used to transmit the header type
+        }
+        else if (msgCount == 0) {
+            header.type = NETWORK_FIRST_FRAGMENT;
+        }
+        else {
+            header.type = NETWORK_MORE_FRAGMENTS; //Set the more fragments flag to indicate a fragmented frame
+        }
+
+        uint16_t offset = msgCount * max_frame_payload_size;
+        uint16_t fragmentLen = rf24_min((uint16_t)(len - offset), max_frame_payload_size);
+
+        //Try to send the payload chunk with the copied header
+        frame_size = sizeof(RF24NetworkHeader) + fragmentLen;
+        ok = _write(header, ((char*)message) + offset, fragmentLen, writeDirect);
+
+        if (!ok) {
+            delay(2);
+            ++retriesPerFrag;
+        }
+        else {
+            retriesPerFrag = 0;
+            fragment_id--;
+            msgCount++;
+        }
+
+        //if(writeDirect != NETWORK_AUTO_ROUTING){ delay(2); } //Delay 2ms between sending multicast payloads
+
+        if (!ok && retriesPerFrag >= 3) {
+            IF_RF24NETWORK_DEBUG_FRAGMENTATION(printf_P(PSTR("FRG TX with fragmentID '%d' failed after %d fragments. Abort.\n\r"), fragment_id, msgCount));
+            break;
+        }
+
+        // Message was successful sent
+        IF_RF24NETWORK_DEBUG_FRAGMENTATION_L2(printf_P(PSTR("FRG message transmission with fragmentID '%d' successful.\n\r"), fragment_id));
+    }
+    header.type = type;
+    if (networkFlags & FLAG_FAST_FRAG) {
+        ok = radio.txStandBy(txTimeout);
+        radio.startListening();
+        radio.setAutoAck(0, 0);
+    }
+    networkFlags &= ~FLAG_FAST_FRAG;
+
+    // Return true if all the chunks where sent successfully
+    IF_RF24NETWORK_DEBUG_FRAGMENTATION(printf_P(PSTR("FRG total message fragments sent %i.\r\n"), msgCount););
+
+    if (!ok || fragment_id > 0) {
+        return false;
+    }
+    return true;
+
+    #endif //Fragmentation enabled
+}
+#endif //NRF52_RADIO_LIBRARY
 /******************************************************************/
 
 template<class radio_t>
