@@ -910,7 +910,7 @@ private:
     /*
      * The main write function where fragmentation and processing of the payload is initiated
      */
-    bool main_write(RF24NetworkHeader& header, const void* message, uint16_t len, uint16_t writeDirect);
+    inline bool main_write(RF24NetworkHeader& header, const void* message, uint16_t len, uint16_t writeDirect);
 
     struct logicalToPhysicalStruct
     {
