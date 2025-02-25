@@ -907,6 +907,11 @@ private:
      */
     bool _write(RF24NetworkHeader& header, const void* message, uint16_t len, uint16_t writeDirect);
 
+    /*
+     * The main write function where fragmentation and processing of the payload is initiated
+     */
+    bool main_write(RF24NetworkHeader& header, const void* message, uint16_t len, uint16_t writeDirect);
+
     struct logicalToPhysicalStruct
     {
         /** The immediate destination (1 hop) of an outgoing frame */
