@@ -699,7 +699,6 @@ bool ESBNetwork<radio_t>::write(RF24NetworkHeader& header, const void* message, 
 template<>
 bool ESBNetwork<RF24>::write(RF24NetworkHeader& header, const void* message, uint16_t len, uint16_t writeDirect)
 {
-    max_frame_payload_size = MAX_FRAME_SIZE - sizeof(RF24NetworkHeader);
     return main_write(header, message, len, writeDirect);
 }
 
