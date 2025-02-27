@@ -722,7 +722,7 @@ bool ESBNetwork<radio_t>::main_write(RF24NetworkHeader& header, const void* mess
 
 #if defined(DISABLE_FRAGMENTATION)
 
-    frame_size = rf24_min(len + sizeof(RF24NetworkHeader), max_frame_payload_size + sizeof(RF24NetworkHeader);
+    frame_size = rf24_min(len + sizeof(RF24NetworkHeader), max_frame_payload_size + sizeof(RF24NetworkHeader));
     return _write(header, message, rf24_min(len, max_frame_payload_size), writeDirect);
 
 #else // !defined(DISABLE_FRAGMENTATION)
