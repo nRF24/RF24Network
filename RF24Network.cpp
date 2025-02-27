@@ -699,7 +699,7 @@ bool ESBNetwork<radio_t>::write(RF24NetworkHeader& header, const void* message, 
 template<>
 bool ESBNetwork<RF24>::write(RF24NetworkHeader& header, const void* message, uint16_t len, uint16_t writeDirect)
 {
-    max_frame_size = MAX_FRAME_SIZE;
+    max_frame_payload_size = MAX_FRAME_SIZE - sizeof(RF24NetworkHeader);
     return main_write(header, message, len, writeDirect);
 }
 
@@ -708,9 +708,9 @@ bool ESBNetwork<RF24>::write(RF24NetworkHeader& header, const void* message, uin
 template<>
 bool ESBNetwork<nrf_to_nrf>::write(RF24NetworkHeader& header, const void* message, uint16_t len, uint16_t writeDirect)
 {
-    max_frame_size = (uint8_t)NRF_RADIO->PCNF1;
+    max_frame_payload_size = (uint8_t)NRF_RADIO->PCNF1 - sizeof(RF24NetworkHeader);
     if (radio.enableEncryption == true) {
-        max_frame_size -= CCM_IV_SIZE + CCM_COUNTER_SIZE + CCM_MIC_SIZE;
+        max_frame_payload_size -= CCM_IV_SIZE + CCM_COUNTER_SIZE + CCM_MIC_SIZE;
     }
     return main_write(header, message, len, writeDirect);
 }
@@ -720,11 +720,10 @@ bool ESBNetwork<nrf_to_nrf>::write(RF24NetworkHeader& header, const void* messag
 template<class radio_t>
 bool ESBNetwork<radio_t>::main_write(RF24NetworkHeader& header, const void* message, uint16_t len, uint16_t writeDirect)
 {
-    max_frame_payload_size = max_frame_size - sizeof(RF24NetworkHeader);
 
 #if defined(DISABLE_FRAGMENTATION)
 
-    frame_size = rf24_min(len + sizeof(RF24NetworkHeader), max_frame_size);
+    frame_size = rf24_min(len + sizeof(RF24NetworkHeader), max_frame_payload_size + sizeof(RF24NetworkHeader);
     return _write(header, message, rf24_min(len, max_frame_payload_size), writeDirect);
 
 #else // !defined(DISABLE_FRAGMENTATION)
