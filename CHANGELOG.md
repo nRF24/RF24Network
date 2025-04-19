@@ -6,11 +6,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 <!-- markdownlint-disable MD024 -->
 
+## [2.0.4] - 2025-04-19
+
+### <!-- 3 --> 🗑️ Removed
+
+- Fix for large payloads with NRF52 by \@TMRh20 in [#244](https://github.com/nRF24/RF24Network/pull/244)
+
+[2.0.4]: https://github.com/nRF24/RF24Network/compare/v2.0.3...v2.0.4
+
+Full commit diff: [`v2.0.3...v2.0.4`][2.0.4]
+
 ## [2.0.3] - 2025-01-10
 
 ### <!-- 4 --> 🛠️ Fixed
 
 - Fix buffering of user payloads by \@TMRh20 in [#243](https://github.com/nRF24/RF24Network/pull/243)
+
+### <!-- 9 --> 🗨️ Changed
+
+- Bump version to v2.0.3 by \@2bndy5 in [`731a368`](https://github.com/nRF24/RF24Network/commit/731a36864daa72a605eb170aed8b29493ecfd6f4)
 
 [2.0.3]: https://github.com/nRF24/RF24Network/compare/v2.0.2...v2.0.3
 
