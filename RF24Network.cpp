@@ -763,9 +763,8 @@ bool RF24Network::write(RF24NetworkHeader& header, const void* message, uint16_t
     }
     header.type = type;
     if (networkFlags & FLAG_FAST_FRAG) {
-        ok = radio.txStandBy(txTimeout);
-        radio.startListening();
         radio.setAutoAck(0, 0);
+        radio.startListening();
     }
     networkFlags &= ~FLAG_FAST_FRAG;
 
@@ -985,11 +984,13 @@ bool RF24Network::write_to_pipe(uint16_t node, uint8_t pipe, bool multicast)
 
     ok = radio.writeFast(frame_buffer, frame_size, 0);
 
-    if (!(networkFlags & FLAG_FAST_FRAG)) {
-        ok = radio.txStandBy(txTimeout);
-        radio.setAutoAck(0, 0);
+    if (!ok) {
+        radio.txStandBy(txTimeout);
+        if (!(networkFlags & FLAG_FAST_FRAG)) {
+            radio.setAutoAck(0, 0);
+        }
     }
-    else if (!ok) {
+    else if ((!(networkFlags & FLAG_FAST_FRAG)) || frame_buffer[6] == NETWORK_LAST_FRAGMENT) {
         ok = radio.txStandBy(txTimeout);
     }
     /*
