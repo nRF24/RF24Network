@@ -1027,12 +1027,12 @@ bool ESBNetwork<radio_t>::write_to_pipe(uint16_t node, uint8_t pipe, bool multic
     ok = radio.writeFast(frame_buffer, frame_size, 0);
 
     if (!ok) {
-       radio.txStandBy(txTimeout);
-       if(!(networkFlags & FLAG_FAST_FRAG)){
-         radio.setAutoAck(0, 0);
-       }
-    }else
-    if ( (!(networkFlags & FLAG_FAST_FRAG)) || frame_buffer[6] == NETWORK_LAST_FRAGMENT) {
+        radio.txStandBy(txTimeout);
+        if (!(networkFlags & FLAG_FAST_FRAG)) {
+            radio.setAutoAck(0, 0);
+        }
+    }
+    else if ((!(networkFlags & FLAG_FAST_FRAG)) || frame_buffer[6] == NETWORK_LAST_FRAGMENT) {
         ok = radio.txStandBy(txTimeout);
     }
     /*
