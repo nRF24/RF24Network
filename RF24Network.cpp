@@ -145,10 +145,6 @@ uint8_t ESBNetwork<radio_t>::update(void)
         frame_size = MAX_FRAME_SIZE;
 #endif
 
-        if (frame_size < sizeof(RF24NetworkHeader)) {
-            continue;
-        }
-
         // Fetch the payload, and see if this was the last one.
         radio.read(frame_buffer, frame_size);
 
@@ -156,7 +152,7 @@ uint8_t ESBNetwork<radio_t>::update(void)
         RF24NetworkHeader* header = (RF24NetworkHeader*)(&frame_buffer);
 
         // Throw it away if it's not a valid address or too small
-        if (!is_valid_address(header->to_node) || !is_valid_address(header->from_node)) {
+        if (frame_size < sizeof(RF24NetworkHeader) || !is_valid_address(header->to_node) || !is_valid_address(header->from_node)) {
             continue;
         }
         //IF_RF24NETWORK_DEBUG(printf_P(PSTR("MAC Received " PRIPSTR
