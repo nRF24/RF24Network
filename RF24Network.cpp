@@ -132,14 +132,12 @@ uint8_t ESBNetwork<radio_t>::update(void)
 
     uint8_t returnVal = 0;
 
-    uint32_t timeout = millis();
+    uint32_t timeout = millis() + 100;
 
     while (radio.available()) {
-        if (millis() - timeout > 1000) {
-#if defined FAILURE_HANDLING
-            radio.failureDetected = 1;
-#endif
-            break;
+        if (millis() > timeout) {
+            radio.flush_rx();
+            return NETWORK_OVERRUN;
         }
 #if defined(ENABLE_DYNAMIC_PAYLOADS) && !defined(XMEGA_D3)
         frame_size = radio.getDynamicPayloadSize();
