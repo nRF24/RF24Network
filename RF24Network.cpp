@@ -132,10 +132,10 @@ uint8_t ESBNetwork<radio_t>::update(void)
 
     uint8_t returnVal = 0;
 
-    uint32_t timeout = millis();
+    uint32_t timeout = millis() + 100;
 
     while (radio.available()) {
-        if (millis() - timeout > 1000) {
+        if (millis() > timeout) {
             radio.flush_rx();
             return NETWORK_OVERRUN;
         }
