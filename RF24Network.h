@@ -123,9 +123,14 @@
 //#define NETWORK_ACK_REQUEST 192
 
 /**
- * Messages of this type indicate the network is being overrun with data & the RX FIFO has been flushed.
+ * Messages of this type indicate the network is being overrun with data.
  **/
 #define NETWORK_OVERRUN 160
+
+/**
+ * Messages of this type indicate radio data corruption & the RX FIFO has been flushed.
+ **/
+#define NETWORK_CORRUPTION 161
 
 /**
  * Messages of this type signal the sender that a network-wide transmission has been completed.
