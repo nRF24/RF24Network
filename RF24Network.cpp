@@ -136,7 +136,6 @@ uint8_t ESBNetwork<radio_t>::update(void)
 
     while (radio.available()) {
         if (millis() > timeout) {
-            radio.flush_rx();
             return NETWORK_OVERRUN;
         }
 #if defined(ENABLE_DYNAMIC_PAYLOADS) && !defined(XMEGA_D3)
@@ -144,6 +143,10 @@ uint8_t ESBNetwork<radio_t>::update(void)
 #else
         frame_size = MAX_FRAME_SIZE;
 #endif
+
+        if (!frame_size) {
+            return NETWORK_CORRUPTION;
+        }
 
         // Fetch the payload, and see if this was the last one.
         radio.read(frame_buffer, frame_size);
