@@ -123,12 +123,12 @@
 //#define NETWORK_ACK_REQUEST 192
 
 /**
- * Messages of this type indicate the network is being overrun with data.
+ * Messages of this type indicate the network is being overrun with data & RF24Network::available() has returned from a loop.
  **/
 #define NETWORK_OVERRUN 160
 
 /**
- * Messages of this type indicate radio data corruption & the RX FIFO has been flushed.
+ * Messages of this type indicate the radio has encoutered corrupted data & the RX FIFO has been flushed.
  **/
 #define NETWORK_CORRUPTION 161
 

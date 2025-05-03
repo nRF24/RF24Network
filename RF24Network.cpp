@@ -143,11 +143,9 @@ uint8_t ESBNetwork<radio_t>::update(void)
 #else
         frame_size = MAX_FRAME_SIZE;
 #endif
-
         if (!frame_size) {
             return NETWORK_CORRUPTION;
         }
-
         // Fetch the payload, and see if this was the last one.
         radio.read(frame_buffer, frame_size);
 
@@ -293,7 +291,7 @@ uint8_t ESBNetwork<radio_t>::enqueue(RF24NetworkHeader* header)
 
             result = f->header.type == EXTERNAL_DATA_TYPE ? 2 : 1;
 
-            if (f->header.id > 0 && f->message_size > 0) {
+            if (f->header.id > 0 && f->message_size > 0 && f->message_size <= MAX_PAYLOAD_SIZE) {
                 //Load external payloads into a separate queue on linux
                 if (result == 2) {
                     external_queue.push(frameFragmentsCache[frame.header.from_node]);
@@ -749,7 +747,6 @@ bool ESBNetwork<radio_t>::main_write(RF24NetworkHeader& header, const void* mess
 
     if (header.to_node != NETWORK_MULTICAST_ADDRESS) {
         networkFlags |= FLAG_FAST_FRAG;
-        radio.stopListening();
     }
 
     uint8_t retriesPerFrag = 0;
@@ -1014,15 +1011,9 @@ bool ESBNetwork<radio_t>::write_to_pipe(uint16_t node, uint8_t pipe, bool multic
 {
     bool ok = false;
 
-    // Open the correct pipe for writing.
-    // First, stop listening so we can talk
-    if (!(networkFlags & FLAG_FAST_FRAG)) {
-        radio.stopListening();
-    }
-
     if (!(networkFlags & FLAG_FAST_FRAG) || (frame_buffer[6] == NETWORK_FIRST_FRAGMENT && networkFlags & FLAG_FAST_FRAG)) {
+        radio.stopListening(pipe_address(node, pipe));
         radio.setAutoAck(0, !multicast);
-        radio.openWritingPipe(pipe_address(node, pipe));
     }
 
     ok = radio.writeFast(frame_buffer, frame_size, 0);
