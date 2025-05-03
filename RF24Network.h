@@ -984,7 +984,7 @@ private:
     uint16_t node_mask;   /** The bits which contain significant node address information */
 
     /* Given the Logical node address & a pipe number, this returns the Physical address assigned to the radio's pipes. */
-    uint64_t pipe_address(uint16_t node, uint8_t pipe);
+    void pipe_address(uint16_t node, uint8_t pipe, uint8_t* address);
 
 #if defined ENABLE_NETWORK_STATS
     uint32_t nFails;

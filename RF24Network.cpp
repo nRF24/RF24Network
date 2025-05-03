@@ -107,8 +107,12 @@ void ESBNetwork<radio_t>::begin(uint8_t _channel, uint16_t _node_address)
 
     // Open up all listening pipes
     uint8_t i = NUM_PIPES;
-    while (i--)
-        radio.openReadingPipe(i, pipe_address(_node_address, i));
+    uint8_t address[5];
+    while (i--) {
+        memset(address, 0xCC, 5);
+        pipe_address(_node_address, i, address);
+        radio.openReadingPipe(i, address);
+    }
 
     radio.startListening();
 }
@@ -1012,7 +1016,9 @@ bool ESBNetwork<radio_t>::write_to_pipe(uint16_t node, uint8_t pipe, bool multic
     bool ok = false;
 
     if (!(networkFlags & FLAG_FAST_FRAG) || (frame_buffer[6] == NETWORK_FIRST_FRAGMENT && networkFlags & FLAG_FAST_FRAG)) {
-        radio.stopListening(pipe_address(node, pipe));
+        uint8_t address[5] = {0xCC};
+        pipe_address(node, pipe, address);
+        radio.stopListening(address);
         radio.setAutoAck(0, !multicast);
     }
 
@@ -1183,7 +1189,9 @@ void ESBNetwork<radio_t>::multicastLevel(uint8_t level)
 {
     _multicast_level = level;
     radio.stopListening();
-    radio.openReadingPipe(0, pipe_address(levelToAddress(level), 0));
+    uint8_t address[5] = {0xCC};
+    pipe_address(levelToAddress(level), 0, address);
+    radio.openReadingPipe(0, address);
     radio.startListening();
 }
 
@@ -1206,7 +1214,7 @@ uint16_t ESBNetwork<radio_t>::levelToAddress(uint8_t level)
 /******************************************************************/
 
 template<class radio_t>
-uint64_t ESBNetwork<radio_t>::pipe_address(uint16_t node, uint8_t pipe)
+void ESBNetwork<radio_t>::pipe_address(uint16_t node, uint8_t pipe, uint8_t* address)
 {
 
     static uint8_t address_translation[] = { 0xc3,
@@ -1225,8 +1233,7 @@ uint64_t ESBNetwork<radio_t>::pipe_address(uint16_t node, uint8_t pipe)
     #endif
 #endif
     };
-    uint64_t result = 0xCCCCCCCCCCLL;
-    uint8_t* out = reinterpret_cast<uint8_t*>(&result);
+    uint8_t* out = address;
 
     // Translate the address to use our optimally chosen radio address bytes
     uint8_t count = 1;
@@ -1251,8 +1258,6 @@ uint64_t ESBNetwork<radio_t>::pipe_address(uint16_t node, uint8_t pipe)
         out[1] = address_translation[count - 1];
 #endif
     IF_RF24NETWORK_DEBUG(uint32_t* top = reinterpret_cast<uint32_t*>(out + 1); printf_P(PSTR("NET Pipe %i on node 0%o has address %x%x\n\r"), pipe, node, *top, *out));
-
-    return result;
 }
 
 /************************ Sleep Mode ******************************************/
