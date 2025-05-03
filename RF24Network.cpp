@@ -1233,7 +1233,6 @@ void ESBNetwork<radio_t>::pipe_address(uint16_t node, uint8_t pipe, uint8_t* add
 #endif
     };
     memset(address, 0xCC, 5);
-    uint8_t* out = address;
 
     // Translate the address to use our optimally chosen radio address bytes
     uint8_t count = 1;
@@ -1243,7 +1242,7 @@ void ESBNetwork<radio_t>::pipe_address(uint16_t node, uint8_t pipe, uint8_t* add
 #if defined(RF24NetworkMulticast)
         if (pipe != 0 || !node)
 #endif
-            out[count] = address_translation[(dec % 8)]; // Convert our decimal values to octal, translate them to address bytes, and set our address
+            address[count] = address_translation[(dec % 8)]; // Convert our decimal values to octal, translate them to address bytes, and set our address
 
         dec /= 8;
         count++;
@@ -1252,12 +1251,12 @@ void ESBNetwork<radio_t>::pipe_address(uint16_t node, uint8_t pipe, uint8_t* add
 #if defined(RF24NetworkMulticast)
     if (pipe != 0 || !node)
 #endif
-        out[0] = address_translation[pipe];
+        address[0] = address_translation[pipe];
 #if defined(RF24NetworkMulticast)
     else
-        out[1] = address_translation[count - 1];
+        address[1] = address_translation[count - 1];
 #endif
-    IF_RF24NETWORK_DEBUG(uint32_t* top = reinterpret_cast<uint32_t*>(out + 1); printf_P(PSTR("NET Pipe %i on node 0%o has address %x%x\n\r"), pipe, node, *top, *out));
+    IF_RF24NETWORK_DEBUG(uint32_t* top = reinterpret_cast<uint32_t*>(address + 1); printf_P(PSTR("NET Pipe %i on node 0%o has address %x%x\n\r"), pipe, node, *top, *address));
 }
 
 /************************ Sleep Mode ******************************************/
