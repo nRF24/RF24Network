@@ -109,7 +109,6 @@ void ESBNetwork<radio_t>::begin(uint8_t _channel, uint16_t _node_address)
     uint8_t i = NUM_PIPES;
     uint8_t address[5];
     while (i--) {
-        memset(address, 0xCC, 5);
         pipe_address(_node_address, i, address);
         radio.openReadingPipe(i, address);
     }
@@ -1016,7 +1015,7 @@ bool ESBNetwork<radio_t>::write_to_pipe(uint16_t node, uint8_t pipe, bool multic
     bool ok = false;
 
     if (!(networkFlags & FLAG_FAST_FRAG) || (frame_buffer[6] == NETWORK_FIRST_FRAGMENT && networkFlags & FLAG_FAST_FRAG)) {
-        uint8_t address[5] = {0xCC};
+        uint8_t address[5];
         pipe_address(node, pipe, address);
         radio.stopListening(address);
         radio.setAutoAck(0, !multicast);
@@ -1189,7 +1188,7 @@ void ESBNetwork<radio_t>::multicastLevel(uint8_t level)
 {
     _multicast_level = level;
     radio.stopListening();
-    uint8_t address[5] = {0xCC};
+    uint8_t address[5];
     pipe_address(levelToAddress(level), 0, address);
     radio.openReadingPipe(0, address);
     radio.startListening();
@@ -1233,6 +1232,7 @@ void ESBNetwork<radio_t>::pipe_address(uint16_t node, uint8_t pipe, uint8_t* add
     #endif
 #endif
     };
+    memset(address, 0xCC, 5);
     uint8_t* out = address;
 
     // Translate the address to use our optimally chosen radio address bytes
