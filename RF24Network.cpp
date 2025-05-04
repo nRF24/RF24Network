@@ -107,8 +107,11 @@ void ESBNetwork<radio_t>::begin(uint8_t _channel, uint16_t _node_address)
 
     // Open up all listening pipes
     uint8_t i = NUM_PIPES;
-    while (i--)
-        radio.openReadingPipe(i, pipe_address(_node_address, i));
+    uint8_t address[5];
+    while (i--) {
+        pipe_address(_node_address, i, address);
+        radio.openReadingPipe(i, address);
+    }
 
     radio.startListening();
 }
@@ -143,11 +146,9 @@ uint8_t ESBNetwork<radio_t>::update(void)
 #else
         frame_size = MAX_FRAME_SIZE;
 #endif
-
         if (!frame_size) {
             return NETWORK_CORRUPTION;
         }
-
         // Fetch the payload, and see if this was the last one.
         radio.read(frame_buffer, frame_size);
 
@@ -293,7 +294,7 @@ uint8_t ESBNetwork<radio_t>::enqueue(RF24NetworkHeader* header)
 
             result = f->header.type == EXTERNAL_DATA_TYPE ? 2 : 1;
 
-            if (f->header.id > 0 && f->message_size > 0) {
+            if (f->header.id > 0 && f->message_size > 0 && f->message_size <= MAX_PAYLOAD_SIZE) {
                 //Load external payloads into a separate queue on linux
                 if (result == 2) {
                     external_queue.push(frameFragmentsCache[frame.header.from_node]);
@@ -749,7 +750,6 @@ bool ESBNetwork<radio_t>::main_write(RF24NetworkHeader& header, const void* mess
 
     if (header.to_node != NETWORK_MULTICAST_ADDRESS) {
         networkFlags |= FLAG_FAST_FRAG;
-        radio.stopListening();
     }
 
     uint8_t retriesPerFrag = 0;
@@ -1014,15 +1014,11 @@ bool ESBNetwork<radio_t>::write_to_pipe(uint16_t node, uint8_t pipe, bool multic
 {
     bool ok = false;
 
-    // Open the correct pipe for writing.
-    // First, stop listening so we can talk
-    if (!(networkFlags & FLAG_FAST_FRAG)) {
-        radio.stopListening();
-    }
-
     if (!(networkFlags & FLAG_FAST_FRAG) || (frame_buffer[6] == NETWORK_FIRST_FRAGMENT && networkFlags & FLAG_FAST_FRAG)) {
+        uint8_t address[5];
+        pipe_address(node, pipe, address);
+        radio.stopListening(address);
         radio.setAutoAck(0, !multicast);
-        radio.openWritingPipe(pipe_address(node, pipe));
     }
 
     ok = radio.writeFast(frame_buffer, frame_size, 0);
@@ -1192,7 +1188,9 @@ void ESBNetwork<radio_t>::multicastLevel(uint8_t level)
 {
     _multicast_level = level;
     radio.stopListening();
-    radio.openReadingPipe(0, pipe_address(levelToAddress(level), 0));
+    uint8_t address[5];
+    pipe_address(levelToAddress(level), 0, address);
+    radio.openReadingPipe(0, address);
     radio.startListening();
 }
 
@@ -1215,7 +1213,7 @@ uint16_t ESBNetwork<radio_t>::levelToAddress(uint8_t level)
 /******************************************************************/
 
 template<class radio_t>
-uint64_t ESBNetwork<radio_t>::pipe_address(uint16_t node, uint8_t pipe)
+void ESBNetwork<radio_t>::pipe_address(uint16_t node, uint8_t pipe, uint8_t* address)
 {
 
     static uint8_t address_translation[] = { 0xc3,
@@ -1234,8 +1232,7 @@ uint64_t ESBNetwork<radio_t>::pipe_address(uint16_t node, uint8_t pipe)
     #endif
 #endif
     };
-    uint64_t result = 0xCCCCCCCCCCLL;
-    uint8_t* out = reinterpret_cast<uint8_t*>(&result);
+    memset(address, 0xCC, 5);
 
     // Translate the address to use our optimally chosen radio address bytes
     uint8_t count = 1;
@@ -1245,7 +1242,7 @@ uint64_t ESBNetwork<radio_t>::pipe_address(uint16_t node, uint8_t pipe)
 #if defined(RF24NetworkMulticast)
         if (pipe != 0 || !node)
 #endif
-            out[count] = address_translation[(dec % 8)]; // Convert our decimal values to octal, translate them to address bytes, and set our address
+            address[count] = address_translation[(dec % 8)]; // Convert our decimal values to octal, translate them to address bytes, and set our address
 
         dec /= 8;
         count++;
@@ -1254,14 +1251,12 @@ uint64_t ESBNetwork<radio_t>::pipe_address(uint16_t node, uint8_t pipe)
 #if defined(RF24NetworkMulticast)
     if (pipe != 0 || !node)
 #endif
-        out[0] = address_translation[pipe];
+        address[0] = address_translation[pipe];
 #if defined(RF24NetworkMulticast)
     else
-        out[1] = address_translation[count - 1];
+        address[1] = address_translation[count - 1];
 #endif
-    IF_RF24NETWORK_DEBUG(uint32_t* top = reinterpret_cast<uint32_t*>(out + 1); printf_P(PSTR("NET Pipe %i on node 0%o has address %x%x\n\r"), pipe, node, *top, *out));
-
-    return result;
+    IF_RF24NETWORK_DEBUG(uint32_t* top = reinterpret_cast<uint32_t*>(address + 1); printf_P(PSTR("NET Pipe %i on node 0%o has address %x%x\n\r"), pipe, node, *top, *address));
 }
 
 /************************ Sleep Mode ******************************************/
