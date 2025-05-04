@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['🚫_20deprecated_0',['&lt;!-- 2 --&gt; 🚫 Deprecated',['../md_CHANGELOG.html#autotoc_md33',1,'']]]
+  ['🚫_20deprecated_0',['&lt;!-- 2 --&gt; 🚫 Deprecated',['../md_CHANGELOG.html#autotoc_md37',1,'']]]
 ];
