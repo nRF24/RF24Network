@@ -192,7 +192,12 @@
 #define USER_TX_TO_LOGICAL_ADDRESS  3 // network ACK
 #define USER_TX_MULTICAST           4
 
-#define MAX_FRAME_SIZE    32 // Size of individual radio frames
+#if defined NRF52_RADIO_LIBRARY
+    #define MAX_FRAME_SIZE 123 // Size of individual radio frames is larger with NRF52
+#else
+    #define MAX_FRAME_SIZE 32 // Size of individual radio frames
+#endif
+
 #define FRAME_HEADER_SIZE 10 // Size of RF24Network frames - data
 
 /**
@@ -881,6 +886,11 @@ private:
      */
     bool _write(RF24NetworkHeader& header, const void* message, uint16_t len, uint16_t writeDirect);
 
+    /*
+     * The main write function where fragmentation and processing of the payload is initiated
+     */
+    inline bool main_write(RF24NetworkHeader& header, const void* message, uint16_t len, uint16_t writeDirect);
+
     struct logicalToPhysicalStruct
     {
         /** The immediate destination (1 hop) of an outgoing frame */
@@ -913,8 +923,9 @@ private:
 
     RF24& radio; /** Underlying radio driver, provides link/physical layers */
 
-    uint8_t frame_size;                                                                            /* The outgoing frame's total size including the header info. Ranges [8, MAX_PAYLOAD_SIZE] */
-    const static unsigned int max_frame_payload_size = MAX_FRAME_SIZE - sizeof(RF24NetworkHeader); /* always 24 bytes to compensate for the frame's header */
+    uint8_t frame_size; /* The outgoing frame's total size including the header info. Ranges [8, MAX_PAYLOAD_SIZE] */
+
+    unsigned int max_frame_payload_size = MAX_FRAME_SIZE - sizeof(RF24NetworkHeader); /* always 24 bytes to compensate for the frame's header */
 
 #if defined(RF24_LINUX)
     std::queue<RF24NetworkFrame> frame_queue;
@@ -966,7 +977,7 @@ private:
  */
 
 /**
- * @example helloworld_rx.ino
+ * @example examples/helloworld_rx/helloworld_rx.ino
  *
  * Simplest possible example of using RF24Network. Put this sketch
  * on one node, and helloworld_tx.pde on the other. Tx will send
@@ -1024,6 +1035,38 @@ private:
 /**
  * @example Network_Priority_RX.ino
  * An example of handling/prioritizing different types of data passing through the RF24Network
+ */
+
+/**
+ * @example examples/nrf_to_nrf/helloworld_tx/helloworld_tx.ino
+ *
+ * Simplest possible example of using RF24Network with nrf_to_nrf library (instead of RF24).
+ * Put this sketch on one node, and helloworld_tx.pde on the other. Tx will send
+ * Rx a nice message every 2 seconds which rx will print out for us.
+ */
+
+/**
+ * @example examples/nrf_to_nrf/helloworld_rx/helloworld_rx.ino
+ *
+ * Simplest possible example of using RF24Network with nrf_to_nrf library (instead of RF24).
+ * Put this sketch on one node, and helloworld_tx.pde on the other. Tx will send
+ * Rx a nice message every 2 seconds which rx will print out for us.
+ */
+
+/**
+ * @example examples/nrf_to_nrf/helloworld_txEncryption/helloworld_txEncryption.ino
+ *
+ * Simplest possible example of using RF24Network with nrf_to_nrf library (instead of RF24) with encryption.
+ * Put this sketch on one node, and helloworld_tx.pde on the other. Tx will send
+ * Rx a nice message every 2 seconds which rx will print out for us.
+ */
+
+/**
+ * @example examples/nrf_to_nrf/helloworld_rxEncryption/helloworld_rxEncryption.ino
+ *
+ * Simplest possible example of using RF24Network with nrf_to_nrf library (instead of RF24) with encryption.
+ * Put this sketch on one node, and helloworld_tx.pde on the other. Tx will send
+ * Rx a nice message every 2 seconds which rx will print out for us.
  */
 
 #endif // __RF24NETWORK_H__

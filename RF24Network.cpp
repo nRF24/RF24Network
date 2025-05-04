@@ -683,9 +683,12 @@ bool RF24Network::write(RF24NetworkHeader& header, const void* message, uint16_t
 {
 
 #if defined(DISABLE_FRAGMENTATION)
-    frame_size = rf24_min(len + sizeof(RF24NetworkHeader), MAX_FRAME_SIZE);
+
+    frame_size = rf24_min(len + sizeof(RF24NetworkHeader), max_frame_payload_size + sizeof(RF24NetworkHeader));
     return _write(header, message, rf24_min(len, max_frame_payload_size), writeDirect);
+
 #else // !defined(DISABLE_FRAGMENTATION)
+
     if (len <= max_frame_payload_size) {
         //Normal Write (Un-Fragmented)
         frame_size = len + sizeof(RF24NetworkHeader);
