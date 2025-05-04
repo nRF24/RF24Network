@@ -6,11 +6,34 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 <!-- markdownlint-disable MD024 -->
 
+## [2.0.5] - 2025-05-04
+
+### <!-- 1 --> 🚀 Added
+
+- Add new type by \@TMRh20 in [#250](https://github.com/nRF24/RF24Network/pull/250)
+
+### <!-- 4 --> 🛠️ Fixed
+
+- Fix write to pipe by \@TMRh20 in [#248](https://github.com/nRF24/RF24Network/pull/248)
+- Fix handling of radio/network overruns by \@TMRh20 in [#249](https://github.com/nRF24/RF24Network/pull/249)
+
+### <!-- 9 --> 🗨️ Changed
+
+- Utilize new stopListening function by \@TMRh20 in [#251](https://github.com/nRF24/RF24Network/pull/251)
+
+[2.0.5]: https://github.com/nRF24/RF24Network/compare/v2.0.4...v2.0.5
+
+Full commit diff: [`v2.0.4...v2.0.5`][2.0.5]
+
 ## [2.0.4] - 2025-04-19
 
 ### <!-- 3 --> 🗑️ Removed
 
 - Fix for large payloads with NRF52 by \@TMRh20 in [#244](https://github.com/nRF24/RF24Network/pull/244)
+
+### <!-- 9 --> 🗨️ Changed
+
+- Bump version to v2.0.4 by \@TMRh20 in [`380efb8`](https://github.com/nRF24/RF24Network/commit/380efb83c9ee8d0455279926fd9a6944dff5f437)
 
 [2.0.4]: https://github.com/nRF24/RF24Network/compare/v2.0.3...v2.0.4
 
