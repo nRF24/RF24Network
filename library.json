@@ -14,15 +14,6 @@
             "authors": "nRF24",
             "frameworks": "arduino",
             "version": ">=1.5"
-        },
-        {
-            "name": "nrf_to_nrf",
-            "authors": "TMRh20",
-            "frameworks": "arduino",
-            "platforms": [
-                "nordicnrf52"
-            ],
-            "version": ">=1.2.16"
         }
     ],
     "export": {

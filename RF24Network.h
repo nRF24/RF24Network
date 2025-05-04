@@ -1047,36 +1047,4 @@ private:
  * An example of handling/prioritizing different types of data passing through the RF24Network
  */
 
-/**
- * @example examples/nrf_to_nrf/helloworld_tx/helloworld_tx.ino
- *
- * Simplest possible example of using RF24Network with nrf_to_nrf library (instead of RF24).
- * Put this sketch on one node, and helloworld_tx.pde on the other. Tx will send
- * Rx a nice message every 2 seconds which rx will print out for us.
- */
-
-/**
- * @example examples/nrf_to_nrf/helloworld_rx/helloworld_rx.ino
- *
- * Simplest possible example of using RF24Network with nrf_to_nrf library (instead of RF24).
- * Put this sketch on one node, and helloworld_tx.pde on the other. Tx will send
- * Rx a nice message every 2 seconds which rx will print out for us.
- */
-
-/**
- * @example examples/nrf_to_nrf/helloworld_txEncryption/helloworld_txEncryption.ino
- *
- * Simplest possible example of using RF24Network with nrf_to_nrf library (instead of RF24) with encryption.
- * Put this sketch on one node, and helloworld_tx.pde on the other. Tx will send
- * Rx a nice message every 2 seconds which rx will print out for us.
- */
-
-/**
- * @example examples/nrf_to_nrf/helloworld_rxEncryption/helloworld_rxEncryption.ino
- *
- * Simplest possible example of using RF24Network with nrf_to_nrf library (instead of RF24) with encryption.
- * Put this sketch on one node, and helloworld_tx.pde on the other. Tx will send
- * Rx a nice message every 2 seconds which rx will print out for us.
- */
-
 #endif // __RF24NETWORK_H__
