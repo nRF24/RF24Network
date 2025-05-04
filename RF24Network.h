@@ -128,7 +128,7 @@
 #define NETWORK_OVERRUN 160
 
 /**
- * Messages of this type indicate the radio has encoutered corrupted data & the RX FIFO has been flushed.
+ * Messages of this type indicate the radio has encountered corrupted data & the RX FIFO has been flushed.
  **/
 #define NETWORK_CORRUPTION 161
 
