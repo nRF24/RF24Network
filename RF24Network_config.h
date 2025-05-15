@@ -40,6 +40,14 @@
  */
 #define NUM_PIPES 6
 
+#ifndef THROTTLE_FRAG
+    #ifdef NRF52_RADIO_LIBRARY
+        #define THROTTLE_FRAG 63
+    #else
+        #define THROTTLE_FRAG 0
+    #endif
+#endif
+
 #if !defined(__AVR_ATtiny85__) && !defined(__AVR_ATtiny84__)
 
     /********** USER CONFIG - non ATTiny **************/
