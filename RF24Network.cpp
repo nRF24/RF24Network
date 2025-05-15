@@ -788,6 +788,9 @@ bool ESBNetwork<radio_t>::main_write(RF24NetworkHeader& header, const void* mess
             retriesPerFrag = 0;
             fragment_id--;
             msgCount++;
+    #if THROTTLE_FRAG > 0
+            delayMicroseconds(THROTTLE_FRAG);
+    #endif
         }
 
         //if(writeDirect != NETWORK_AUTO_ROUTING){ delay(2); } //Delay 2ms between sending multicast payloads
