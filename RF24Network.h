@@ -228,6 +228,18 @@
  */
 #define FLAG_NO_POLL 8
 
+/**
+ * Add a slight delay (63 uS) when sending fragmented payloads with nRF52x & nrf_to_nrf library
+ * This is required because the nRF52x is slightly faster than the nRF24L01
+ */
+#ifndef THROTTLE_FRAG
+    #ifdef NRF52_RADIO_LIBRARY
+        #define THROTTLE_FRAG 63
+    #else
+        #define THROTTLE_FRAG 0
+    #endif
+#endif
+
 class RF24;
 #if defined(ARDUINO_ARCH_NRF52) || defined(ARDUINO_ARCH_NRF52840) || defined(ARDUINO_ARCH_NRF52833)
 class nrf_to_nrf;
