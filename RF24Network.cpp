@@ -423,6 +423,10 @@ uint8_t RF24Network::enqueue(RF24NetworkHeader* header)
 
     if (isFragment) {
 
+        if (header->reserved < 2 && header->type != NETWORK_LAST_FRAGMENT) {
+            return false;
+        }
+
         if (header->type == NETWORK_FIRST_FRAGMENT) {
 
             memcpy((char*)(&frag_queue), &frame_buffer, sizeof(RF24NetworkHeader));
