@@ -459,7 +459,10 @@ uint8_t ESBNetwork<radio_t>::enqueue(RF24NetworkHeader* header)
                 frag_queue.header.reserved = 0;
                 return false;
             }
-            if (frag_queue.header.reserved == 0 || (header->type != NETWORK_LAST_FRAGMENT && header->reserved != frag_queue.header.reserved) || frag_queue.header.id != header->id || (header->type == NETWORK_LAST_FRAGMENT && frag_queue.header.reserved != 1)) {
+            if (frag_queue.header.reserved == 0
+                || (header->type != NETWORK_LAST_FRAGMENT && header->reserved != frag_queue.header.reserved)
+                || frag_queue.header.id != header->id
+                || (header->type == NETWORK_LAST_FRAGMENT && frag_queue.header.reserved != 1)) {
         #if defined(RF24NETWORK_DEBUG_FRAGMENTATION) || defined(RF24NETWORK_DEBUG_MINIMAL)
                 printf_P(PSTR("Drop frag %d Out of order\n\r"), header->reserved);
         #endif
