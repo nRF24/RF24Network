@@ -1,4 +1,4 @@
-name: build Docs
+name: Docs
 
 on:
   pull_request:
@@ -33,13 +33,13 @@ concurrency:
   cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
 
 jobs:
-  build-docs:
+  build:
     uses: nRF24/.github/.github/workflows/build_docs.yaml@review-ci
     with:
       doxygen-version: '1.11.0'
 
-  deploy-docs:
-    needs: [build-docs]
+  deploy:
+    needs: [build]
     if: github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/')
     permissions:
       # to authenticate the gh-pages environment

@@ -1,4 +1,4 @@
-name: Linux build
+name: Linux
 
 on:
   pull_request:
@@ -36,7 +36,7 @@ concurrency:
   cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
 
 jobs:
-  using_cmake:
+  build:
     uses: nRF24/.github/.github/workflows/build_linux_cmake.yaml@review-ci
     with:
       rf24network-ref: ${{ github.sha }}
@@ -59,8 +59,9 @@ jobs:
           - compiler: "default" # github runner is hosted on a "amd64"
             usr_dir: "local"
 
-  deploy-release-assets:
-    needs: [using_cmake]
+  deploy:
+    name: deploy release assets
+    needs: [build]
     permissions:
       # needed for uploading release assets
       contents: write

@@ -1,10 +1,10 @@
-name: check code formatting
+name: Code format
 
 on:
-    push:
-        branches: [master, v1.x]
-    pull_request:
-        branches: [master, v1.x]
+  push:
+    branches: [master, v1.x]
+  pull_request:
+    branches: [master, v1.x]
 
 permissions: {}
 
@@ -13,7 +13,7 @@ concurrency:
   cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
 
 jobs:
-  check_formatting:
+  check:
     uses: nRF24/.github/.github/workflows/cpp_lint.yaml@review-ci
     permissions:
       # needed to detect changed files

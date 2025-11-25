@@ -1,4 +1,4 @@
-name: nRF52840 build
+name: nRF52840
 
 on:
   pull_request:

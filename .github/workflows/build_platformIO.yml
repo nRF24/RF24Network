@@ -1,4 +1,4 @@
-name: PlatformIO build
+name: PlatformIO
 
 on:
   pull_request:
@@ -25,11 +25,12 @@ concurrency:
 
 jobs:
   validate_lib_json:
+    name: validate library.json
     uses: nRF24/.github/.github/workflows/vaildate_platformio.yaml@review-ci
 
   build:
     needs: [validate_lib_json]
-    uses: nRF24/.github/.github/workflows/build_platformio.yaml@main
+    uses: nRF24/.github/.github/workflows/build_platformio.yaml@review-ci
     with:
       example-path: ${{ matrix.example }}
       board-id: ${{ matrix.board }}
@@ -51,7 +52,8 @@ jobs:
           - "teensy41"
           - "teensylc"
 
-  deploy-pio-assets:
+  deploy:
+    name: deploy release asset
     if: startsWith(github.ref, 'refs/tags/')
     needs: [validate_lib_json, build]
     permissions:
