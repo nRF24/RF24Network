@@ -36,7 +36,7 @@ jobs:
   build:
     uses: nRF24/.github/.github/workflows/build_docs.yaml@review-ci
     with:
-      doxygen-version: '1.11.0'
+      doxygen-version: '1.15.0'
 
   deploy:
     needs: [build]
