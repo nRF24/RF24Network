@@ -15,15 +15,17 @@ on:
       - "library.json"
       - "examples/**"
       - "!examples/*.zip"
-  release:
-    types: [published, edited]
+    tags: ["*"]
+
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
 
 jobs:
   validate_lib_json:
-    uses: nRF24/.github/.github/workflows/validate_deploy_platformio.yaml@main
-    secrets: inherit
-    with:
-      deploy-release: ${{ github.event_name == 'release' }}
+    uses: nRF24/.github/.github/workflows/vaildate_platformio.yaml@review-ci
 
   build:
     needs: [validate_lib_json]
@@ -48,3 +50,12 @@ jobs:
           - "teensy40"
           - "teensy41"
           - "teensylc"
+
+  deploy-pio-assets:
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: [validate_lib_json, build]
+    permissions:
+      # needed for uploading release assets
+      contents: write
+    uses: nRF24/.github/.github/workflows/deploy_platformio_artifact.yaml@review-ci
+    secrets: inherit

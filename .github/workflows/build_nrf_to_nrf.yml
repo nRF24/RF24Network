@@ -6,9 +6,15 @@ on:
   push:
     branches: [master]
 
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
+
 jobs:
   build:
-    uses: nRF24/.github/.github/workflows/build_platformio.yaml@main
+    uses: nRF24/.github/.github/workflows/build_platformio.yaml@review-ci
     with:
       example-path: ${{ matrix.example }}
       board-id: ${{ matrix.board }}
