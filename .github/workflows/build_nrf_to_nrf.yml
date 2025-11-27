@@ -14,7 +14,7 @@ concurrency:
 
 jobs:
   build:
-    uses: nRF24/.github/.github/workflows/build_platformio.yaml@review-ci
+    uses: nRF24/.github/.github/workflows/build_platformio.yaml@main
     with:
       example-path: ${{ matrix.example }}
       board-id: ${{ matrix.board }}
