@@ -203,9 +203,9 @@
 #define USER_TX_MULTICAST           4
 
 #if defined NRF52_RADIO_LIBRARY
-    #define MAX_FRAME_SIZE 123 // Size of individual radio frames is larger with NRF52
+    #define RF24NETWORK_MAX_FRAME_SIZE 123 // Size of individual radio frames is larger with NRF52
 #else
-    #define MAX_FRAME_SIZE 32 // Size of individual radio frames
+    #define RF24NETWORK_MAX_FRAME_SIZE 32 // Size of individual radio frames
 #endif
 
 #define FRAME_HEADER_SIZE 10 // Size of RF24Network frames - data
@@ -765,7 +765,7 @@ public:
      * outgoing or incoming).
      * @note The first 8 bytes of this buffer is latest handled frame's RF24NetworkHeader data.
      */
-    uint8_t frame_buffer[MAX_FRAME_SIZE];
+    uint8_t frame_buffer[RF24NETWORK_MAX_FRAME_SIZE];
 
     /**
      * **Linux platforms only**
@@ -956,7 +956,7 @@ private:
 
     uint8_t frame_size; /* The outgoing frame's total size including the header info. Ranges [8, MAX_PAYLOAD_SIZE] */
 
-    unsigned int max_frame_payload_size = MAX_FRAME_SIZE - sizeof(RF24NetworkHeader); /* always 24 bytes to compensate for the frame's header */
+    unsigned int max_frame_payload_size = RF24NETWORK_MAX_FRAME_SIZE - sizeof(RF24NetworkHeader); /* always 24 bytes to compensate for the frame's header */
 
 #if defined(RF24_LINUX)
     std::queue<RF24NetworkFrame> frame_queue;
@@ -965,12 +965,12 @@ private:
 #else // Not Linux:
 
     #if defined(DISABLE_USER_PAYLOADS)
-    uint8_t frame_queue[1];  /** Space for a small set of frames that need to be delivered to the app layer */
+    uint8_t frame_queue[1]; /** Space for a small set of frames that need to be delivered to the app layer */
     #else
     uint8_t frame_queue[MAIN_BUFFER_SIZE]; /** Space for a small set of frames that need to be delivered to the app layer */
     #endif
 
-    uint8_t* next_frame;                                 /** Pointer into the @p frame_queue where we should place the next received frame */
+    uint8_t* next_frame; /** Pointer into the @p frame_queue where we should place the next received frame */
 
     #if !defined(DISABLE_FRAGMENTATION)
     RF24NetworkFrame frag_queue;                         /* a cache for re-assembling incoming message fragments */

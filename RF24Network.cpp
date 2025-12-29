@@ -52,7 +52,7 @@ uint16_t RF24NetworkHeader::next_id = 1;
 #if defined(RF24_LINUX)
 /******************************************************************/
 template<class radio_t>
-ESBNetwork<radio_t>::ESBNetwork(radio_t& _radio) : radio(_radio), frame_size(MAX_FRAME_SIZE)
+ESBNetwork<radio_t>::ESBNetwork(radio_t& _radio) : radio(_radio), frame_size(RF24_NETWORK_MAX_FRAME_SIZE)
 {
     networkFlags = 0;
     returnSysMsgs = 0;
@@ -144,7 +144,7 @@ uint8_t ESBNetwork<radio_t>::update(void)
 #if defined(ENABLE_DYNAMIC_PAYLOADS) && !defined(XMEGA_D3)
         frame_size = radio.getDynamicPayloadSize();
 #else
-        frame_size = MAX_FRAME_SIZE;
+        frame_size = RF24NETWORK_MAX_FRAME_SIZE;
 #endif
         if (!frame_size) {
             return NETWORK_CORRUPTION;
@@ -459,10 +459,7 @@ uint8_t ESBNetwork<radio_t>::enqueue(RF24NetworkHeader* header)
                 frag_queue.header.reserved = 0;
                 return false;
             }
-            if (frag_queue.header.reserved == 0
-                || (header->type != NETWORK_LAST_FRAGMENT && header->reserved != frag_queue.header.reserved)
-                || frag_queue.header.id != header->id
-                || (header->type == NETWORK_LAST_FRAGMENT && frag_queue.header.reserved != 1)) {
+            if (frag_queue.header.reserved == 0 || (header->type != NETWORK_LAST_FRAGMENT && header->reserved != frag_queue.header.reserved) || frag_queue.header.id != header->id || (header->type == NETWORK_LAST_FRAGMENT && frag_queue.header.reserved != 1)) {
         #if defined(RF24NETWORK_DEBUG_FRAGMENTATION) || defined(RF24NETWORK_DEBUG_MINIMAL)
                 printf_P(PSTR("Drop frag %d Out of order\n\r"), header->reserved);
         #endif
@@ -489,7 +486,6 @@ uint8_t ESBNetwork<radio_t>::enqueue(RF24NetworkHeader* header)
         #if defined(DISABLE_USER_PAYLOADS)
             return 0;
         #endif
-
             if ((uint16_t)(MAX_PAYLOAD_SIZE) - (next_frame - frame_queue) >= frag_queue.message_size) {
                 memcpy(next_frame, &frag_queue, 10);
                 memcpy(next_frame + 10, frag_queue.message_buffer, frag_queue.message_size);
@@ -788,7 +784,9 @@ bool ESBNetwork<radio_t>::main_write(RF24NetworkHeader& header, const void* mess
         ok = _write(header, ((char*)message) + offset, fragmentLen, writeDirect);
 
         if (!ok) {
-            delay(2);
+            uint32_t timer = micros() + 2000;
+            while (micros() < timer) {
+            }
             ++retriesPerFrag;
         }
         else {
@@ -1223,19 +1221,19 @@ template<class radio_t>
 void ESBNetwork<radio_t>::pipe_address(uint16_t node, uint8_t pipe, uint8_t* address)
 {
 
-    static uint8_t address_translation[] = { 0xc3,
-                                             0x3c,
-                                             0x33,
-                                             0xce,
-                                             0x3e,
-                                             0xe3,
-                                             0xec
+    static uint8_t address_translation[] = {0xc3,
+                                            0x3c,
+                                            0x33,
+                                            0xce,
+                                            0x3e,
+                                            0xe3,
+                                            0xec
 #if NUM_PIPES > 6
-                                             ,
-                                             0xee
+                                            ,
+                                            0xee
     #if NUM_PIPES > 7
-                                             ,
-                                             0xed
+                                            ,
+                                            0xed
     #endif
 #endif
     };
@@ -1307,8 +1305,8 @@ bool ESBNetwork<radio_t>::sleepNode(unsigned int cycles, int interruptPin, uint8
 
     while (sleep_cycles_remaining) {
         sleep_mode(); // System sleeps here
-    }                 // The WDT_vect interrupt wakes the MCU from here
-    sleep_disable();  // System continues execution here when watchdog timed out
+    } // The WDT_vect interrupt wakes the MCU from here
+    sleep_disable(); // System continues execution here when watchdog timed out
     detachInterrupt(interruptPin);
 
         #if defined(__AVR_ATtiny25__) || defined(__AVR_ATtiny45__) || defined(__AVR_ATtiny85__)
