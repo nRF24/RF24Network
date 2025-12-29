@@ -784,8 +784,8 @@ bool ESBNetwork<radio_t>::main_write(RF24NetworkHeader& header, const void* mess
         ok = _write(header, ((char*)message) + offset, fragmentLen, writeDirect);
 
         if (!ok) {
-            uint32_t timer = micros() + 2000;
-            while (micros() < timer) {
+            uint32_t timer = millis() + 2;
+            while (millis() < timer) {
             }
             ++retriesPerFrag;
         }
