@@ -52,7 +52,7 @@ uint16_t RF24NetworkHeader::next_id = 1;
 #if defined(RF24_LINUX)
 /******************************************************************/
 template<class radio_t>
-ESBNetwork<radio_t>::ESBNetwork(radio_t& _radio) : radio(_radio), frame_size(RF24_NETWORK_MAX_FRAME_SIZE)
+ESBNetwork<radio_t>::ESBNetwork(radio_t& _radio) : radio(_radio), frame_size(RF24NETWORK_MAX_FRAME_SIZE)
 {
     networkFlags = 0;
     returnSysMsgs = 0;
