@@ -1221,19 +1221,19 @@ template<class radio_t>
 void ESBNetwork<radio_t>::pipe_address(uint16_t node, uint8_t pipe, uint8_t* address)
 {
 
-    static uint8_t address_translation[] = {0xc3,
-                                            0x3c,
-                                            0x33,
-                                            0xce,
-                                            0x3e,
-                                            0xe3,
-                                            0xec
+    static uint8_t address_translation[] = { 0xc3,
+                                             0x3c,
+                                             0x33,
+                                             0xce,
+                                             0x3e,
+                                             0xe3,
+                                             0xec
 #if NUM_PIPES > 6
-                                            ,
-                                            0xee
+                                             ,
+                                             0xee
     #if NUM_PIPES > 7
-                                            ,
-                                            0xed
+                                             ,
+                                             0xed
     #endif
 #endif
     };
@@ -1305,8 +1305,8 @@ bool ESBNetwork<radio_t>::sleepNode(unsigned int cycles, int interruptPin, uint8
 
     while (sleep_cycles_remaining) {
         sleep_mode(); // System sleeps here
-    } // The WDT_vect interrupt wakes the MCU from here
-    sleep_disable(); // System continues execution here when watchdog timed out
+    }                 // The WDT_vect interrupt wakes the MCU from here
+    sleep_disable();  // System continues execution here when watchdog timed out
     detachInterrupt(interruptPin);
 
         #if defined(__AVR_ATtiny25__) || defined(__AVR_ATtiny45__) || defined(__AVR_ATtiny85__)

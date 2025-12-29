@@ -965,12 +965,12 @@ private:
 #else // Not Linux:
 
     #if defined(DISABLE_USER_PAYLOADS)
-    uint8_t frame_queue[1]; /** Space for a small set of frames that need to be delivered to the app layer */
+    uint8_t frame_queue[1];  /** Space for a small set of frames that need to be delivered to the app layer */
     #else
     uint8_t frame_queue[MAIN_BUFFER_SIZE]; /** Space for a small set of frames that need to be delivered to the app layer */
     #endif
 
-    uint8_t* next_frame; /** Pointer into the @p frame_queue where we should place the next received frame */
+    uint8_t* next_frame;                                 /** Pointer into the @p frame_queue where we should place the next received frame */
 
     #if !defined(DISABLE_FRAGMENTATION)
     RF24NetworkFrame frag_queue;                         /* a cache for re-assembling incoming message fragments */
