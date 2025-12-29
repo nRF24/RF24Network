@@ -1232,8 +1232,8 @@ void ESBNetwork<radio_t>::pipe_address(uint16_t node, uint8_t pipe, uint8_t* add
                                              ,
                                              0xee
     #if NUM_PIPES > 7
-                                            ,
-                                            0xed
+                                             ,
+                                             0xed
     #endif
 #endif
     };
