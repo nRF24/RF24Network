@@ -1221,13 +1221,13 @@ template<class radio_t>
 void ESBNetwork<radio_t>::pipe_address(uint16_t node, uint8_t pipe, uint8_t* address)
 {
 
-    static uint8_t address_translation[] = {0xc3,
-                                            0x3c,
-                                            0x33,
-                                            0xce,
-                                            0x3e,
-                                            0xe3,
-                                            0xec
+    static uint8_t address_translation[] = { 0xc3,
+                                             0x3c,
+                                             0x33,
+                                             0xce,
+                                             0x3e,
+                                             0xe3,
+                                             0xec
 #if NUM_PIPES > 6
                                             ,
                                             0xee
