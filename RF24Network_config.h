@@ -61,7 +61,7 @@
      * the actual transmitted payload to 24 bytes (which is also the default behavior on ATTiny devices).
      */
     #ifndef MAX_PAYLOAD_SIZE
-        #if defined linux || defined __linux
+        #if defined linux || defined __linux || !defined F_CPU || F_CPU >= 50000000
             #define MAX_PAYLOAD_SIZE 1514
         #else
             #define MAX_PAYLOAD_SIZE 144
