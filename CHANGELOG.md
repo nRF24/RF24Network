@@ -6,6 +6,34 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 <!-- markdownlint-disable MD024 -->
 
+## [2.0.6] - 2026-03-12
+
+### <!-- 1 --> 🚀 Added
+
+- Add delay during fragmentation for nRF52x by \@TMRh20 in [#253](https://github.com/nRF24/RF24Network/pull/253)
+
+### <!-- 4 --> 🛠️ Fixed
+
+- Fix frag delay code by \@TMRh20 in [#254](https://github.com/nRF24/RF24Network/pull/254)
+- Fixes for lwIP integration by \@TMRh20 in [#260](https://github.com/nRF24/RF24Network/pull/260)
+
+### <!-- 8 --> 📝 Documentation
+
+- Typo in doc comment by \@2bndy5 in [`aed6024`](https://github.com/nRF24/RF24Network/commit/aed6024c4e17555605082f50a87e91921b247f17)
+
+### <!-- 9 --> 🗨️ Changed
+
+- Use nushell as task runner by \@2bndy5 in [#256](https://github.com/nRF24/RF24Network/pull/256)
+- Revert throttle frag by \@TMRh20 in [#255](https://github.com/nRF24/RF24Network/pull/255)
+- Reject invalid fragmented payloads by \@TMRh20 in [#257](https://github.com/nRF24/RF24Network/pull/257)
+- Reject invalid fragmented payloads by \@TMRh20 in [#258](https://github.com/nRF24/RF24Network/pull/258)
+- Revise CI by \@2bndy5 in [#259](https://github.com/nRF24/RF24Network/pull/259)
+- Larger payloads on faster devices by \@TMRh20 in [#262](https://github.com/nRF24/RF24Network/pull/262)
+
+[2.0.6]: https://github.com/nRF24/RF24Network/compare/v2.0.5...v2.0.6
+
+Full commit diff: [`v2.0.5...v2.0.6`][2.0.6]
+
 ## [2.0.5] - 2025-05-04
 
 ### <!-- 1 --> 🚀 Added
@@ -20,6 +48,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### <!-- 9 --> 🗨️ Changed
 
 - Utilize new stopListening function by \@TMRh20 in [#251](https://github.com/nRF24/RF24Network/pull/251)
+- Bump version to v2.0.5 by \@2bndy5 in [`69584ac`](https://github.com/nRF24/RF24Network/commit/69584acc174dcfa497c687490f4d2790da557248)
 
 [2.0.5]: https://github.com/nRF24/RF24Network/compare/v2.0.4...v2.0.5
 
@@ -372,7 +401,9 @@ Full commit diff: [`v1.0.15...v1.0.16`][1.0.16]
 Full commit diff: [`v1.0.14...v1.0.15`][1.0.15]
 
 ## New Contributors
-* \@kripton made their first contribution in [#171](https://github.com/nRF24/RF24Network/pull/171)
+
+- \@kripton made their first contribution in [#171](https://github.com/nRF24/RF24Network/pull/171)
+
 ## [1.0.14] - 2020-12-14
 
 ### <!-- 3 --> 🗑️ Removed
@@ -405,7 +436,9 @@ Full commit diff: [`v1.0.14...v1.0.15`][1.0.15]
 Full commit diff: [`v1.0.13...v1.0.14`][1.0.14]
 
 ## New Contributors
-* \@2bndy5 made their first contribution in [#163](https://github.com/nRF24/RF24Network/pull/163)
+
+- \@2bndy5 made their first contribution in [#163](https://github.com/nRF24/RF24Network/pull/163)
+
 ## [1.0.13] - 2020-08-30
 
 ### <!-- 9 --> 🗨️ Changed
@@ -531,9 +564,11 @@ Full commit diff: [`v1.0.9...v1.0.10`][1.0.10]
 Full commit diff: [`v1.0.8...v1.0.9`][1.0.9]
 
 ## New Contributors
-* \@cnlangness made their first contribution
-* \@wilmsn made their first contribution
-* \@MAKOMO made their first contribution
+
+- \@cnlangness made their first contribution
+- \@wilmsn made their first contribution
+- \@MAKOMO made their first contribution
+
 ## [1.0.8] - 2017-01-25
 
 ### <!-- 1 --> 🚀 Added
@@ -550,9 +585,9 @@ Full commit diff: [`v1.0.8...v1.0.9`][1.0.9]
 ### <!-- 9 --> 🗨️ Changed
 
 - Per RF24 issue change binary values to hex by \@TMRh20 in [`85550ee`](https://github.com/nRF24/RF24Network/commit/85550eed8663a2a60dc5def5f7dbd02d2f775446)
-- Possibility to setup the interrupt_mode in sleepnode by \@ricgyver in [`7169f23`](https://github.com/nRF24/RF24Network/commit/7169f23662116545ecdcc2478a3c2366096b2185)
-- Styling of the interrupt setup by \@ricgyver in [`69b7340`](https://github.com/nRF24/RF24Network/commit/69b7340652d55b7bc237bc801283a062b59b0330)
-- Merge pull request \#99 from ricmail85/master by \@ricgyver in [#99](https://github.com/nRF24/RF24Network/pull/99)
+- Possibility to setup the interrupt_mode in sleepnode in [`7169f23`](https://github.com/nRF24/RF24Network/commit/7169f23662116545ecdcc2478a3c2366096b2185)
+- Styling of the interrupt setup in [`69b7340`](https://github.com/nRF24/RF24Network/commit/69b7340652d55b7bc237bc801283a062b59b0330)
+- Merge pull request \#99 from ricmail85/master in [#99](https://github.com/nRF24/RF24Network/pull/99)
 - Merge branch 'master' of https://github.com/TMRh20/RF24Network by \@akatran in [`4b3ae24`](https://github.com/nRF24/RF24Network/commit/4b3ae2447c9a95f539b35af36b468777c3a023f4)
 - Update from TMRh20/master and merge with local. by \@akatran in [`430dcae`](https://github.com/nRF24/RF24Network/commit/430dcae6cdbb7614a0284a9df0c1ce90f5c36571)
 - Update README.md by \@akatran in [`379cb54`](https://github.com/nRF24/RF24Network/commit/379cb54533e375c464e37f2cd116c4255893c2d1)
@@ -570,9 +605,10 @@ Full commit diff: [`v1.0.8...v1.0.9`][1.0.9]
 Full commit diff: [`v1.0.7...v1.0.8`][1.0.8]
 
 ## New Contributors
-* \@comdata made their first contribution
-* \@akatran made their first contribution in [#76](https://github.com/nRF24/RF24Network/pull/76)
-* \@ricgyver made their first contribution in [#99](https://github.com/nRF24/RF24Network/pull/99)
+
+- \@comdata made their first contribution
+- \@akatran made their first contribution in [#76](https://github.com/nRF24/RF24Network/pull/76)
+
 ## [1.0.7] - 2016-09-20
 
 ### <!-- 1 --> 🚀 Added
@@ -598,7 +634,9 @@ Full commit diff: [`v1.0.7...v1.0.8`][1.0.8]
 Full commit diff: [`v1.0.6...v1.0.7`][1.0.7]
 
 ## New Contributors
-* \@aaddame made their first contribution
+
+- \@aaddame made their first contribution
+
 ## [1.0.6] - 2016-04-12
 
 ### <!-- 3 --> 🗑️ Removed
@@ -642,9 +680,11 @@ Full commit diff: [`v1.0.5...v1.0.6`][1.0.6]
 Full commit diff: [`v1.0.4...v1.0.5`][1.0.5]
 
 ## New Contributors
-* \@martin-mat made their first contribution
-* \@gregj1 made their first contribution
-* \@yozik04 made their first contribution
+
+- \@martin-mat made their first contribution
+- \@gregj1 made their first contribution
+- \@yozik04 made their first contribution
+
 ## [1.0.4] - 2015-12-15
 
 ### <!-- 4 --> 🛠️ Fixed
@@ -701,7 +741,9 @@ Full commit diff: [`v1.0.3...v1.0.4`][1.0.4]
 Full commit diff: [`v1.0.2...v1.0.3`][1.0.3]
 
 ## New Contributors
-* \@joernesdohr made their first contribution
+
+- \@joernesdohr made their first contribution
+
 ## [1.0.2] - 2015-11-27
 
 ### <!-- 1 --> 🚀 Added
@@ -1060,16 +1102,18 @@ Full commit diff: [`v1.0...v1.0.1`][1.0.1]
 Full commit diff: [`f54c0ac...v1.0`][1.0]
 
 ## New Contributors
-* \@TMRh20 made their first contribution
-* \@Avamander made their first contribution
-* \@gehel made their first contribution
-* \@crcastle made their first contribution
-* \@ivankravets made their first contribution
-* \@dsbaha made their first contribution
-* \@spaniakos made their first contribution
-* \@lnxbil made their first contribution
-* \@flavio-fernandes made their first contribution
-* \@ made their first contribution
-* \@reixd made their first contribution
-* \@maniacbug made their first contribution
+
+- \@TMRh20 made their first contribution
+- \@Avamander made their first contribution
+- \@gehel made their first contribution
+- \@crcastle made their first contribution
+- \@ivankravets made their first contribution
+- \@dsbaha made their first contribution
+- \@spaniakos made their first contribution
+- \@lnxbil made their first contribution
+- \@flavio-fernandes made their first contribution
+- \@ made their first contribution
+- \@reixd made their first contribution
+- \@maniacbug made their first contribution
+
 <!-- generated by git-cliff -->
