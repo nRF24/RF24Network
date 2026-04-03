@@ -229,7 +229,7 @@
 #define FLAG_NO_POLL 8
 
 class RF24;
-#if defined(ARDUINO_ARCH_NRF52) || defined(ARDUINO_ARCH_NRF52840) || defined(ARDUINO_ARCH_NRF52833)
+#if defined(ARDUINO_ARCH_NRF52) || defined(ARDUINO_ARCH_NRF52840) || defined(ARDUINO_ARCH_NRF52833) || defined(ARDUINO_NRF54L15)
 class nrf_to_nrf;
 #endif
 
@@ -1011,7 +1011,7 @@ private:
  * ```
  */
 typedef ESBNetwork<RF24> RF24Network;
-#if defined(ARDUINO_ARCH_NRF52) || defined(ARDUINO_ARCH_NRF52840) || defined(ARDUINO_ARCH_NRF52833)
+#if defined(ARDUINO_ARCH_NRF52) || defined(ARDUINO_ARCH_NRF52840) || defined(ARDUINO_ARCH_NRF52833) || defined(ARDUINO_NRF54L15)
 typedef ESBNetwork<nrf_to_nrf> RF52Network;
 #endif
 

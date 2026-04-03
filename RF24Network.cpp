@@ -24,7 +24,7 @@
     #endif
 #else
     #include "RF24.h"
-    #if defined(ARDUINO_ARCH_NRF52) || defined(ARDUINO_ARCH_NRF52840)
+    #if defined(ARDUINO_ARCH_NRF52) || defined(ARDUINO_ARCH_NRF52840) || defined(ARDUINO_NRF54L15)
         #include <nrf_to_nrf.h>
     #endif
 #endif
@@ -713,9 +713,11 @@ template<>
 bool ESBNetwork<nrf_to_nrf>::write(RF24NetworkHeader& header, const void* message, uint16_t len, uint16_t writeDirect)
 {
     max_frame_payload_size = (uint8_t)NRF_RADIO->PCNF1 - sizeof(RF24NetworkHeader);
+    #if defined(CCM_ENCRYPTION_ENABLED)
     if (radio.enableEncryption == true) {
         max_frame_payload_size -= CCM_IV_SIZE + CCM_COUNTER_SIZE + CCM_MIC_SIZE;
     }
+    #endif
     return main_write(header, message, len, writeDirect);
 }
 #endif
@@ -1340,6 +1342,6 @@ void ESBNetwork<radio_t>::setup_watchdog(uint8_t prescalar)
 
 // ensure the compiler is aware of the possible datatype for the template class
 template class ESBNetwork<RF24>;
-#if defined(ARDUINO_ARCH_NRF52) || defined(ARDUINO_ARCH_NRF52840) || defined(ARDUINO_ARCH_NRF52833)
+#if defined(ARDUINO_ARCH_NRF52) || defined(ARDUINO_ARCH_NRF52840) || defined(ARDUINO_ARCH_NRF52833) || defined(ARDUINO_NRF54L15)
 template class ESBNetwork<nrf_to_nrf>;
 #endif
