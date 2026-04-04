@@ -203,7 +203,7 @@
 #define USER_TX_MULTICAST           4
 
 #if defined NRF52_RADIO_LIBRARY
-    #define RF24NETWORK_MAX_FRAME_SIZE 123 // Size of individual radio frames is larger with NRF52
+    #define RF24NETWORK_MAX_FRAME_SIZE 254 // Size of individual radio frames is larger with NRF52
 #else
     #define RF24NETWORK_MAX_FRAME_SIZE 32 // Size of individual radio frames
 #endif
