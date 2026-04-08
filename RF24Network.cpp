@@ -511,7 +511,7 @@ uint8_t ESBNetwork<radio_t>::enqueue(RF24NetworkHeader* header)
         if (header->type == EXTERNAL_DATA_TYPE)
     {
         memcpy((char*)(&frag_queue), &frame_buffer, 8);
-        frag_queue.message_buffer = frame_buffer + sizeof(RF24NetworkHeader);
+        memcpy(frag_queue.message_buffer, frame_buffer + sizeof(RF24NetworkHeader), message_size);
         frag_queue.message_size = message_size;
         return 2;
     }
