@@ -6,6 +6,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 <!-- markdownlint-disable MD024 -->
 
+## [2.1.0] - 2026-04-08
+
+### <!-- 1 --> 🚀 Added
+
+- Support larger payload sizes by \@TMRh20 in [#264](https://github.com/nRF24/RF24Network/pull/264)
+
+### <!-- 4 --> 🛠️ Fixed
+
+- Fix buffer overflow by \@TMRh20 in [#266](https://github.com/nRF24/RF24Network/pull/266)
+
+### <!-- 9 --> 🗨️ Changed
+
+- Modify call to reusable PIO workflow by \@2bndy5 in [`7f31821`](https://github.com/nRF24/RF24Network/commit/7f318219e58285bc301d04c4f197dc015894e490)
+- NRF54l15 support by \@TMRh20 in [#263](https://github.com/nRF24/RF24Network/pull/263)
+
+[2.1.0]: https://github.com/nRF24/RF24Network/compare/v2.0.6...v2.1.0
+
+Full commit diff: [`v2.0.6...v2.1.0`][2.1.0]
+
 ## [2.0.6] - 2026-03-12
 
 ### <!-- 1 --> 🚀 Added
@@ -29,6 +48,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Reject invalid fragmented payloads by \@TMRh20 in [#258](https://github.com/nRF24/RF24Network/pull/258)
 - Revise CI by \@2bndy5 in [#259](https://github.com/nRF24/RF24Network/pull/259)
 - Larger payloads on faster devices by \@TMRh20 in [#262](https://github.com/nRF24/RF24Network/pull/262)
+- Bump version to v2.0.6 by \@TMRh20 in [`c1160e4`](https://github.com/nRF24/RF24Network/commit/c1160e424ce86fad97a215fd607ca6810da9aa22)
 
 [2.0.6]: https://github.com/nRF24/RF24Network/compare/v2.0.5...v2.0.6
 
