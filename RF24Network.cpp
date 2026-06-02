@@ -207,7 +207,6 @@ uint8_t ESBNetwork<radio_t>::update(void)
                 if (returnSysMsgs) {
                     return returnVal;
                 }
-                continue;
             }
 
             if (enqueue(header) == 2) { //External data received
