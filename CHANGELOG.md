@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### <!-- 4 --> 🛠️ Fixed
 
-- Prevent non-fragment, non-external system payloads (e.g. mesh control-plane types) from leaking into the user queue on non-Linux/Arduino nodes
+- Prevent non-fragment, non-external system payloads (e.g. mesh control-plane types) from leaking into the normal user queue in `update()`, while still allowing `returnSysMsgs` handling and queueing fragments/external payloads
 
 ## [2.1.0] - 2026-04-08
 

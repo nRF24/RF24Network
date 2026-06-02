@@ -191,30 +191,24 @@ uint8_t ESBNetwork<radio_t>::update(void)
                 write(header->to_node, TX_NORMAL);
                 continue;
             }
-            if ((returnSysMsgs && header->type > MAX_USER_DEFINED_HEADER_TYPE) || header->type == NETWORK_ACK) {
+            bool isSystemType = header->type > MAX_USER_DEFINED_HEADER_TYPE;
+            bool isQueueableSystemType = header->type == NETWORK_FIRST_FRAGMENT ||
+                                         header->type == NETWORK_MORE_FRAGMENTS ||
+                                         header->type == NETWORK_LAST_FRAGMENT ||
+                                         header->type == EXTERNAL_DATA_TYPE;
+
+            if (header->type == NETWORK_ACK) {
                 IF_RF24NETWORK_DEBUG_ROUTING(printf_P(PSTR("MAC System payload rcvd %d\n"), returnVal););
-                if (header->type != NETWORK_FIRST_FRAGMENT && header->type != NETWORK_MORE_FRAGMENTS && header->type != EXTERNAL_DATA_TYPE && header->type != NETWORK_LAST_FRAGMENT) {
-                    return returnVal;
-                }
+                return returnVal;
             }
 
-#if !defined(RF24_LINUX)
-            // Prevent non-fragment, non-external system payloads from leaking into the
-            // normal user queue. Mesh control-plane types (e.g. MESH_ADDR_LOOKUP,
-            // MESH_ADDR_RELEASE, MESH_ID_LOOKUP) must never be visible via
-            // available()/read() on Arduino/non-Linux nodes.
-            if (header->type > MAX_USER_DEFINED_HEADER_TYPE &&
-                header->type != NETWORK_FIRST_FRAGMENT &&
-                header->type != NETWORK_MORE_FRAGMENTS &&
-                header->type != NETWORK_LAST_FRAGMENT &&
-                header->type != EXTERNAL_DATA_TYPE) {
+            if (isSystemType && !isQueueableSystemType) {
                 IF_RF24NETWORK_DEBUG_ROUTING(printf_P(PSTR("MAC System payload rcvd %d\n"), returnVal););
                 if (returnSysMsgs) {
                     return returnVal;
                 }
-                continue; // consume/drop; do not enqueue into user queue
+                continue;
             }
-#endif
 
             if (enqueue(header) == 2) { //External data received
                 IF_RF24NETWORK_DEBUG_MINIMAL(printf_P(PSTR("ret ext\n")););
