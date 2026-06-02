@@ -1,0 +1,2 @@
+g++ -Wall -fPIC  -c RF24Network.cpp
+g++ -shared -Wl,-soname,librf24network.so.1  -o librf24network.so.1.0 RF24Network.o -lrf24-bcm
