@@ -135,10 +135,10 @@ uint8_t ESBNetwork<radio_t>::update(void)
 
     uint8_t returnVal = 0;
 
-    uint32_t timeout = millis() + 100;
+    const uint32_t timeout_start = millis();
 
     while (radio.available()) {
-        if (millis() > timeout) {
+        if (millis() - timeout_start > 100) {
             return NETWORK_OVERRUN;
         }
 #if defined(ENABLE_DYNAMIC_PAYLOADS) && !defined(XMEGA_D3)
@@ -786,8 +786,8 @@ bool ESBNetwork<radio_t>::main_write(RF24NetworkHeader& header, const void* mess
         ok = _write(header, ((char*)message) + offset, fragmentLen, writeDirect);
 
         if (!ok) {
-            uint32_t timer = millis() + 2;
-            while (millis() < timer) {
+            const uint32_t retry_delay_start = millis();
+            while (millis() - retry_delay_start < 2) {
             }
             ++retriesPerFrag;
         }
