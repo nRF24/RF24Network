@@ -6,6 +6,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 <!-- markdownlint-disable MD024 -->
 
+## [2.1.1] - 2026-06-06
+
+### <!-- 9 --> 🗨️ Changed
+
+- Inform AI agents about dev workflows by \@2bndy5 in [#268](https://github.com/nRF24/RF24Network/pull/268)
+- Patch rollover-unsafe `millis()` deadline checks in `RF24Network.cpp` by \@Copilot in [#270](https://github.com/nRF24/RF24Network/pull/270)
+
+[2.1.1]: https://github.com/nRF24/RF24Network/compare/v2.1.0...v2.1.1
+
+Full commit diff: [`v2.1.0...v2.1.1`][2.1.1]
+
+## New Contributors
+
+- \@Copilot made their first contribution in [#270](https://github.com/nRF24/RF24Network/pull/270)
+
 ## [2.1.0] - 2026-04-08
 
 ### <!-- 1 --> 🚀 Added
@@ -20,6 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Modify call to reusable PIO workflow by \@2bndy5 in [`7f31821`](https://github.com/nRF24/RF24Network/commit/7f318219e58285bc301d04c4f197dc015894e490)
 - NRF54l15 support by \@TMRh20 in [#263](https://github.com/nRF24/RF24Network/pull/263)
+- Bump version to v2.1.0 by \@TMRh20 in [`f06c267`](https://github.com/nRF24/RF24Network/commit/f06c267f131a1d4b926f5df6d1c78ca05d344774)
 
 [2.1.0]: https://github.com/nRF24/RF24Network/compare/v2.0.6...v2.1.0
 
