@@ -845,13 +845,11 @@ public:
      */
     uint8_t networkFlags;
 
-#if defined ARDUINO_ARCH_ESP8266 || ARDUINO_ARCH_ESP32
     /**
      * Use a regular delay for most devices, but on ESP32 and ESP8266, use a millis() based timeout.
      * See RF24NETWORK_DELAY in RF24Network_config.h
      */
     void RF24NetworkDelay(uint32_t delay);
-#endif
 
 protected:
 #if defined(RF24NetworkMulticast)
