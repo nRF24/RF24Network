@@ -1265,7 +1265,7 @@ void ESBNetwork<radio_t>::pipe_address(uint16_t node, uint8_t pipe, uint8_t* add
 }
 
 /******************************************************************/
-
+#if defined ARDUINO_ARCH_ESP8266 || defined ARDUINO_ARCH_ESP32
 template<class radio_t>
 void ESBNetwork<radio_t>::RF24NetworkDelay(uint32_t delay)
 {
@@ -1273,7 +1273,7 @@ void ESBNetwork<radio_t>::RF24NetworkDelay(uint32_t delay)
     while (millis() - timer < delay) {
     }
 }
-
+#endif
 /************************ Sleep Mode ******************************************/
 
 #if defined ENABLE_SLEEP_MODE
