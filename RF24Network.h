@@ -845,6 +845,14 @@ public:
      */
     uint8_t networkFlags;
 
+#if defined ARDUINO_ARCH_ESP8266 || ARDUINO_ARCH_ESP32
+    /**
+     * Use a regular delay for most devices, but on ESP32 and ESP8266, use a millis() based timeout.
+     * See RF24NETWORK_DELAY in RF24Network_config.h
+     */
+    void RF24NetworkDelay(uint32_t delay);
+#endif
+
 protected:
 #if defined(RF24NetworkMulticast)
     /**
@@ -965,12 +973,12 @@ private:
 #else // Not Linux:
 
     #if defined(DISABLE_USER_PAYLOADS)
-    uint8_t frame_queue[1];  /** Space for a small set of frames that need to be delivered to the app layer */
+    uint8_t frame_queue[1]; /** Space for a small set of frames that need to be delivered to the app layer */
     #else
     uint8_t frame_queue[MAIN_BUFFER_SIZE]; /** Space for a small set of frames that need to be delivered to the app layer */
     #endif
 
-    uint8_t* next_frame;                                 /** Pointer into the @p frame_queue where we should place the next received frame */
+    uint8_t* next_frame; /** Pointer into the @p frame_queue where we should place the next received frame */
 
     #if !defined(DISABLE_FRAGMENTATION)
     RF24NetworkFrame frag_queue;                         /* a cache for re-assembling incoming message fragments */

@@ -213,9 +213,9 @@ uint8_t ESBNetwork<radio_t>::update(void)
                         header->to_node = header->from_node;
                         header->from_node = node_address;
     #ifdef SLOW_ADDR_POLL_RESPONSE
-                        delay(parent_pipe + SLOW_ADDR_POLL_RESPONSE);
+                        RF24NETWORK_DELAY(parent_pipe + SLOW_ADDR_POLL_RESPONSE);
     #else
-                        delay(parent_pipe);
+                        RF24NETWORK_DELAY(parent_pipe);
     #endif
                         write(header->to_node, USER_TX_TO_PHYSICAL_ADDRESS);
                     }
@@ -786,9 +786,7 @@ bool ESBNetwork<radio_t>::main_write(RF24NetworkHeader& header, const void* mess
         ok = _write(header, ((char*)message) + offset, fragmentLen, writeDirect);
 
         if (!ok) {
-            const uint32_t retry_delay_start = millis();
-            while (millis() - retry_delay_start < 2) {
-            }
+            RF24NETWORK_DELAY(2);
             ++retriesPerFrag;
         }
         else {
@@ -902,7 +900,7 @@ bool ESBNetwork<radio_t>::write(uint16_t to_node, uint8_t sendType)
     IF_RF24NETWORK_DEBUG(printf_P(PSTR("MAC Sending to 0%o via 0%o on pipe %x\n\r"), to_node, conversion.send_node, conversion.send_pipe));
     /**Write it*/
     if (sendType == TX_ROUTED && conversion.send_node == to_node && isAckType) {
-        delay(2);
+        RF24NETWORK_DELAY(2);
     }
     ok = write_to_pipe(conversion.send_node, conversion.send_pipe, conversion.multicast);
 
@@ -1266,6 +1264,16 @@ void ESBNetwork<radio_t>::pipe_address(uint16_t node, uint8_t pipe, uint8_t* add
     IF_RF24NETWORK_DEBUG(uint32_t* top = reinterpret_cast<uint32_t*>(address + 1); printf_P(PSTR("NET Pipe %i on node 0%o has address %x%x\n\r"), pipe, node, *top, *address));
 }
 
+/******************************************************************/
+
+template<class radio_t>
+void ESBNetwork<radio_t>::RF24NetworkDelay(uint32_t delay)
+{
+    uint32_t timer = millis();
+    while (millis() - timer < delay) {
+    }
+}
+
 /************************ Sleep Mode ******************************************/
 
 #if defined ENABLE_SLEEP_MODE
@@ -1307,8 +1315,8 @@ bool ESBNetwork<radio_t>::sleepNode(unsigned int cycles, int interruptPin, uint8
 
     while (sleep_cycles_remaining) {
         sleep_mode(); // System sleeps here
-    }                 // The WDT_vect interrupt wakes the MCU from here
-    sleep_disable();  // System continues execution here when watchdog timed out
+    } // The WDT_vect interrupt wakes the MCU from here
+    sleep_disable(); // System continues execution here when watchdog timed out
     detachInterrupt(interruptPin);
 
         #if defined(__AVR_ATtiny25__) || defined(__AVR_ATtiny45__) || defined(__AVR_ATtiny85__)

@@ -88,6 +88,12 @@
         #define ENABLE_DYNAMIC_PAYLOADS
     #endif // DISABLE_DYNAMIC_PAYLOADS
 
+    #if defined ARDUINO_ARCH_ESP8266 || ARDUINO_ARCH_ESP32
+        #define RF24NETWORK_DELAY(x) RF24NetworkDelay(x)
+    #else
+        #define RF24NETWORK_DELAY(x) delay(x)
+    #endif
+
     /* Debug Options */
     //#define RF24NETWORK_DEBUG
     //#define RF24NETWORK_DEBUG_MINIMAL
