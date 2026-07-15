@@ -423,6 +423,12 @@ template<class radio_t>
 uint8_t ESBNetwork<radio_t>::enqueue(RF24NetworkHeader* header)
 {
     bool result = false;
+
+    // Prevent unsigned underflow in message_size calculation
+    if (frame_size < sizeof(RF24NetworkHeader)) {
+        return false;
+    }
+
     uint16_t message_size = frame_size - sizeof(RF24NetworkHeader);
 
     IF_RF24NETWORK_DEBUG(printf_P(PSTR("NET Enqueue @%x\n"), next_frame - frame_queue));
@@ -438,6 +444,11 @@ uint8_t ESBNetwork<radio_t>::enqueue(RF24NetworkHeader* header)
         }
 
         if (header->type == NETWORK_FIRST_FRAGMENT) {
+
+            // Necessary bounds check before copy
+            if (message_size > MAX_PAYLOAD_SIZE) {
+                return false;
+            }
 
             memcpy((char*)(&frag_queue), &frame_buffer, sizeof(RF24NetworkHeader));
             memcpy(frag_queue.message_buffer, frame_buffer + sizeof(RF24NetworkHeader), message_size);
@@ -487,11 +498,11 @@ uint8_t ESBNetwork<radio_t>::enqueue(RF24NetworkHeader* header)
             return 0;
         #endif
             if ((uint16_t)(MAX_PAYLOAD_SIZE) - (next_frame - frame_queue) >= frag_queue.message_size) {
-                memcpy(next_frame, &frag_queue, 10);
-                memcpy(next_frame + 10, frag_queue.message_buffer, frag_queue.message_size);
-                next_frame += (10 + frag_queue.message_size);
+                memcpy(next_frame, &frag_queue, sizeof(RF24NetworkHeader) + sizeof(uint16_t));
+                memcpy(next_frame + sizeof(RF24NetworkHeader) + sizeof(uint16_t), frag_queue.message_buffer, frag_queue.message_size);
+                next_frame += (sizeof(RF24NetworkHeader) + sizeof(uint16_t) + frag_queue.message_size);
         #if !defined(ARDUINO_ARCH_AVR)
-                if (uint8_t padding = (frag_queue.message_size + 10) % 4) {
+                if (uint8_t padding = (frag_queue.message_size + sizeof(RF24NetworkHeader) + sizeof(uint16_t)) % 4) {
                     next_frame += 4 - padding;
                 }
         #endif
@@ -510,7 +521,12 @@ uint8_t ESBNetwork<radio_t>::enqueue(RF24NetworkHeader* header)
     #if !defined(DISABLE_FRAGMENTATION)
         if (header->type == EXTERNAL_DATA_TYPE)
     {
-        memcpy((char*)(&frag_queue), &frame_buffer, 8);
+        // Necessary bounds check before copy
+        if (message_size > MAX_PAYLOAD_SIZE) {
+            return false;
+        }
+
+        memcpy((char*)(&frag_queue), &frame_buffer, sizeof(RF24NetworkHeader));
         memcpy(frag_queue.message_buffer, frame_buffer + sizeof(RF24NetworkHeader), message_size);
         frag_queue.message_size = message_size;
         return 2;
@@ -521,26 +537,23 @@ uint8_t ESBNetwork<radio_t>::enqueue(RF24NetworkHeader* header)
 }
     #else // !defined(DISABLE_USER_PAYLOADS)
         #if !defined(ARDUINO_ARCH_AVR)
-    uint8_t padding = (message_size + 10) % 4;
+    uint8_t padding = (message_size + sizeof(RF24NetworkHeader) + sizeof(uint16_t)) % 4;
     padding = padding ? 4 - padding : 0;
     if (padding +
         #else
     if (
         #endif
-            message_size + 10 + (next_frame - frame_queue)
+            message_size + sizeof(RF24NetworkHeader) + sizeof(uint16_t) + (next_frame - frame_queue)
         <= MAIN_BUFFER_SIZE)
     {
-        memcpy(next_frame, &frame_buffer, 8);
-        memcpy(next_frame + 8, &message_size, 2);
-        memcpy(next_frame + 10, frame_buffer + 8, message_size);
+        memcpy(next_frame, &frame_buffer, sizeof(RF24NetworkHeader));
+        memcpy(next_frame + sizeof(RF24NetworkHeader), &message_size, sizeof(uint16_t));
+        memcpy(next_frame + sizeof(RF24NetworkHeader) + sizeof(uint16_t), frame_buffer + sizeof(RF24NetworkHeader), message_size);
 
-        //IF_RF24NETWORK_DEBUG_FRAGMENTATION( for(int i=0; i<message_size;i++){ Serial.print(next_frame[i],HEX); Serial.print(" : "); } Serial.println(""); );
-
-        next_frame += (message_size + 10);
+        next_frame += (message_size + sizeof(RF24NetworkHeader) + sizeof(uint16_t));
         #if !defined(ARDUINO_ARCH_AVR)
         next_frame += padding;
         #endif
-        //IF_RF24NETWORK_DEBUG_FRAGMENTATION( Serial.print("Enq "); Serial.println(next_frame-frame_queue); );//printf_P(PSTR("enq %d\n"),next_frame-frame_queue); );
 
         result = true;
     }
@@ -1266,12 +1279,21 @@ void ESBNetwork<radio_t>::pipe_address(uint16_t node, uint8_t pipe, uint8_t* add
 
 /******************************************************************/
 #if defined ARDUINO_ARCH_ESP8266 || defined ARDUINO_ARCH_ESP32
+    #ifdef ARDUINO_ARCH_ESP32
+        #include "esp_task_wdt.h"
+    #endif
+
 template<class radio_t>
 void ESBNetwork<radio_t>::RF24NetworkDelay(uint32_t delay)
 {
     uint32_t timer = millis();
     while (millis() - timer < delay) {
     }
+    #if defined ARDUINO_ARCH_ESP8266
+    ESP.wdtFeed();
+    #else
+    esp_task_wdt_reset();
+    #endif
 }
 #endif
 /************************ Sleep Mode ******************************************/
