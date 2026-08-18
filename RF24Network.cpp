@@ -425,7 +425,6 @@ uint8_t ESBNetwork<radio_t>::enqueue(RF24NetworkHeader* header)
     bool result = false;
     constexpr uint8_t NETWORK_HEADER_SIZE = sizeof(RF24NetworkHeader);
     constexpr uint8_t FRAG_MSG_OFFSET = NETWORK_HEADER_SIZE + sizeof(uint16_t);
-    
     // Prevent unsigned underflow in message_size calculation
     if (frame_size < NETWORK_HEADER_SIZE) {
         return false;
