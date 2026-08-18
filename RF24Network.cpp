@@ -423,13 +423,15 @@ template<class radio_t>
 uint8_t ESBNetwork<radio_t>::enqueue(RF24NetworkHeader* header)
 {
     bool result = false;
-
+    constexpr uint8_t NETWORK_HEADER_SIZE = sizeof(RF24NetworkHeader);
+    constexpr uint8_t FRAG_MSG_OFFSET = NETWORK_HEADER_SIZE + sizeof(uint16_t);
+    
     // Prevent unsigned underflow in message_size calculation
-    if (frame_size < sizeof(RF24NetworkHeader)) {
+    if (frame_size < NETWORK_HEADER_SIZE) {
         return false;
     }
 
-    uint16_t message_size = frame_size - sizeof(RF24NetworkHeader);
+    uint16_t message_size = frame_size - NETWORK_HEADER_SIZE
 
     IF_RF24NETWORK_DEBUG(printf_P(PSTR("NET Enqueue @%x\n"), next_frame - frame_queue));
 
@@ -450,8 +452,8 @@ uint8_t ESBNetwork<radio_t>::enqueue(RF24NetworkHeader* header)
                 return false;
             }
 
-            memcpy((char*)(&frag_queue), &frame_buffer, sizeof(RF24NetworkHeader));
-            memcpy(frag_queue.message_buffer, frame_buffer + sizeof(RF24NetworkHeader), message_size);
+            memcpy((char*)(&frag_queue), &frame_buffer, NETWORK_HEADER_SIZE);
+            memcpy(frag_queue.message_buffer, frame_buffer + NETWORK_HEADER_SIZE, message_size);
 
             IF_RF24NETWORK_DEBUG_FRAGMENTATION(printf_P(PSTR("queue first, total frags %d\n\r"), header->reserved););
             //Store the total size of the stored frame in message_size
@@ -477,7 +479,7 @@ uint8_t ESBNetwork<radio_t>::enqueue(RF24NetworkHeader* header)
                 return false;
             }
 
-            memcpy(frag_queue.message_buffer + frag_queue.message_size, frame_buffer + sizeof(RF24NetworkHeader), message_size);
+            memcpy(frag_queue.message_buffer + frag_queue.message_size, frame_buffer + NETWORK_HEADER_SIZE, message_size);
             frag_queue.message_size += message_size;
 
             if (header->type != NETWORK_LAST_FRAGMENT) {
@@ -498,11 +500,11 @@ uint8_t ESBNetwork<radio_t>::enqueue(RF24NetworkHeader* header)
             return 0;
         #endif
             if ((uint16_t)(MAX_PAYLOAD_SIZE) - (next_frame - frame_queue) >= frag_queue.message_size) {
-                memcpy(next_frame, &frag_queue, sizeof(RF24NetworkHeader) + sizeof(uint16_t));
-                memcpy(next_frame + sizeof(RF24NetworkHeader) + sizeof(uint16_t), frag_queue.message_buffer, frag_queue.message_size);
-                next_frame += (sizeof(RF24NetworkHeader) + sizeof(uint16_t) + frag_queue.message_size);
+                memcpy(next_frame, &frag_queue, FRAG_MSG_OFFSET);
+                memcpy(next_frame + FRAG_MSG_OFFSET, frag_queue.message_buffer, frag_queue.message_size);
+                next_frame += (FRAG_MSG_OFFSET + frag_queue.message_size);
         #if !defined(ARDUINO_ARCH_AVR)
-                if (uint8_t padding = (frag_queue.message_size + sizeof(RF24NetworkHeader) + sizeof(uint16_t)) % 4) {
+                if (uint8_t padding = (frag_queue.message_size + FRAG_MSG_OFFSET) % 4) {
                     next_frame += 4 - padding;
                 }
         #endif
@@ -526,8 +528,8 @@ uint8_t ESBNetwork<radio_t>::enqueue(RF24NetworkHeader* header)
             return false;
         }
 
-        memcpy((char*)(&frag_queue), &frame_buffer, sizeof(RF24NetworkHeader));
-        memcpy(frag_queue.message_buffer, frame_buffer + sizeof(RF24NetworkHeader), message_size);
+        memcpy((char*)(&frag_queue), &frame_buffer, NETWORK_HEADER_SIZE);
+        memcpy(frag_queue.message_buffer, frame_buffer + NETWORK_HEADER_SIZE, message_size);
         frag_queue.message_size = message_size;
         return 2;
     }
@@ -537,20 +539,20 @@ uint8_t ESBNetwork<radio_t>::enqueue(RF24NetworkHeader* header)
 }
     #else // !defined(DISABLE_USER_PAYLOADS)
         #if !defined(ARDUINO_ARCH_AVR)
-    uint8_t padding = (message_size + sizeof(RF24NetworkHeader) + sizeof(uint16_t)) % 4;
+    uint8_t padding = (message_size + FRAG_MSG_OFFSET) % 4;
     padding = padding ? 4 - padding : 0;
     if (padding +
         #else
     if (
         #endif
-            message_size + sizeof(RF24NetworkHeader) + sizeof(uint16_t) + (next_frame - frame_queue)
+            message_size + FRAG_MSG_OFFSET + (next_frame - frame_queue)
         <= MAIN_BUFFER_SIZE)
     {
-        memcpy(next_frame, &frame_buffer, sizeof(RF24NetworkHeader));
-        memcpy(next_frame + sizeof(RF24NetworkHeader), &message_size, sizeof(uint16_t));
-        memcpy(next_frame + sizeof(RF24NetworkHeader) + sizeof(uint16_t), frame_buffer + sizeof(RF24NetworkHeader), message_size);
+        memcpy(next_frame, &frame_buffer, NETWORK_HEADER_SIZE);
+        memcpy(next_frame + NETWORK_HEADER_SIZE, &message_size, sizeof(uint16_t));
+        memcpy(next_frame + FRAG_MSG_OFFSET, frame_buffer + NETWORK_HEADER_SIZE, message_size);
 
-        next_frame += (message_size + sizeof(RF24NetworkHeader) + sizeof(uint16_t));
+        next_frame += (message_size + FRAG_MSG_OFFSET);
         #if !defined(ARDUINO_ARCH_AVR)
         next_frame += padding;
         #endif
