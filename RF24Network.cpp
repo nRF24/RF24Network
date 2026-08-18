@@ -1279,9 +1279,6 @@ void ESBNetwork<radio_t>::pipe_address(uint16_t node, uint8_t pipe, uint8_t* add
 
 /******************************************************************/
 #if defined ARDUINO_ARCH_ESP8266 || defined ARDUINO_ARCH_ESP32
-    #ifdef ARDUINO_ARCH_ESP32
-        #include "esp_task_wdt.h"
-    #endif
 
 template<class radio_t>
 void ESBNetwork<radio_t>::RF24NetworkDelay(uint32_t delay)
@@ -1292,7 +1289,8 @@ void ESBNetwork<radio_t>::RF24NetworkDelay(uint32_t delay)
     #if defined ARDUINO_ARCH_ESP8266
     ESP.wdtFeed();
     #else
-    esp_task_wdt_reset();
+    const TickType_t xDelay = pdMS_TO_TICKS(1);
+    vTaskDelay(xDelay);
     #endif
 }
 #endif
