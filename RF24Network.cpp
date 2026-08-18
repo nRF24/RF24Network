@@ -433,7 +433,7 @@ uint8_t ESBNetwork<radio_t>::enqueue(RF24NetworkHeader* header)
 
     uint16_t message_size = frame_size - NETWORK_HEADER_SIZE
 
-    IF_RF24NETWORK_DEBUG(printf_P(PSTR("NET Enqueue @%x\n"), next_frame - frame_queue));
+                                IF_RF24NETWORK_DEBUG(printf_P(PSTR("NET Enqueue @%x\n"), next_frame - frame_queue));
 
     #if !defined(DISABLE_FRAGMENTATION)
 
