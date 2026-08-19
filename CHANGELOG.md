@@ -6,12 +6,27 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 <!-- markdownlint-disable MD024 -->
 
+## [2.1.2] - 2026-08-19
+
+### <!-- 4 --> 🛠️ Fixed
+
+- Fix for delays on ESP32 & ESP8266 by \@TMRh20 in [#271](https://github.com/nRF24/RF24Network/pull/271)
+
+### <!-- 9 --> 🗨️ Changed
+
+- Potential fix for \#272 by \@TMRh20 in [#273](https://github.com/nRF24/RF24Network/pull/273)
+
+[2.1.2]: https://github.com/nRF24/RF24Network/compare/v2.1.1...v2.1.2
+
+Full commit diff: [`v2.1.1...v2.1.2`][2.1.2]
+
 ## [2.1.1] - 2026-06-06
 
 ### <!-- 9 --> 🗨️ Changed
 
 - Inform AI agents about dev workflows by \@2bndy5 in [#268](https://github.com/nRF24/RF24Network/pull/268)
 - Patch rollover-unsafe `millis()` deadline checks in `RF24Network.cpp` by \@Copilot in [#270](https://github.com/nRF24/RF24Network/pull/270)
+- Bump version to v2.1.1 by \@TMRh20 in [`57b12f0`](https://github.com/nRF24/RF24Network/commit/57b12f0d931b951f90276aa3baaa4dea3ca34d6b)
 
 [2.1.1]: https://github.com/nRF24/RF24Network/compare/v2.1.0...v2.1.1
 
