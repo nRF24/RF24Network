@@ -6,6 +6,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 <!-- markdownlint-disable MD024 -->
 
+## [2.2.0] - 2026-09-12
+
+### <!-- 1 --> 🚀 Added
+
+- Add Zephyr support by \@TMRh20 in [#276](https://github.com/nRF24/RF24Network/pull/276)
+
+### <!-- 9 --> 🗨️ Changed
+
+- Lower threshold for CPU detection of buffer size by \@TMRh20 in [#274](https://github.com/nRF24/RF24Network/pull/274)
+
+[2.2.0]: https://github.com/nRF24/RF24Network/compare/v2.1.2...v2.2.0
+
+Full commit diff: [`v2.1.2...v2.2.0`][2.2.0]
+
 ## [2.1.2] - 2026-08-19
 
 ### <!-- 4 --> 🛠️ Fixed
@@ -15,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### <!-- 9 --> 🗨️ Changed
 
 - Potential fix for \#272 by \@TMRh20 in [#273](https://github.com/nRF24/RF24Network/pull/273)
+- Bump version to v2.1.2 by \@TMRh20 in [`0faa3db`](https://github.com/nRF24/RF24Network/commit/0faa3db0e511a7a6fe79725534ada2a887721db6)
 
 [2.1.2]: https://github.com/nRF24/RF24Network/compare/v2.1.1...v2.1.2
 
