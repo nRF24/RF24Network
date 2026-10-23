@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 <!-- markdownlint-disable MD024 -->
 
+## [2.2.1] - 2026-10-23
+
+### <!-- 4 --> 🛠️ Fixed
+
+- Fix for STM32 devices by \@TMRh20 in [#278](https://github.com/nRF24/RF24Network/pull/278)
+
+[2.2.1]: https://github.com/nRF24/RF24Network/compare/v2.2.0...v2.2.1
+
+Full commit diff: [`v2.2.0...v2.2.1`][2.2.1]
+
 ## [2.2.0] - 2026-09-12
 
 ### <!-- 1 --> 🚀 Added
@@ -15,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### <!-- 9 --> 🗨️ Changed
 
 - Lower threshold for CPU detection of buffer size by \@TMRh20 in [#274](https://github.com/nRF24/RF24Network/pull/274)
+- Bump version to v2.2.0 by \@TMRh20 in [`0dfe14e`](https://github.com/nRF24/RF24Network/commit/0dfe14e9b6af591af313eb2f490ef383664114fc)
 
 [2.2.0]: https://github.com/nRF24/RF24Network/compare/v2.1.2...v2.2.0
 
