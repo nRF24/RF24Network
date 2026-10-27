@@ -32,6 +32,9 @@
 #if defined(USE_RF24_LIB_SRC)
     #include <RF24.h>
 #endif
+#if defined(RF24NETWORK_CCM)
+    #include "RF24CCM.h"
+#endif
 
 #if defined(ENABLE_SLEEP_MODE) && defined(ESP8266)
     #warning "Disabling sleep mode because sleep doesn't work on ESP8266"
@@ -735,6 +738,19 @@ bool ESBNetwork<nrf_to_nrf>::write(RF24NetworkHeader& header, const void* messag
 }
 #endif
 /******************************************************************/
+#if defined(RF24NETWORK_CCM)
+template<>
+bool ESBNetwork<RF24CCM>::write(RF24NetworkHeader& header, const void* message, uint16_t len, uint16_t writeDirect)
+{
+    // Leave room in each radio frame for the IV, packet counter and MIC
+    max_frame_payload_size = RF24NETWORK_MAX_FRAME_SIZE - sizeof(RF24NetworkHeader);
+    if (radio.enableEncryption) {
+        max_frame_payload_size -= RF24CCM_OVERHEAD;
+    }
+    return main_write(header, message, len, writeDirect);
+}
+#endif
+/******************************************************************/
 
 template<class radio_t>
 bool ESBNetwork<radio_t>::main_write(RF24NetworkHeader& header, const void* message, uint16_t len, uint16_t writeDirect)
@@ -1370,6 +1386,9 @@ void ESBNetwork<radio_t>::setup_watchdog(uint8_t prescalar)
 
 // ensure the compiler is aware of the possible datatype for the template class
 template class ESBNetwork<RF24>;
+#if defined(RF24NETWORK_CCM)
+template class ESBNetwork<RF24CCM>;
+#endif
 #if defined(ARDUINO_ARCH_NRF52) || defined(ARDUINO_ARCH_NRF52840) || defined(ARDUINO_ARCH_NRF52833) || defined(ARDUINO_NRF54L15)
 template class ESBNetwork<nrf_to_nrf>;
 #endif
