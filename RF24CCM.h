@@ -59,7 +59,7 @@ inline const uint8_t* sbox()
         uint8_t p = 1, q = 1;
         do {
             p = (uint8_t)(p ^ (p << 1) ^ ((p & 0x80) ? 0x1B : 0x00)); // multiply p by 3
-            q ^= (uint8_t)(q << 1);                                    // divide q by 3
+            q ^= (uint8_t)(q << 1);                                   // divide q by 3
             q ^= (uint8_t)(q << 2);
             q ^= (uint8_t)(q << 4);
             if (q & 0x80) {
