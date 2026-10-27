@@ -428,7 +428,6 @@ private:
 
     // New data members go below this line, so existing members keep their offsets and a program or
     // library built against an older RF24CCM.h still finds the key and buffers where it expects them.
-public:
     /**
      * While encryption is enabled, setRetries() never goes below these values (delay in 250us steps).
      * Encrypted frames carry half the data, so messages take twice as many frames, and nrf_to_nrf only
