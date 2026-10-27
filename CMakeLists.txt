@@ -45,6 +45,7 @@ option(RF24NETWORK_DEBUG_FRAGMENTATION_L2
 )
 option(DISABLE_FRAGMENTATION "disable message fragmentation" OFF)
 option(DISABLE_DYNAMIC_PAYLOADS "force usage of static payload size" OFF)
+option(RF24NETWORK_CCM "build ESBNetwork<RF24CCM> for AES-CCM encrypted networks (nrf_to_nrf compatible)" OFF)
 
 # detect CPU and add compiler flags accordingly
 include(cmake/detectCPU.cmake)
@@ -151,6 +152,10 @@ if(DEFINED SLOW_ADDR_POLL_RESPONSE)
     message(STATUS "SLOW_ADDR_POLL_RESPONSE set to ${SLOW_ADDR_POLL_RESPONSE}")
     target_compile_definitions(${LibTargetName} PUBLIC SLOW_ADDR_POLL_RESPONSE=${SLOW_ADDR_POLL_RESPONSE})
 endif()
+if(RF24NETWORK_CCM)
+    message(STATUS "RF24NETWORK_CCM asserted")
+    target_compile_definitions(${LibTargetName} PUBLIC RF24NETWORK_CCM)
+endif()
 
 ###########################
 # target install rules for the RF24Network lib
@@ -162,6 +167,7 @@ install(TARGETS ${LibTargetName}
 install(FILES
         RF24Network.h
         RF24Network_config.h
+        RF24CCM.h
     DESTINATION include/RF24Network
 )
 
