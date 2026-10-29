@@ -500,7 +500,7 @@ uint8_t ESBNetwork<radio_t>::enqueue(RF24NetworkHeader* header)
         #if defined(DISABLE_USER_PAYLOADS)
             return 0;
         #endif
-            if ((uint16_t)(MAX_PAYLOAD_SIZE) - (next_frame - frame_queue) >= frag_queue.message_size) {
+            if ((uint32_t)(next_frame - frame_queue) + FRAG_MSG_OFFSET + frag_queue.message_size <= MAIN_BUFFER_SIZE) {
                 memcpy(next_frame, &frag_queue, FRAG_MSG_OFFSET);
                 memcpy(next_frame + FRAG_MSG_OFFSET, frag_queue.message_buffer, frag_queue.message_size);
                 next_frame += (FRAG_MSG_OFFSET + frag_queue.message_size);
@@ -648,7 +648,9 @@ uint16_t ESBNetwork<radio_t>::read(RF24NetworkHeader& header, void* message, uin
 
     // This function assumes that there is a frame in the queue.
     // Call `available()` before calling `read()`.
-    //if (!available()) { return bufsize; }
+    if (!available()) {
+        return 0;
+    }
 
 #if defined(RF24_LINUX)
     RF24NetworkFrame frame = frame_queue.front();
