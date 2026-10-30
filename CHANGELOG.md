@@ -6,11 +6,30 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 <!-- markdownlint-disable MD024 -->
 
+## [2.3.0] - 2026-10-30
+
+### <!-- 1 --> 🚀 Added
+
+- Add CCM Encryption by \@TMRh20 in [#279](https://github.com/nRF24/RF24Network/pull/279)
+
+### <!-- 9 --> 🗨️ Changed
+
+- Update CMakeLists.txt by \@TMRh20 in [#280](https://github.com/nRF24/RF24Network/pull/280)
+- Memory fixes by \@TMRh20 in [#281](https://github.com/nRF24/RF24Network/pull/281)
+
+[2.3.0]: https://github.com/nRF24/RF24Network/compare/v2.2.1...v2.3.0
+
+Full commit diff: [`v2.2.1...v2.3.0`][2.3.0]
+
 ## [2.2.1] - 2026-10-23
 
 ### <!-- 4 --> 🛠️ Fixed
 
 - Fix for STM32 devices by \@TMRh20 in [#278](https://github.com/nRF24/RF24Network/pull/278)
+
+### <!-- 9 --> 🗨️ Changed
+
+- Bump version to v2.2.1 by \@TMRh20 in [`fff12de`](https://github.com/nRF24/RF24Network/commit/fff12defd35b8587c0901630f3f79bc8e3a646d9)
 
 [2.2.1]: https://github.com/nRF24/RF24Network/compare/v2.2.0...v2.2.1
 
