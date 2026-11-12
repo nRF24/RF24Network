@@ -5,6 +5,8 @@
 [![Pico SDK build](https://github.com/nRF24/RF24Network/actions/workflows/build_rp2xxx.yml/badge.svg)](https://github.com/nRF24/RF24Network/actions/workflows/build_rp2xxx.yml)
 [![Documentation Status](https://readthedocs.org/projects/rf24network/badge/?version=latest)](https://rf24network.readthedocs.io/en/latest/?badge=latest)
 
+<img width="100%" alt="RF24Network-banner-flat" src="https://github.com/user-attachments/assets/0494bdb5-3080-4da1-ac85-6e5550ae0cb1" />
+
 # TMRh20 2014-2024 - Optimized Network Layer for nRF24L01(+) & nRF52x radios
 Introducing **RF24Network & RF24Mesh v2.0** with some *significant API changes*, adding the use of C++ Templates in order to support a
 range of ESB enabled radios, most recently NRF52x radios.
